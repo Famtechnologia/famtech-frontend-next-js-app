@@ -1,21 +1,13 @@
-// app/(dashboard)/page.tsx
-"use client";
+// app/reset-password/[token]/page.jsx
+import ResetPasswordForm from "@/components/auth/ResetPassword";
 
-import { useEffect } from "react";
+interface ResetPasswordPageProps {
+  params: {
+    token: string;
+  };
+}
 
-export default function Page() {
-  useEffect(() => {
-    // You can run client-side logic here if needed
-    console.log("Dashboard Home mounted");
-  }, []);
-
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-      <p className="text-gray-600 mt-2">
-        Welcome to your dashboard! Here you can see an overview of your farms,
-        crops, and livestock.
-      </p>
-    </div>
-  );
+export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
+  const { token } = params;
+  return <ResetPasswordForm token={token} />;
 }

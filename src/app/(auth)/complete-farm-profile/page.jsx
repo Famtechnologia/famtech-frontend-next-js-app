@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Building2, MapPin, Settings, CheckCircle, ChevronLeft, ChevronRight  } from 'lucide-react';
-import {API_URL} from '../../config'
-import {useAuthStore} from "../../../store/authStore"
+import {API_URL} from '../../../../config'
+import {useAuthStore} from "@/lib/store/authStore"
 
 export default function ModernFarmRegistration() {
   const router = useRouter();
@@ -292,7 +292,7 @@ export default function ModernFarmRegistration() {
 
       const result = await response.json();
       
-      router.push('/farm')
+      router.push('/')
       
       console.log('Registration successful:', result);
     } catch (error) {

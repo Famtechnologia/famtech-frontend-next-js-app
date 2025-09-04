@@ -55,9 +55,9 @@ const Login: React.FC = () => {
       setCheckingProfile(false);
 
       if (profile) {
-        router.push("/farm");
+        router.push("/");
       } else {
-        router.push("/auth/register");
+        router.push("/complete-farm-profile");
       }
     } catch (error: any) {
       toast.error(error?.message || "Login failed");
@@ -138,7 +138,7 @@ const Login: React.FC = () => {
         <p className="text-center text-sm text-gray-500 mt-4">
           Don&apos;t have an account?{" "}
           <a
-            href="/onboarding/signup"
+            href="/register"
             className="text-green-600 hover:underline"
           >
             Sign Up

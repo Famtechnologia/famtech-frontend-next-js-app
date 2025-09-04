@@ -73,7 +73,7 @@ export default function SignupPage() {
       // so no need to set a token here.
 
       toast.success(message || "Signup successful!");
-      router.push("/auth/verify-email");
+      router.push("/verify-email");
     } catch (err: any) {
       console.error("Signup failed:", err);
       toast.error(err.message || "Something went wrong");
@@ -180,7 +180,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-gray-500 mt-4">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-green-600">
+          <Link href="/login" className="text-green-600">
             Sign in
           </Link>
         </p>

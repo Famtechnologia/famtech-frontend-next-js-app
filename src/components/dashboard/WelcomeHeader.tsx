@@ -51,6 +51,7 @@ const sliderData = [
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const { profile, loading, error,  } = useProfileStore();
 
+
   // Auto-slide functionality
   useEffect(() => {
     if (!isAutoPlaying) return;

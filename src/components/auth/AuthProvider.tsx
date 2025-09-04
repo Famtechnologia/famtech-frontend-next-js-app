@@ -1,21 +1,28 @@
-// 3. Create/Update AuthProvider component
 // components/auth/AuthProvider.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
+import { useProfileStore } from '@/lib/store/farmStore';
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { initializeAuth } = useAuthStore();
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const token = useAuthStore((state) => state.token);
+  const fetchProfile = useProfileStore((state: any) => state.fetchProfile);
 
   useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+    const init = async () => {
+      await initializeAuth();
+      if (useAuthStore.getState().token) {
+        await fetchProfile();
+      }
+    };
+    init();
+  }, []); // run once on mount
 
   return <>{children}</>;
 }
-

@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useAuthStore } from "@/lib/store/authStore";
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api-famtech-backend-app.onrender.com";
+export const API_URL =  process.env.NEXT_PUBLIC_API_URL || "https://api-famtech-backend-app.onrender.com";
+// export const API_URL = "https://api-famtech-backend-app.onrender.com";
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -57,7 +57,7 @@ apiClient.interceptors.response.use(
         const { clearUser } = useAuthStore.getState();
         clearUser();
         if (typeof window !== "undefined") {
-          window.location.href = "/auth/login";
+          window.location.href = "/login";
         }
       }
     }

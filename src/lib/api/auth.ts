@@ -23,6 +23,13 @@ export interface LoginResponse {
     };
   };
 }
+// export interface resetPasswordResponse{
+//   email: string
+// }
+
+// export interface forgotPasswordResponse{
+//   email: string
+// }
 
 export interface RegisterResponse {
   message: string;
@@ -117,3 +124,46 @@ export const useLogout = () => {
 
   return { handleLogout };
 };
+
+export const forgotPassword = async (
+  email: string,
+) => {
+  try {
+    const { data } = await apiClient.post("/auth/forgot-password", {
+      email,
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Password Reset link failed";
+      throw new Error(message);
+    }
+    throw new Error("Network error occurred");
+  }
+};
+
+export const resetPassword = async (
+  password: string,
+  token: string
+) => {
+  try {
+    const { data } = await apiClient.post("/auth/reset-password", {
+      password,
+      token
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Password Reset failed";
+      throw new Error(message);
+    }
+    throw new Error("Network error occurred");
+  }
+};
+

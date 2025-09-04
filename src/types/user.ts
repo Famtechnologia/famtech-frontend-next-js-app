@@ -103,7 +103,7 @@ export interface DashboardStats {
 }
 
 export interface ProfileResponse {
-   data:any
+   data:{}
   farmProfile: any
   id: string;
   uid: string;

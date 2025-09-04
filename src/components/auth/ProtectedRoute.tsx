@@ -1,8 +1,7 @@
 // components/auth/ProtectedRoute.tsx
 'use client';
-import { useAuth } from '../../lib/hooks/useAuth';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
@@ -20,18 +19,31 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      
-      if (claims.role !== requiredRole) {
-        router.push('/unauthorized');
-        return;
-      }
-      
-     if (claims.role?.toLowerCase() !== requiredRole.toLowerCase()) {
+    if (loading) return;
+
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (!claims?.role) {
+      router.push('/unauthorized');
+      return;
+    }
+
+    const userRole = claims.role.toLowerCase();
+    const expectedRole = requiredRole.toLowerCase();
+
+    if (userRole !== expectedRole) {
+      router.push('/unauthorized');
+      return;
+    }
+
+    if (requiredSubRole) {
+      const userSubRole = claims.subRole?.toLowerCase();
+      const expectedSubRole = requiredSubRole.toLowerCase();
+
+      if (userSubRole !== expectedSubRole) {
         router.push('/unauthorized');
         return;
       }
@@ -45,7 +57,7 @@ export default function ProtectedRoute({
       </div>
     );
   }
-  
+
   if (!user) return null;
 
   return <>{children}</>;
