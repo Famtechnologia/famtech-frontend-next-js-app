@@ -23,13 +23,6 @@ export interface LoginResponse {
     };
   };
 }
-// export interface resetPasswordResponse{
-//   email: string
-// }
-
-// export interface forgotPasswordResponse{
-//   email: string
-// }
 
 export interface RegisterResponse {
   message: string;
@@ -98,6 +91,26 @@ export const register = async (
         error.response?.data?.message ||
         error.response?.data?.error ||
         "Registration failed";
+      throw new Error(message);
+    }
+    throw new Error("Network error occurred");
+  }
+};
+
+export const verifyEmail = async (
+  token: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const { data } = await apiClient.get("/auth/verify-email", {
+      params: { token },
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Email verification failed";
       throw new Error(message);
     }
     throw new Error("Network error occurred");

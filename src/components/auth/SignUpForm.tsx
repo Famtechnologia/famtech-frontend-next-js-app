@@ -19,7 +19,7 @@ interface SignupFormInputs {
 }
 
 export default function SignupPage() {
-  const router = useRouter();
+  // const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -73,7 +73,7 @@ export default function SignupPage() {
       // so no need to set a token here.
 
       toast.success(message || "Signup successful!");
-      router.push("/verify-email");
+      // router.push("/verify-email");
    } catch (err: unknown) {
   console.error("Signup failed:", err);
   const errorMessage = err instanceof Error ? err.message : "Something went wrong";
