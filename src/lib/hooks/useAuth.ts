@@ -19,7 +19,7 @@ export const useAuth = () => {
   return {
     user,
     token,
-    claims: claims || { role: '', subRole: '' },
+    claims: claims || { role: user?.role, subRole: '' },
     loading,
     isAuthenticated: !!user && !!token,
     logout,

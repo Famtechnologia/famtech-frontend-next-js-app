@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
+import DashboardSkeleton from "@/components/skeleton/DashboardSkeleton";
 
 export default function Page() {
   useEffect(() => {
@@ -11,11 +12,7 @@ export default function Page() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-      <p className="text-gray-600 mt-2">
-        Welcome to your dashboard! Here you can see an overview of your farms,
-        crops, and livestock.
-      </p>
+    <DashboardSkeleton />
     </div>
   );
 }

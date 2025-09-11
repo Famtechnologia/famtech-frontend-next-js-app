@@ -13,7 +13,6 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ 
   children, 
   requiredRole, 
-  requiredSubRole 
 }: ProtectedRouteProps) {
   const { user, loading, claims } = useAuth();
   const router = useRouter();
@@ -26,12 +25,12 @@ export default function ProtectedRoute({
       return;
     }
 
-    if (!claims?.role) {
+    if (!user?.role) {
       router.push('/unauthorized');
       return;
     }
 
-    const userRole = claims.role.toLowerCase();
+    const userRole = user?.role.toLowerCase();
     const expectedRole = requiredRole.toLowerCase();
 
     if (userRole !== expectedRole) {
@@ -39,16 +38,16 @@ export default function ProtectedRoute({
       return;
     }
 
-    if (requiredSubRole) {
-      const userSubRole = claims.subRole?.toLowerCase();
-      const expectedSubRole = requiredSubRole.toLowerCase();
+    // if (requiredSubRole) {
+    //   const userSubRole = claims.subRole?.toLowerCase();
+    //   const expectedSubRole = requiredSubRole.toLowerCase();
 
-      if (userSubRole !== expectedSubRole) {
-        router.push('/unauthorized');
-        return;
-      }
-    }
-  }, [user, loading, claims, router, requiredRole, requiredSubRole]);
+    //   if (userSubRole !== expectedSubRole) {
+    //     router.push('/unauthorized');
+    //     return;
+    //   }
+    // }
+  }, [user, loading, claims, router, requiredRole]);
 
   if (loading) {
     return (
