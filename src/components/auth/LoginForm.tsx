@@ -59,15 +59,17 @@ const Login: React.FC = () => {
       } else {
         router.push("/complete-farm-profile");
       }
-    } catch (error: any) {
-      toast.error(error?.message || "Login failed");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Login failed";
+      toast.error(errorMessage);
       setCheckingProfile(false);
     } finally {
       setLoading(false);
     }
   };
 
-   return (
+  return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg relative">
         {(loading || checkingProfile) && (
@@ -137,10 +139,7 @@ const Login: React.FC = () => {
 
         <p className="text-center text-sm text-gray-500 mt-4">
           Don&apos;t have an account?{" "}
-          <a
-            href="/register"
-            className="text-green-600 hover:underline"
-          >
+          <a href="/register" className="text-green-600 hover:underline">
             Sign Up
           </a>
         </p>

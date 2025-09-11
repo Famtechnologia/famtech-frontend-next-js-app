@@ -42,7 +42,17 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
   const router = useRouter();
   const pathname = usePathname();
   const { handleLogout } = useLogout();
-  const { profile, loading, error,  } = useProfileStore();
+  // Define the expected profile type
+  interface ProfileOwner {
+    firstName?: string;
+    // add other fields as needed
+  }
+  interface Profile {
+    owner?: ProfileOwner;
+    // add other fields as needed
+  }
+  
+  const { profile, loading, error } = useProfileStore() as { profile?: Profile; loading: boolean; error: unknown };
 
   const toggleMenu = (menuName: string) => {
     // Don't expand/collapse menus when sidebar is collapsed
@@ -330,7 +340,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500 capitalize">
-                  {profile?.owner.firstName} 
+                  {profile?.owner?.firstName} 
                 </p>
               </div>
             )}
@@ -378,7 +388,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                   <User size={16} className="text-white" />
                 </div>
-                <span className="text-sm font-medium text-gray-900">{profile?.owner.firstName}</span>
+                <span className="text-sm font-medium text-gray-900">{profile?.owner?.firstName}</span>
                 <ChevronDown size={16} className="text-gray-500" />
               </div>
             </div>

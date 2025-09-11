@@ -49,7 +49,18 @@ const sliderData = [
  export default function WelcomeHeader (){
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const { profile, loading, error,  } = useProfileStore();
+  // Define the expected profile type
+  type Profile = {
+    farmName?: string;
+    // add other properties as needed
+  };
+
+  // Tell TypeScript the shape of profile
+  const { profile, loading, error } = useProfileStore() as {
+    profile: Profile;
+    loading: boolean;
+    error: unknown;
+  };
 
 
   // Auto-slide functionality

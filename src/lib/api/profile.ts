@@ -11,8 +11,8 @@ import axios from "axios";
 // }
 
 export interface  ProfileResponse {
-  data: any
-  farmProfile: any
+  data: Array<object>
+  farmProfile: object | null;
   id: string;
   uid: string;
   farmName: string;

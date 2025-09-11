@@ -12,7 +12,8 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const token = useAuthStore((state) => state.token);
-  const fetchProfile = useProfileStore((state: any) => state.fetchProfile);
+// Let TypeScript infer the type automatically
+const fetchProfile = useProfileStore(state => state.fetchProfile);
 
   useEffect(() => {
     const init = async () => {

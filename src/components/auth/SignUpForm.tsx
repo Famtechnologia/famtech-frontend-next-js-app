@@ -74,10 +74,11 @@ export default function SignupPage() {
 
       toast.success(message || "Signup successful!");
       router.push("/verify-email");
-    } catch (err: any) {
-      console.error("Signup failed:", err);
-      toast.error(err.message || "Something went wrong");
-    }
+   } catch (err: unknown) {
+  console.error("Signup failed:", err);
+  const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+  toast.error(errorMessage);
+}
   };
 
   return (

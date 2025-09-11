@@ -84,9 +84,9 @@ export interface Report {
   period: string;
   data: {
     // i added this as strings for now
-    weather: String;   // WeatherSummary
-    crops: String;    // CropHealthSummary
-    finances: String;  // FinancialSummary
+    weather: string;   // WeatherSummary
+    crops: string;    // CropHealthSummary
+    finances: string;  // FinancialSummary
     recommendations: string[];
   };
   generatedAt: Date;
@@ -103,8 +103,8 @@ export interface DashboardStats {
 }
 
 export interface ProfileResponse {
-   data:{}
-  farmProfile: any
+   data:object | null;
+  farmProfile: object | null;
   id: string;
   uid: string;
   farmName: string;

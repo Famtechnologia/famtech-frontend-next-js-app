@@ -5,7 +5,7 @@ import { getProfile } from "@/lib/api/profile";
 import { useAuthStore } from "@/lib/store/authStore"; // still get token from auth
 
 interface ProfileState {
-  profile: any;
+  profile: unknown | null;
   loading: boolean;
   error: string | null;
   fetchProfile: () => Promise<void>;
@@ -31,9 +31,10 @@ export const useProfileStore = create<ProfileState>()(
           console.log(token);
 
           const profileData = await getProfile(token);
-          console.log(profileData?.data.farmProfile);
+          console.log(profileData?.data);
 
-          const farm = profileData?.data.farmProfile
+          // If data is an array, get the first profile or handle as needed
+          const farm = Array.isArray(profileData?.data) ? profileData.data[0] : undefined;
 
           if (farm) {
             console.log("on");
