@@ -101,7 +101,7 @@ export const verifyEmail = async (
   token: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const { data } = await apiClient.get("/auth/verify-email", {
+    const { data } = await apiClient.get(`/auth/verify-email?token=${token}`, {
       params: { token },
     });
     return data;
