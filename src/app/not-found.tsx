@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Leaf
 } from "lucide-react";
+import Link from "next/link";
 
 export default function Page() {
   const [mounted, setMounted] = useState(false);
@@ -63,7 +64,7 @@ export default function Page() {
               Oops! Field Not Found
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Looks like you've wandered off the beaten path! The page you're looking for 
+              Looks like youve wandered off the beaten path! The page youre looking for 
               seems to have grown legs and walked away to greener pastures.
             </p>
           </div>
@@ -130,12 +131,12 @@ export default function Page() {
             </h3>
             
             <p className="text-gray-600 mb-6 max-w-lg mx-auto">
-              Don't worry! Here are some popular destinations to get you back on track.
+              Dont worry! Here are some popular destinations to get you back on track.
             </p>
 
             {/* Quick Links */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <a 
+              <Link
                 href="/farms" 
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
               >
@@ -144,9 +145,9 @@ export default function Page() {
                 </div>
                 <h4 className="font-medium text-gray-900 mb-1">Farms</h4>
                 <p className="text-sm text-gray-600">Manage your farms</p>
-              </a>
+              </Link>
 
-              <a 
+              <Link 
                 href="/crops" 
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
               >
@@ -155,9 +156,9 @@ export default function Page() {
                 </div>
                 <h4 className="font-medium text-gray-900 mb-1">Crops</h4>
                 <p className="text-sm text-gray-600">Track crop health</p>
-              </a>
+              </Link>
 
-              <a 
+              <Link
                 href="/analytics" 
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
               >
@@ -166,9 +167,9 @@ export default function Page() {
                 </div>
                 <h4 className="font-medium text-gray-900 mb-1">Analytics</h4>
                 <p className="text-sm text-gray-600">View reports</p>
-              </a>
+              </Link>
 
-              <a 
+              <Link 
                 href="/settings" 
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
               >
@@ -177,7 +178,7 @@ export default function Page() {
                 </div>
                 <h4 className="font-medium text-gray-900 mb-1">Settings</h4>
                 <p className="text-sm text-gray-600">Account settings</p>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

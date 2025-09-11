@@ -52,7 +52,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
     // add other fields as needed
   }
   
-  const { profile, loading, error } = useProfileStore() as { profile?: Profile; loading: boolean; error: unknown };
+  const { profile, loading,  } = useProfileStore() as { profile?: Profile; loading: boolean; error: unknown };
 
   const toggleMenu = (menuName: string) => {
     // Don't expand/collapse menus when sidebar is collapsed
