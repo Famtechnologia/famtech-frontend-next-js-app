@@ -101,10 +101,8 @@ export const verifyEmail = async (
   token: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    const { data } = await apiClient.get(`/auth/verify-email?token=${token}`, {
-      params: { token },
-    });
-    return data;
+  await apiClient.get(`/auth/verify-email?token=${token}`);
+  return { success: true, message: "Email verified successfully" };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const message =

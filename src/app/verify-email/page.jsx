@@ -20,7 +20,6 @@ export default function VerifyEmailPage() {
   const [verificationStatus, setVerificationStatus] = useState("verifying"); // 'verifying', 'success', 'expired', 'invalid', 'error'
   const [isResending, setIsResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [userEmail, setUserEmail] = useState("");
   const [token, setToken] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -29,15 +28,13 @@ export default function VerifyEmailPage() {
 
     // Get email and token from URL params
     const urlParams = new URLSearchParams(window.location.search);
-    const emailParam = urlParams.get("email") || "";
     const tokenParam = urlParams.get("token") || "";
 
-    setUserEmail(emailParam);
     setToken(tokenParam);
 
     // Auto-verify the token
     if (tokenParam) {
-      handleTokenVerification(tokenParam, emailParam);
+      handleTokenVerification(tokenParam);
     } else {
       // No token provided - invalid verification attempt
       setVerificationStatus("invalid");
@@ -46,7 +43,7 @@ export default function VerifyEmailPage() {
   }, []);
 
   // Handle token verification from URL
-  const handleTokenVerification = async (verifyToken, email) => {
+  const handleTokenVerification = async (verifyToken) => {
     setVerificationStatus("verifying");
     setErrorMessage("");
 
@@ -76,7 +73,6 @@ export default function VerifyEmailPage() {
         if (isSuccess) {
           setVerificationStatus("success");
           localStorage.setItem("emailVerified", "true");
-          localStorage.setItem("verifiedEmail", email);
         } else {
           setVerificationStatus("invalid");
           setErrorMessage("The verification token is invalid or corrupted.");
@@ -92,52 +88,52 @@ export default function VerifyEmailPage() {
   };
 
   // Resend verification email
-  const handleResendEmail = async () => {
-    if (resendCooldown > 0) return;
+  // const handleResendEmail = async () => {
+  //   if (resendCooldown > 0) return;
 
-    setIsResending(true);
-    setErrorMessage("");
+  //   setIsResending(true);
+  //   setErrorMessage("");
 
-    try {
-      // Simulate API call to resend email
-      const response = await fetch("/api/resend-verification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: userEmail,
-        }),
-      });
+  //   try {
+  //     // Simulate API call to resend email
+  //     const response = await fetch("/api/resend-verification", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         email: userEmail,
+  //       }),
+  //     });
 
-      // Simulate delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+  //     // Simulate delay
+  //     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Start cooldown timer
-      setResendCooldown(60);
-      const interval = setInterval(() => {
-        setResendCooldown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+  //     // Start cooldown timer
+  //     setResendCooldown(60);
+  //     const interval = setInterval(() => {
+  //       setResendCooldown((prev) => {
+  //         if (prev <= 1) {
+  //           clearInterval(interval);
+  //           return 0;
+  //         }
+  //         return prev - 1;
+  //       });
+  //     }, 1000);
 
-      // Show success feedback
-      alert(
-        "Verification email sent! Please check your inbox and spam folder."
-      );
-    } catch (error) {
-      console.error("Resend error:", error);
-      setErrorMessage(
-        "Failed to resend verification email. Please try again later."
-      );
-    } finally {
-      setIsResending(false);
-    }
-  };
+  //     // Show success feedback
+  //     alert(
+  //       "Verification email sent! Please check your inbox and spam folder."
+  //     );
+  //   } catch (error) {
+  //     console.error("Resend error:", error);
+  //     setErrorMessage(
+  //       "Failed to resend verification email. Please try again later."
+  //     );
+  //   } finally {
+  //     setIsResending(false);
+  //   }
+  // };
 
   const goBack = () => {
     window.history.back();
@@ -173,9 +169,6 @@ export default function VerifyEmailPage() {
               <p className="text-lg text-gray-600 mb-2">
                 Please wait while we verify your email address.
               </p>
-              {userEmail && (
-                <p className="text-green-600 font-medium">{userEmail}</p>
-              )}
               <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-ping mr-2"></div>
                 Processing verification token...
@@ -198,14 +191,12 @@ export default function VerifyEmailPage() {
                 Your email address has been confirmed and your account is now
                 fully activated.
               </p>
-              {userEmail && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                  <p className="text-green-700 font-medium">✓ {userEmail}</p>
                   <p className="text-sm text-green-600 mt-1">
                     Verified successfully
                   </p>
                 </div>
-              )}
+  
               <div className="space-y-3">
                 <button
                   onClick={goToDashboard}
@@ -235,11 +226,6 @@ export default function VerifyEmailPage() {
               <p className="text-lg text-gray-600 mb-2">
                 This verification link has expired for security reasons.
               </p>
-              {userEmail && (
-                <p className="text-gray-700 font-medium mb-6">
-                  Email: {userEmail}
-                </p>
-              )}
               {errorMessage && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                   <p className="text-yellow-700 text-sm">{errorMessage}</p>
@@ -300,7 +286,7 @@ export default function VerifyEmailPage() {
                   <p className="text-red-700 text-sm">{errorMessage}</p>
                 </div>
               )}
-              <div className="space-y-3">
+              {/* <div className="space-y-3">
                 {userEmail ? (
                   <button
                     onClick={handleResendEmail}
@@ -334,7 +320,7 @@ export default function VerifyEmailPage() {
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Go Back
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         );
@@ -360,8 +346,8 @@ export default function VerifyEmailPage() {
               <div className="space-y-3">
                 <button
                   onClick={() => {
-                    if (token && userEmail) {
-                      handleTokenVerification(token, userEmail);
+                    if (token) {
+                      handleTokenVerification(token);
                     } else {
                       window.location.reload();
                     }
@@ -371,16 +357,7 @@ export default function VerifyEmailPage() {
                   <RefreshCw className="w-5 h-5 mr-2" />
                   Try Again
                 </button>
-                {userEmail && (
-                  <button
-                    onClick={handleResendEmail}
-                    disabled={isResending || resendCooldown > 0}
-                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border border-gray-300 transition-all duration-200 hover:shadow-md disabled:opacity-50"
-                  >
-                    <Send className="w-5 h-5 mr-2" />
-                    Request New Link
-                  </button>
-                )}
+               
               </div>
             </div>
           </div>
@@ -435,7 +412,7 @@ export default function VerifyEmailPage() {
             <p>
               <strong>Debug:</strong>
             </p>
-            <p>Email: {userEmail || "Not provided"}</p>
+    
             <p>
               Token: {token ? `${token.substring(0, 10)}...` : "Not provided"}
             </p>
