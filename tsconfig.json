@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/(auth)/complete-farm-profile/page.jsx", "src/app/(auth)/verify-code/page.jsx", "src/app/unauthorized/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/(auth)/complete-farm-profile/page.jsx", "src/app/(auth)/verify-code/page.jsx", "src/app/unauthorized/page.jsx", "src/components/tasks/tasksCard.jsx"],
   "exclude": ["node_modules"]
 }

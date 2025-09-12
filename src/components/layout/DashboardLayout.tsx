@@ -201,7 +201,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } fixed inset-y-0 left-0 z-50 ${
         sidebarCollapsed ? 'w-16' : 'w-64'
-      } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200`}>
+      } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 overflow-y-scroll scrollbar-hide  z-50 `}>
         
         {/* Logo */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
@@ -221,7 +221,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-4 overflow-y-auto">
+        <nav className="flex-1 px-4 py-4 ">
           <div className="space-y-2">
             {/* Collapse Toggle - only show on desktop/tablet */}
             <div className="hidden md:block">
@@ -329,10 +329,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
               );
             })}
           </div>
-        </nav>
-
-        {/* User Profile & Sign Out */}
-        <div className="border-t border-gray-200 p-4">
+          <div className="border-t border-gray-200 p-4">
           <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'} mb-3`}>
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
               <User size={16} className="text-white" />
@@ -356,10 +353,14 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             {!sidebarCollapsed && 'Sign out'}
           </button>
         </div>
+        </nav>
+
+        {/* User Profile & Sign Out */}
+        
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-y-auto">
         {/* Top bar */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-6">

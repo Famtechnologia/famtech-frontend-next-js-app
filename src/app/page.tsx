@@ -22,8 +22,14 @@ import {
   Leaf,
   Wheat,
 } from "lucide-react";
-import  WelcomeHeader  from "@/components/dashboard/WelcomeHeader";
-import  DashboardSkeleton  from "@/components/skeleton/DashboardSkeleton"
+import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
+import DashboardSkeleton from "@/components/skeleton/DashboardSkeleton";
+import WeatherForecast from "@/app/(dashboard)/weather/components/WeatherCard";
+import Tasks from "@/components/tasks/tasksCard";
+import Alerts from "@/components/notifications/AlertBanner";
+import  MarketPrices from "@/app/(dashboard)/marketplace/components/cropPrice";
+import FarmDiary from "@/app/(dashboard)/farms/components/farmDiary";
+import SmartAdvisory from '@/app/(dashboard)/farms/components/SmartAdvisoryCard'
 
 interface DashboardStats {
   tasks: {
@@ -73,7 +79,6 @@ export default function FarmerAdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
- 
 
   const [error, setError] = useState<string | null>(null);
 
@@ -156,12 +161,8 @@ export default function FarmerAdminDashboard() {
     }, 1000);
   }, []);
 
-  
-
   if (loading) {
-    return (
-      <DashboardSkeleton />
-    );
+    return <DashboardSkeleton />;
   }
 
   const getTaskIcon = (status: string) => {
@@ -189,69 +190,19 @@ export default function FarmerAdminDashboard() {
   return (
     <ProtectedRoute requiredRole="farmer">
       <DashboardLayout title="Dashboard">
-        <div className="space-y-6">
-         {/* Welcome Header */}
+        <div className="space-y-6 ">
+          {/* Welcome Header */}
           <WelcomeHeader />
-           {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Weather Forecast */}
-            <div className="bg-white rounded-lg shadow-sm  p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Weather Forecast
-              </h3>
-              <div className="text-center">
-                <p className="text-sm text-gray-500 mb-1">Today</p>
-                <div className="flex items-center justify-center space-x-3 mb-2">
-                  <Cloud className="w-8 h-8 text-gray-400" />
-                  <p className="text-3xl font-bold text-gray-900">
-                    {stats?.weather.current.temperature}°C
-                  </p>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {stats?.weather.current.condition}
-                </p>
-              </div>
-            </div>
-
-            {/* Net Worth Preview */}
-            <div className="bg-white rounded-lg shadow-sm  p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Net Worth Preview
-              </h3>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Net Worth</p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-2xl font-bold text-gray-900">
-                    ${stats?.financials.totalNetWorth.toLocaleString()}
-                  </p>
-                  <div className="flex items-center text-green-600">
-                    <TrendingUp className="w-4 h-4" />
-                    <span className="text-sm font-medium">
-                      +{stats?.financials.growth}%
-                    </span>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Assets</p>
-              </div>
-            </div>
-
-            {/* Additional metrics placeholder */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Actions
-              </h3>
-              <div className="space-y-2">
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
-                  View Reports
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
-                  Manage Team
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
-                  Check Weather
-                </button>
-              </div>
-            </div>
+          {/* Main Grid */}
+          <div
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(50px, 3fr))",
+            }}
+          >
+            <WeatherForecast />
+            <Tasks />
+              <Alerts />
           </div>
           {/* Bottom Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -424,7 +375,19 @@ export default function FarmerAdminDashboard() {
             </div> */}
           </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Task Overview */}
+            <MarketPrices />
+            <FarmDiary />
+            <SmartAdvisory/>
+
          
+
+            {/* Middle Column - Crop Health */}
+          
+
+            
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>
