@@ -84,7 +84,7 @@ const Login: React.FC = () => {
 
         <div className="h-24 w-24 flex justify-center mx-auto mt-6">
           <Image
-            src="/images/onboarding/Logo 1.jpg"
+            src="/images/auth/Logo 1.jpg"
             width={96}
             height={96}
             alt="logo"

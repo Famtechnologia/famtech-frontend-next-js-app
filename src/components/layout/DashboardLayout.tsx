@@ -154,8 +154,8 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           key: 'settings',
           expandable: true,
           children: [
-            { name: 'Profile', href: `/dashboard/farmer/${subRole}/settings/profile` },
-            { name: 'Farm Settings', href: `/dashboard/farmer/${subRole}/settings/farm` },
+            { name: 'Profile', href: `/settings/profile` },
+            { name: 'Farm Settings', href: `/settings/farm-setting` },
             { name: 'Notifications', href: `/dashboard/farmer/${subRole}/settings/notifications` },
           ]
         },
@@ -166,7 +166,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           expandable: true,
           children: [
             { name: 'Documentation', href: `/dashboard/farmer/${subRole}/help/docs` },
-            { name: 'Contact Support', href: `/dashboard/farmer/${subRole}/help/contact` },
+            { name: 'Contact Support', href: `/help/contact-support` },
             { name: 'Training', href: `/dashboard/farmer/${subRole}/help/training` },
           ]
         },

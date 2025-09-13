@@ -1,21 +1,28 @@
-// app/(dashboard)/page.tsx
-"use client";
+// app/layout.tsx
+import { Inter } from 'next/font/google'
+import { Toaster } from 'react-hot-toast';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
-import { useEffect } from "react";
 
-export default function Page() {
-  useEffect(() => {
-    // You can run client-side logic here if needed
-    console.log("Dashboard Home mounted");
-  }, []);
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
+
+
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-      <p className="text-gray-600 mt-2">
-        Welcome to your dashboard! Here you can see an overview of your farms,
-        crops, and livestock.
-      </p>
-    </div>
+    <html lang="en" className={inter.className}>
+      <body className='bg-white text-gray-800 antialiased'>
+        
+            <DashboardLayout title="FarmTech - Dashboard">
+           {children}
+          <Toaster position="top-right" />
+          </DashboardLayout>
+      </body>
+    </html>
   );
 }
