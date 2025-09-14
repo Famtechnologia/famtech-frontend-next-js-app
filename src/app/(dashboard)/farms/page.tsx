@@ -365,7 +365,7 @@ const TaskPlanner: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-500 uppercase">TODAY'S TASKS ({filteredTasks.length})</h3>
+            <h3 className="text-lg font-semibold text-gray-500 uppercase">TODAY`&apos;`S TASKS ({filteredTasks.length})</h3>
             <div className="space-y-4">
               {filteredTasks.map(task => (
                 <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 md:flex justify-between items-center cursor-pointer hover:bg-gray-50" onClick={() => openEditTaskModal(task)}>
@@ -853,7 +853,15 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
         // Crop Details
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <img src={record?.image} alt={record?.name} width={200} height={200} className="w-full h-auto object-cover rounded-lg mb-4" />
+            {record?.image && (
+              <Image 
+                src={record.image} 
+                alt={record?.name} 
+                width={200} 
+                height={200} 
+                className="w-full h-auto object-cover rounded-lg mb-4" 
+              />
+            )}
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Crop Name</label>
@@ -880,7 +888,13 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
         // Livestock Details
         <div className="space-y-4">
           <div className="sm:col-span-2">
-            <img src={record?.image} alt={record?.name} className="w-full h-auto object-cover rounded-lg mb-4" />
+            {record?.image && (
+              <Image 
+                src={record.image} 
+                alt={record?.name} 
+                className="w-full h-auto object-cover rounded-lg mb-4" 
+              />
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -941,20 +955,7 @@ const CropLivestockRecords: React.FC = () => {
     { id: 5, name: "Sheep", breed: "Merino • West Pasture", count: 40, age: "Adult", feed: "Twice daily", lastCheckup: "7/3/2023", image: "/images/livestock/Container (14).png", health: "Poor", issues: [{ text: "Disease: Suspected parasitic infection" }] },
   ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Good':
-        return 'bg-green-100 text-green-700';
-      case 'Fair':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'Poor':
-        return 'bg-red-100 text-red-700';
-      case 'Excellent':
-        return 'bg-green-100 text-green-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
+ 
 
   const currentRecords = activeRecordTab === 'Crops' ? cropRecords : livestockRecords;
 

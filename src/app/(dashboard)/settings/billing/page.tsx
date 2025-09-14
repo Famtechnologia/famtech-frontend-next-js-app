@@ -59,7 +59,7 @@ const App: React.FC = () => {
     setSelectedPlanId(planId);
   };
 
-  const isCurrentPlan = (planId: string) => selectedPlanId === 'enterprise';
+  const isCurrentPlan = (planId: string) => selectedPlanId === planId;
   const isSelected = (planId: string) => selectedPlanId === planId;
 
   return (

@@ -62,7 +62,7 @@ const HelpAndSupport = () => {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-6 md:p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-8">
         <div className="flex-1 space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">Still Can't Find Answers?</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Still Can`&apos;`t Find Answers?</h2>
           <div className="flex items-center space-x-4">
             <Image
 
