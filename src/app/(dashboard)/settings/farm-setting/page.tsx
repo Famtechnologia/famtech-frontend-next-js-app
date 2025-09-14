@@ -64,7 +64,7 @@ const settingsSections = [
 
 const Settings: React.FC = () => {
   return (
-    <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
+    <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-500">Personalize your account</p>
@@ -75,19 +75,19 @@ const Settings: React.FC = () => {
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">{section.title}</h2>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="px-2 py-4 md:p-6 space-y-4">
             {section.items.map((item, itemIndex) => (
               <div
                 key={itemIndex}
                 className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
               >
-                <div className="flex items-center space-x-4">
+                <div className="flex items-start justify-start space-x-4">
                   <div className="p-2 rounded-full text-blue-600">
                     {item.icon}
                   </div>
                   <div>
-                    <p className="text-lg font-medium text-gray-800">{item.label}</p>
-                    <p className="text-gray-600">{item.description}</p>
+                    <p className="text-base md:text-lg font-medium text-gray-800">{item.label}</p>
+                    <p className="text-gray-600 text-sm md:text-base">{item.description}</p>
                   </div>
                 </div>
                 <Link href='/settings/billing' className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 focus:outline-none bg-gray-100">

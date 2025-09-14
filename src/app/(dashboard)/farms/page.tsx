@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import {
-  
-  
+
+
   Plus,
   CheckCheck,
 
@@ -124,25 +124,25 @@ const FarmOperationTabs: React.FC<FarmOperationTabsProps> = ({ activeTab, setAct
   ];
   return (
     <>
-      <div className="flex justify-between px-4 items-center mb-6">
+      <div className="flex justify-between px-2 md:px-4 items-center mb-6">
         <h1 className="text-3xl font-semibold text-gray-900">Farm Operations</h1>
-       
+
       </div>
-    <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-6 -mt-2">
-      {tabs.map((tab) => (
-        <button
-          key={tab.tab}
-          onClick={() => setActiveTab(tab.tab)}
-          className={`flex items-center px-4 py-4 pt-6 text-sm font-medium transition-colors duration-200
+      <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-6 -mt-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab.tab}
+            onClick={() => setActiveTab(tab.tab)}
+            className={`flex items-center px-4 py-4 pt-6 text-sm font-medium transition-colors duration-200
             ${activeTab === tab.tab
-              ? 'border-b-2 border-green-600 text-green-700'
-              : 'text-gray-600 hover:text-gray-800 hover:border-b-2 hover:border-gray-400'}`}
-        >
-          {React.cloneElement(tab.icon, { className: 'h-4 w-4 mr-2' })}
-          {tab.label}
-        </button>
-      ))}
-    </div>
+                ? 'border-b-2 border-green-600 text-green-700'
+                : 'text-gray-600 hover:text-gray-800 hover:border-b-2 hover:border-gray-400'}`}
+          >
+            {React.cloneElement(tab.icon, { className: 'h-4 w-4 mr-2' })}
+            {tab.label}
+          </button>
+        ))}
+      </div>
     </>
   );
 };
@@ -240,7 +240,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, task, mode }) => {
           <Plus className="h-5 w-5 mr-2" /> Add Attachment
         </button>
       </div>
-      
+
       {/* Modal Footer */}
       <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
         {mode === 'edit' && (
@@ -300,9 +300,9 @@ const TaskPlanner: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-2 md:p-6">
       <div className="flex justify-end items-center mb-6">
-        
+
         <div className="flex items-center space-x-4">
           <button className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md border bg-green-600 scale-105" onClick={openNewTaskModal}>
             <Plus className="h-4 w-4 mr-2" /> New Task
@@ -313,7 +313,7 @@ const TaskPlanner: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex space-x-6">
+      <div className=" space-y-6 md:space-y-0 md:flex md:space-x-6">
         {/* Left Sidebar for Filters */}
         <div className="w-64 space-y-6">
           <div>
@@ -368,9 +368,9 @@ const TaskPlanner: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-500 uppercase">TODAY'S TASKS ({filteredTasks.length})</h3>
             <div className="space-y-4">
               {filteredTasks.map(task => (
-                <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center cursor-pointer hover:bg-gray-50" onClick={() => openEditTaskModal(task)}>
-                  <div className="flex items-start space-x-4 py-2">
-                    <button className="mt-1" onClick={(e) => { e.stopPropagation();  }}>
+                <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 md:flex justify-between items-center cursor-pointer hover:bg-gray-50" onClick={() => openEditTaskModal(task)}>
+                  <div className="flex items-start space-x-2 md:space-x-4 py-2">
+                    <button className="mt-1" onClick={(e) => { e.stopPropagation(); }}>
                       {task.completed ? (
                         <CheckCircle className="h-6 w-6 text-green-500" />
                       ) : (
@@ -379,10 +379,10 @@ const TaskPlanner: React.FC = () => {
                     </button>
                     <div className='space-y-2'>
                       <h4 className="font-medium text-xl text-gray-800">{task.name}</h4>
-                      <p className="text-base text-gray-500 flex items-center space-x-2">
+                      <p className="text-base text-gray-500 space-y-2  items-center lg:space-x-2 lg:flex">
                         <span>{task.type}</span>
-                        <span className="text-xs text-gray-400">•</span>
-                        <CalendarCheck className="h-4 w-4" />
+                        <span className="text-xs text-gray-400 lg:mb-0">•</span>
+                        <CalendarCheck className="h-4 w-4 mt-2" />
                         <span>Today, {task.time}</span>
                       </p>
                       <span className={`mt-2 inline-block px-4 py-2 text-base rounded-2xl ${getPriorityColor(task.priority)}`}>
@@ -397,7 +397,7 @@ const TaskPlanner: React.FC = () => {
                     <span className="text-sm text-gray-600">
                       {task.user === 'JD' ? 'John Doe' : 'Maria Garcia'}
                     </span>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 hidden md:flex" />
                   </div>
                 </div>
               ))}
@@ -419,15 +419,15 @@ const TaskPlanner: React.FC = () => {
 // A simple dialog for adding an event
 const AddEventDialog: React.FC = () => (
   <div className="relative">
-    <button className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700">
-      <Plus className="h-4 w-4 mr-2" /> Add Event
+    <button className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700">
+      <Plus className="h-4 w-4 mr-2" /> <span className='hidden md:flex'>Add</span>Event
     </button>
   </div>
 );
 
 // CalendarView component
 const CalendarView: React.FC = () => (
-  <div className="p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
+  <div className="p-2 md:p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
     {/* Left Sidebar for Calendar and Filters */}
     <div className="w-full md:w-64 space-y-6">
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
@@ -440,8 +440,8 @@ const CalendarView: React.FC = () => (
         </div>
         {/* Simple calendar grid */}
         <div className="grid grid-cols-7 gap-1 text-center text-sm">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-            <div key={day} className="font-medium text-gray-500">{day}</div>
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <div key={day + index} className="font-medium text-gray-500">{day}</div>
           ))}
           {[...Array(31).keys()].map(day => (
             <div
@@ -455,7 +455,7 @@ const CalendarView: React.FC = () => (
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-500 uppercase mb-2">VIEW OPTIONS</h3>
+        <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">VIEW OPTIONS</h3>
         <div className="flex space-x-2">
           <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Month</button>
           <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">Week</button>
@@ -463,7 +463,7 @@ const CalendarView: React.FC = () => (
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-500 uppercase mb-2">FILTER EVENTS</h3>
+        <h3 className=" text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">FILTER EVENTS</h3>
         <div className="space-y-2">
           {['Crop Tasks', 'Livestock Tasks', 'Equipment', 'General Tasks'].map(type => (
             <div key={type} className="flex items-center space-x-2 p-2 rounded-xl text-base font-medium text-gray-600">
@@ -475,9 +475,9 @@ const CalendarView: React.FC = () => (
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-500 uppercase mb-2">LEGEND</h3>
+        <h3 className="text-base md:text-lg  font-semibold text-gray-500 uppercase mb-2">LEGEND</h3>
         <div className="space-y-3">
-          {[{label: 'Seeding', color: 'bg-green-500'}, {label: 'Fertilizer', color: 'bg-blue-500'}, {label: 'Harvesting', color: 'bg-yellow-500'}, {label: 'Livestock', color: 'bg-purple-500'}, {label: 'Equipment', color: 'bg-red-500'}].map(item => (
+          {[{ label: 'Seeding', color: 'bg-green-500' }, { label: 'Fertilizer', color: 'bg-blue-500' }, { label: 'Harvesting', color: 'bg-yellow-500' }, { label: 'Livestock', color: 'bg-purple-500' }, { label: 'Equipment', color: 'bg-red-500' }].map(item => (
             <div key={item.label} className="flex items-center space-x-2 text-base font-medium text-gray-600">
               <div className={`h-2.5 w-2.5 rounded-full ${item.color}`}></div>
               <span>{item.label}</span>
@@ -500,14 +500,14 @@ const CalendarView: React.FC = () => (
           <AddEventDialog />
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-2 text-center text-sm">
+      <div className="grid grid-cols-7 gap-1 md:gap-2 text-center text-sm">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div key={day} className="font-medium text-gray-500">{day}</div>
         ))}
         {/* Placeholder for calendar days */}
         {[...Array(31).keys()].map(day => (
-          <div key={day} className="h-28 border border-gray-200 rounded-md p-2 hover:bg-green- cursor-pointer">
-            <span className="text-gray-400 text-xs">{day + 1}</span>
+          <div key={day} className="  md:h-28  border border-gray-200 rounded-md p-2 md:p-2  mt-2 hover:bg-green-300 cursor-pointer">
+            <span className="text-gray-500 text-xs">{day + 1}</span>
           </div>
         ))}
       </div>
@@ -564,8 +564,8 @@ const InventoryManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-start border-b border-gray-200 mb-6 -mt-2">
+    <div className="p-2 md:p-6">
+      <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-6 -mt-2">
         {inventoryTabs.map(tab => (
           <button
             key={tab.name}
@@ -581,9 +581,9 @@ const InventoryManagement: React.FC = () => {
         ))}
       </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <div className="md:flex justify-between items-center space-y-4 mb-6">
+        <div className="relative w-64"> 
+          <Search className="absolute  left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input type="text" placeholder="Search inventory..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500" />
         </div>
         <div className="flex items-center space-x-4">
@@ -721,7 +721,7 @@ const AddCropForm: React.FC<AddCropFormProps> = ({ onClose }) => (
         </button>
       </div>
     </div>
-    
+
     <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-md" role="alert">
       <div className="flex items-center">
         <TriangleAlert className="h-5 w-5 mr-3" />
@@ -730,7 +730,7 @@ const AddCropForm: React.FC<AddCropFormProps> = ({ onClose }) => (
         </p>
       </div>
     </div>
-    
+
     {/* Modal Footer */}
     <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
       <button className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100" onClick={onClose}>
@@ -817,7 +817,7 @@ const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose }) => (
         </button>
       </div>
     </div>
-    
+
     <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-md" role="alert">
       <div className="flex items-center">
         <TriangleAlert className="h-5 w-5 mr-3" />
@@ -826,7 +826,7 @@ const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose }) => (
         </p>
       </div>
     </div>
-    
+
     {/* Modal Footer */}
     <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
       <button className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100" onClick={onClose}>
@@ -906,7 +906,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
           </div>
         </div>
       )}
-      
+
       {/* Modal Footer */}
       <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
         <button className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100" onClick={onClose}>
@@ -972,7 +972,7 @@ const CropLivestockRecords: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className=" p-2 md:p-6">
       <div className="flex items-center justify-start border-b border-gray-200 mb-6 -mt-2">
         <button
           onClick={() => setActiveRecordTab('Crops')}
@@ -993,12 +993,12 @@ const CropLivestockRecords: React.FC = () => {
           Livestock
         </button>
       </div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="md:flex justify-between space-y-4 items-center mb-6">
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input type="text" placeholder={`Search ${activeRecordTab.toLowerCase()}...`} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500" />
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-end space-x-4">
           <button className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700" onClick={openNewRecordModal}>
             <Plus className="h-4 w-4 mr-2" /> Add {activeRecordTab === 'Crops' ? 'Crop' : 'Livestock'}
           </button>
@@ -1051,7 +1051,7 @@ const CropLivestockRecords: React.FC = () => {
                 </div>
               )}
               <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-                <div className="flex space-x-4 text-gray-400">
+                <div className="flex space-x-2 md:space-x-4 text-gray-400">
                   <button onClick={(e) => { e.stopPropagation(); openViewRecordModal(record); }} className="hover:text-green-600">
                     <FolderOpen className="h-5 w-5" />
                   </button>

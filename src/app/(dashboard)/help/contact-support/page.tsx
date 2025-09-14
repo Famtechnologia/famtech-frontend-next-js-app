@@ -36,7 +36,7 @@ const HelpAndSupport = () => {
   };
 
   return (
-    <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
+    <div className=" md:p-8  space-y-8 bg-gray-50 min-h-screen">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Help & Support</h1>
         <p className="text-gray-500">Need Help?? Chat with our chatbot.</p>
@@ -60,9 +60,9 @@ const HelpAndSupport = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-8">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-6 md:p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-8">
         <div className="flex-1 space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">Still Can`&apos;`t Find Answers?</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Still Can't Find Answers?</h2>
           <div className="flex items-center space-x-4">
             <Image
 
@@ -79,12 +79,12 @@ const HelpAndSupport = () => {
             />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-gray-600">
+            <div className="flex text-sm items-center space-x-2 text-gray-600">
               <Mail className="h-5 w-5" />
               <span>famtechnologia@gmail.com</span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Phone className="h-5 w-5" />
+            <div className="flex text-sm items-center space-x-2 text-gray-600">
+              <Phone className=" h-4 w-4 md:h-5 md:w-5 " />
               <span>+234 809 697 9032</span>
             </div>
           </div>
@@ -99,7 +99,7 @@ const HelpAndSupport = () => {
                 </button>
               </div>
               {openIndex === index && (
-                <div className="mt-2 text-gray-600 text-sm">
+                <div className="mt-2 text-gray-600 text-xs">
                   {topic.answer}
                 </div>
               )}

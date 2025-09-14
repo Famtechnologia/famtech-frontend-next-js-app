@@ -63,8 +63,8 @@ const App: React.FC = () => {
   const isSelected = (planId: string) => selectedPlanId === planId;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 flex flex-col items-center">
-      <div className="w-full max-w-8xl bg-white rounded-lg shadow-md p-8">
+    <div className="min-h-screen bg-gray-100 md:p-8 flex flex-col items-center">
+      <div className="w-full max-w-8xl bg-white rounded-lg shadow-md px-4 py-8 md:p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Plan & Billing</h1>
         <p className="text-gray-600 mb-8">
           Choose the plan that best suits your farming needs. You can change the plan at any time.
@@ -76,15 +76,15 @@ const App: React.FC = () => {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`flex flex-col p-6 border rounded-xl cursor-pointer transition-colors duration-200 ${
+              className={`flex flex-col px-4 py-6 md:p-6 border rounded-xl cursor-pointer transition-colors duration-200 ${
                 isSelected(plan.id)
                   ? 'border-green-600 bg-green-50'
                   : 'border-gray-200 hover:border-gray-400'
               }`}
               onClick={() => handleSelectPlan(plan.id)}
             >
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center space-x-2">
+              <div className="flex justify-start md:justify-between space-x-2 items-center mb-4">
+                <div className="flex items-start space-x-2">
                   <input
                     type="radio"
                     name="plan"
@@ -97,7 +97,7 @@ const App: React.FC = () => {
                   </h3>
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <p className="text-3xl font-bold text-gray-800">${plan.price.toFixed(2)}</p>
+                  <p className="text-xl md:text-3xl font-bold text-gray-800">${plan.price.toFixed(2)}</p>
                   {plan.price > 0 && <p className="text-gray-500 text-sm">/ month</p>}
                 </div>
               </div>
@@ -125,7 +125,7 @@ const App: React.FC = () => {
           <button className="px-6 py-3 border border-gray-300 rounded-md text-gray-700 font-semibold hover:bg-gray-100">
             Cancel
           </button>
-          <button className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors duration-200">
+          <button className="px-4 md:px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors duration-200">
             Save Plan
           </button>
         </div>

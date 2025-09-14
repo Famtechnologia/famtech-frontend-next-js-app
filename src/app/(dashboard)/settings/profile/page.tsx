@@ -3,7 +3,7 @@ import { User, MapPin, Phone, Wheat, Ruler } from 'lucide-react';
 
 const Settings = () => {
   return (
-    <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
+    <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-500">Personalize your account</p>
@@ -13,7 +13,7 @@ const Settings = () => {
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800">Owner Profile</h2>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="px-2 py-4 md:p-6 space-y-4">
           {/* Farm Owner */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center space-x-4">
@@ -21,7 +21,7 @@ const Settings = () => {
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-800">Farm Owner</p>
+                <p className="text-base md:text-lg font-medium text-gray-800">Farm Owner</p>
                 <p className="text-gray-600 text-sm">Eribola Ayomiposi</p>
               </div>
             </div>
@@ -37,7 +37,7 @@ const Settings = () => {
                 <MapPin className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-800">Farm Location</p>
+                <p className="text-base md:text-lg font-medium text-gray-800">Farm Location</p>
                 <p className="text-gray-600 text-sm">Ibadan, Lagos</p>
               </div>
             </div>
@@ -53,7 +53,7 @@ const Settings = () => {
                 <Phone className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-800">Phone Number</p>
+                <p className="text-base md:text-lg font-medium text-gray-800">Phone Number</p>
                 <p className="text-gray-600 text-sm">+234 812 673 1234</p>
               </div>
             </div>
@@ -68,7 +68,7 @@ const Settings = () => {
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800">Farm Information</h2>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="px-2 py-4 md:p-6 space-y-4">
           {/* Farm Type */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center space-x-4">
@@ -76,7 +76,7 @@ const Settings = () => {
                 <Wheat className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-600">Farm Type</p>
+                <p className="text-base md:text-lg font-medium text-gray-700">Farm Type</p>
                 <p className="text-gray-600 text-sm">Mixed Farming</p>
               </div>
             </div>
@@ -92,7 +92,7 @@ const Settings = () => {
                 <Ruler className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-600">Farm Size</p>
+                <p className="text-base md:text-lg font-medium text-gray-600">Farm Size</p>
                 <p className="text-gray-600 text-sm">2 Acres</p>
               </div>
             </div>
