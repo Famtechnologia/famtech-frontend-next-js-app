@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={inter.className}>
       <body className='bg-white text-gray-800 antialiased'>
         
-            <DashboardLayout title="FarmTech - Dashboard">
+          <DashboardLayout title="FamTech - Dashboard">
            {children}
           <Toaster position="top-right" />
           </DashboardLayout>
