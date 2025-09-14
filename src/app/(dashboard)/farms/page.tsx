@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import {
-  Bell,
-  User,
+  
+  
   Plus,
   CheckCheck,
-  ArrowRight,
+
   Search,
   CheckCircle,
   CalendarCheck,
@@ -21,20 +21,17 @@ import {
   Filter,
   TriangleAlert,
   X,
-  List,
-  Grid3X3,
-  ListFilter,
   Download,
   FolderOpen,
   Camera,
   Heart,
   FileText,
-  Weight,
   Syringe,
   Pill,
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
+import Image from 'next/image';
 // Interfaces for data objects
 interface Task {
   id: number;
@@ -372,7 +369,7 @@ const TaskPlanner: React.FC = () => {
             <div className="space-y-4">
               {filteredTasks.map(task => (
                 <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center cursor-pointer hover:bg-gray-50" onClick={() => openEditTaskModal(task)}>
-                  <div className="flex items-start space-x-4 py-2 ">
+                  <div className="flex items-start space-x-4 py-2">
                     <button className="mt-1" onClick={(e) => { e.stopPropagation();  }}>
                       {task.completed ? (
                         <CheckCircle className="h-6 w-6 text-green-500" />
@@ -856,7 +853,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
         // Crop Details
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <img src={record?.image} alt={record?.name} className="w-full h-auto object-cover rounded-lg mb-4" />
+            <img src={record?.image} alt={record?.name} width={200} height={200} className="w-full h-auto object-cover rounded-lg mb-4" />
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Crop Name</label>
@@ -1011,7 +1008,7 @@ const CropLivestockRecords: React.FC = () => {
         {currentRecords.map(record => (
           <div key={record.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer" onClick={() => openViewRecordModal(record)}>
             <div className="relative">
-              <img src={record.image} alt={record.name} className="w-full h-48 object-cover" />
+              <Image src={record.image} alt={record.name} width={200} height={200} className="w-full h-48 object-cover" />
               <div className={`absolute top-4 right-4 px-2 py-1 rounded-full text-xs font-semibold text-white ${record.health === 'Good' || record.health === 'Excellent' ? 'bg-green-500' : record.health === 'Fair' ? 'bg-yellow-500' : 'bg-red-500'}`}>
                 {record.health}
               </div>

@@ -6,19 +6,13 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../lib/store/authStore";
 import {
-  Cloud,
-  Activity,
-  Users,
-  TrendingUp,
-  AlertTriangle,
+  
   Droplets,
   Thermometer,
-  Wind,
   CheckCircle,
   Clock,
   AlertCircle,
   Eye,
-  MoreHorizontal,
   Leaf,
   Wheat,
 } from "lucide-react";

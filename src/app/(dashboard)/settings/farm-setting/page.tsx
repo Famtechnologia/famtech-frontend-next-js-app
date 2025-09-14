@@ -1,12 +1,10 @@
 import React from 'react';
 import {
-  Map,Clipboard,
   Pencil,
   Bell,
   Shield,
   Briefcase,
   Layers,
-  MapPin,
   PencilRuler
 } from 'lucide-react';
 import Link from 'next/link';
