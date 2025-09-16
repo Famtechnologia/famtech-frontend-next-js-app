@@ -134,3 +134,21 @@
   background-size: cover;
   background-position: start;
 }
+
+.scrollbar-hide::-webkit-scrollbar{
+  display: none;
+}
+
+.scrollbar-hide{
+  scrollbar-width: none;
+}
+
+/* font-family: Inter;
+font-weight: 600;
+font-style: Semi Bold;
+font-size: 15.3px;
+leading-trim: NONE;
+line-height: 28px;
+letter-spacing: 0%;
+vertical-align: middle; */
+

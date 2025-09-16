@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -86,7 +86,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
         <div className="h-24 w-24 flex justify-center mx-auto mt-6">
           <Image
-            src="/images/onboarding/Logo 1.jpg"
+            src="/images/auth/Logo 1.jpg"
             width={96}
             height={96}
             alt="logo"

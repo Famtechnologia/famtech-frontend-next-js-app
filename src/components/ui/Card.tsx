@@ -1,21 +1,21 @@
 // app/(dashboard)/page.tsx
 "use client";
+import { CardProps } from "@/types/general";
 
-import { useEffect } from "react";
-
-export default function Page() {
-  useEffect(() => {
-    // You can run client-side logic here if needed
-    console.log("Dashboard Home mounted");
-  }, []);
-
+const Card: React.FC<CardProps> = ({
+  title,
+  children,
+  className = "",
+  headerClassName = "",
+  bodyClassName = "",
+}) => {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-      <p className="text-gray-600 mt-2">
-        Welcome to your dashboard! Here you can see an overview of your farms,
-        crops, and livestock.
-      </p>
+     <div className={`bg-white rounded-lg shadow-sm border border-gray-200  ${className}`}>
+      <div className={`p-4 border-b border-gray-200 ${headerClassName}`}>
+        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+      </div>
+      <div className={`p-4 ${bodyClassName}`}>{children}</div>
     </div>
   );
-}
+};
+export default Card
