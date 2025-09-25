@@ -11,7 +11,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
-  const token = useAuthStore((state) => state.token);
+  
 // Let TypeScript infer the type automatically
 const fetchProfile = useProfileStore(state => state.fetchProfile);
 
@@ -23,7 +23,8 @@ const fetchProfile = useProfileStore(state => state.fetchProfile);
       }
     };
     init();
-  }, []); // run once on mount
+  }, 
+); // run once on mount
 
   return <>{children}</>;
 }

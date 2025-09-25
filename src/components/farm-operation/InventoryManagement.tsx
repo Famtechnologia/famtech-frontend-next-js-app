@@ -81,30 +81,40 @@ const InventoryManagement: React.FC = () => {
             reorderLevel: 0,
         } as NewInventoryItemData);
     };
+type FormDataType = Record<string, string | number | null | undefined>;
+   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => {
+        // Use FormDataType for the local variable to allow dynamic assignment
+        const newFormData: FormDataType = { ...prev, [name]: value };
+        
+        // Use a type guard for the keys that should be numbers
+        if (name === 'quantity' || name === 'reorderLevel' || name === 'n' || name === 'p' || name === 'k') {
+            newFormData[name] = Number(value);
+        }
+        
+        // Assert the final result back to the expected specific type
+        return newFormData as NewInventoryItemData;
+    });
+};
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => {
-            const newFormData = { ...prev, [name]: value };
-            if (name === 'quantity' || name === 'reorderLevel' || name === 'n' || name === 'p' || name === 'k') {
-                (newFormData as any)[name] = Number(value);
-            }
-            return newFormData as NewInventoryItemData;
-        });
-    };
-
-    const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setUpdateFormData(prev => {
-            if (!prev) return null;
-            const newFormData = { ...prev, [name]: value };
-            if (name === 'quantity' || name === 'reorderLevel' || name === 'n' || name === 'p' || name === 'k') {
-                (newFormData as any)[name] = Number(value);
-            }
-            return newFormData as UpdateInventoryItemData;
-        });
-    };
-
+const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setUpdateFormData(prev => {
+        if (!prev) return null;
+        
+        // Use FormDataType for the local variable to allow dynamic assignment
+        const newFormData: FormDataType = { ...prev, [name]: value };
+        
+        // Use a type guard for the keys that should be numbers
+        if (name === 'quantity' || name === 'reorderLevel' || name === 'n' || name === 'p' || name === 'k') {
+            newFormData[name] = Number(value);
+        }
+        
+        // Assert the final result back to the expected specific type
+        return newFormData as unknown as UpdateInventoryItemData;
+    });
+};
     const handleCreateItem = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
