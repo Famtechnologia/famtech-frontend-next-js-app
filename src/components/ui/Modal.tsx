@@ -12,7 +12,7 @@ const Modal: React.FC<ModalProps> = ({ show, onClose, title, children }) => {
     return null;
   }
   return (
-    <div className="fixed inset-0 bg-gray-50 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-30">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
