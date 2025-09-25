@@ -56,7 +56,7 @@ const sliderData = [
   };
 
   // Tell TypeScript the shape of profile
-  const { profile, loading, error } = useProfileStore() as {
+  const { profile } = useProfileStore() as {
     profile: Profile;
     loading: boolean;
     error: unknown;

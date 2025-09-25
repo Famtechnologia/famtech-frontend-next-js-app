@@ -2,11 +2,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "../lib/store/authStore";
 import {
-  
   Droplets,
   Thermometer,
   CheckCircle,
@@ -22,8 +18,8 @@ import WeatherForecast from "@/app/(dashboard)/weather/components/WeatherCard";
 import Tasks from "@/components/tasks/tasksCard";
 import Alerts from "@/components/notifications/AlertBanner";
 import  MarketPrices from "@/app/(dashboard)/marketplace/components/cropPrice";
-import FarmDiary from "@/app/(dashboard)/farms/components/farmDiary";
-import SmartAdvisory from '@/app/(dashboard)/farms/components/SmartAdvisoryCard'
+import FarmDiary from "@/app/(dashboard)/farm-operation/components/farmDiary";
+import SmartAdvisory from '@/app/(dashboard)/farm-operation/components/SmartAdvisoryCard'
 
 interface DashboardStats {
   tasks: {
@@ -68,13 +64,10 @@ interface DashboardStats {
 }
 
 export default function FarmerAdminDashboard() {
-  const router = useRouter();
-  const { farmID: farmId } = useParams();
+  
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuthStore();
-
-  const [error, setError] = useState<string | null>(null);
+ 
 
   useEffect(() => {
     // Simulate API call - replace with actual data fetching
