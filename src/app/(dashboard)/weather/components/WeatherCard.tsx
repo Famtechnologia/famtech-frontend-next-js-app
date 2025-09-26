@@ -6,7 +6,7 @@ import {  Sun, CloudRain, Wind, Eye,  } from 'lucide-react';
 
 export default function WeatherForecast() {
   return (
-     <Card title="Weather Forecast" className="h-[320px] " headerClassName='bg-[#EFF6FF] border-b border-blue-200' bodyClassName='p-6' >
+     <Card title="Weather Forecast" className="h-[350px] md:h-[320px] " headerClassName='bg-[#EFF6FF] border-b border-blue-200' bodyClassName='p-6' >
        <div className="space-y-4">
          {/* Main weather display */}
          <div className="flex items-center justify-between">

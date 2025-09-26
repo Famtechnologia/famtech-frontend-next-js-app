@@ -320,10 +320,10 @@ export default function ModernFarmRegistration() {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-12">
+    <div className=" flex items-center justify-center mb-12">
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center">
-          <div className={`group relative flex items-center justify-center w-16 h-16 rounded-2xl border-2 transition-all duration-300 ${
+        <div key={step.id} className="flex items-center md:items-center">
+          <div className={`group relative flex items-center justify-center w-8 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 rounded-2xl border-2 transition-all duration-300 ${
             currentStep >= step.id 
               ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/25' 
               : currentStep === step.id
@@ -340,7 +340,7 @@ export default function ModernFarmRegistration() {
             )}
           </div>
           
-          <div className="ml-4 mr-8 hidden md:block">
+          <div className="ml-4 mr-0 lg:mr-8 hidden md:block">
             <p className={`font-semibold text-sm ${
               currentStep >= step.id ? 'text-emerald-600' : 'text-gray-400'
             }`}>
@@ -350,7 +350,7 @@ export default function ModernFarmRegistration() {
           </div>
           
           {index < steps.length - 1 && (
-            <div className={`w-16 h-1 mx-4 rounded-full transition-all duration-300 ${
+            <div className={`w-4 md:w-6 lg:w-16  h-1 mx-4 rounded-full transition-all duration-300 ${
               currentStep > step.id 
                 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' 
                 : 'bg-gray-200'
@@ -524,7 +524,7 @@ export default function ModernFarmRegistration() {
         <p className="text-gray-500 text-lg">Tell us where your farm is located</p>
       </div>
       
-      <div className="p-8">
+      <div className="p-2 md:p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="group">
             <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Country</label>
@@ -693,7 +693,7 @@ export default function ModernFarmRegistration() {
   );
 
   const renderPreferences = () => (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-2 md:mx-auto">
       <div className="text-center mb-10">
         <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Settings className="w-10 h-10 text-white" />
@@ -701,17 +701,17 @@ export default function ModernFarmRegistration() {
         <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">
            Farm Preferences
         </h2>
-        <p className="text-gray-500 text-lg">Customize your farm management settings to get personalized recommendations</p>
+        <p className="text-gray-500 text-base md:text-lg">Customize your farm management settings to get personalized recommendations</p>
       </div>
-      <div className="p-4 space-y-8">
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+      <div className="p-0  md:p-4 space-y-8">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <svg className="w-5 h-5 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
             Primary Crops
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {cropOptions.map(crop => (
               <label key={crop} className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative">
@@ -754,7 +754,7 @@ export default function ModernFarmRegistration() {
             </svg>
             Farming Methods
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {farmingMethodOptions.map(method => (
               <label key={method} className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative">
@@ -915,7 +915,7 @@ export default function ModernFarmRegistration() {
         
         {renderStepIndicator()}
         
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 md:p-12">
           {renderCurrentStep()}
           
           {registrationError && (
@@ -924,11 +924,11 @@ export default function ModernFarmRegistration() {
             </div>
           )}
           
-          <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
+          <div className="text-xs md:text-base flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all ${
+              className={`flex items-center space-x-0 md:space-x-2 px-0 md:px-6 py-3 rounded-xl font-medium transition-all ${
                 currentStep === 1
                   ? 'text-gray-400 cursor-not-allowed'
                   : 'text-gray-700 hover:bg-gray-100'
@@ -938,14 +938,14 @@ export default function ModernFarmRegistration() {
               <span>Previous</span>
             </button>
             
-            <div className="text-sm text-gray-500">
+            <div className="text-xs md:text-sm text-gray-500">
               Step {currentStep} of {steps.length}
             </div>
             
             {currentStep < steps.length ? (
               <button
                 onClick={nextStep}
-                className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-all"
+                className="flex items-center space-x-0 md:space-x-2 bg-green-600 text-white px-3 md:px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-all"
               >
                 <span>Next</span>
                 <ChevronRight size={20} />
@@ -954,7 +954,7 @@ export default function ModernFarmRegistration() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex items-center space-x-2 bg-green-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center text-xs md:text-base space-x-0 md:space-x-2 bg-green-600 text-white px-3 md:px-8 py-3 rounded-xl font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

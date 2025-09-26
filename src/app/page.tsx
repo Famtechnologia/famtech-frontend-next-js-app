@@ -184,7 +184,7 @@ export default function FarmerAdminDashboard() {
           <div
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             style={{
-              gridTemplateColumns: "repeat(auto-fit, minmax(50px, 3fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 3fr))",
             }}
           >
             <WeatherForecast />
@@ -195,7 +195,7 @@ export default function FarmerAdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Task Overview */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm  p-6">
+              <div className="bg-white rounded-lg shadow-sm  p-4 md:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">
                     Task Overview
@@ -206,7 +206,7 @@ export default function FarmerAdminDashboard() {
                 </div>
 
                 {/* Task Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-1 md:gap-4 mb-6">
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <p className="text-2xl font-bold text-green-800">
                       {stats?.tasks.completed}

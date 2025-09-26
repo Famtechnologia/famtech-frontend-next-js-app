@@ -3,9 +3,9 @@ import React from 'react';
 const App = () => {
   const SmartDiaryPage = () => {
     return (
-      <div className="p-4 bg-gray-100 min-h-screen font-sans">
+      <div className="p-0 md:p-4 bg-gray-100 min-h-screen font-sans">
         {/* Purpose Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4">
           <h3 className="text-xl font-semibold text-gray-800 mb-2">
             Purpose of a Smart Diary
           </h3>
@@ -101,7 +101,7 @@ const App = () => {
 
           {/* Right section: Smart Farming Tips */}
           <div className="w-full md:w-2/5">
-            <div className="bg-white rounded-lg shadow-md p-6 h-full">
+            <div className="bg-white rounded-lg shadow-md p-3 pt-6 pb-6 md:p-6 h-full">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-gray-800">Smart Farming Tips</h3>
                 <span className="px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">recommendations</span>
@@ -111,7 +111,7 @@ const App = () => {
               <div className="space-y-6">
                 {/* Tip 1 */}
                 <div className="flex items-start">
-                  <svg className="w-5 h-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-10 md:w-5 h-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <div>
@@ -126,7 +126,7 @@ const App = () => {
                 
                 {/* Tip 2 */}
                 <div className="flex items-start">
-                  <svg className="w-5 h-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-10 md:w-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <div>
@@ -142,7 +142,7 @@ const App = () => {
 
                 {/* Tip 3 */}
                 <div className="flex items-start">
-                  <svg className="w-5 h-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-10 md:w-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <div>
@@ -157,7 +157,7 @@ const App = () => {
 
                 {/* Tip 4 (The last tip in the image) */}
                 <div className="flex items-start">
-                  <svg className="w-5 h-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-10 md:w-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <div>

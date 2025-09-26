@@ -186,7 +186,6 @@ const AddEventDialog: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) 
   return (
     <div className="relative">
       <button
-        onClick={handleOpenModal}
         className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
       >
         <Plus className="h-4 w-4 mr-2" />

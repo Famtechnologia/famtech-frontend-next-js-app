@@ -126,9 +126,9 @@ const ChatWithOfficerPage: React.FC = () => {
           <br />One message at a time! 
         </p>
       </div>
-      <div className="flex space-x-2 h-full pt-6">
+      <div className="lg:flex space-x-2  lg:h-full pt-6">
         {/* Left section: Conversation/Default View (3/5 width) */}
-        <div className="w-3/5 rounded-lg flex items-center justify-center">
+        <div className="w-full lg:w-3/5 rounded-lg flex items-center justify-center">
           {renderContent()}
         </div>
 

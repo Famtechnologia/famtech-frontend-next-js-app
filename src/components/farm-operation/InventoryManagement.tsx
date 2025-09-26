@@ -407,7 +407,7 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
                     />
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-wrap items-center space-y-2 space-x-2 md:space-x-4">
                     <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
                         <ListFilter className="h-4 w-4 mr-2" />
                     </button>

@@ -167,7 +167,7 @@ const EquipmentSyncPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-0 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -175,7 +175,7 @@ const EquipmentSyncPage: React.FC = () => {
           <p className="text-muted-foreground">Connect and manage farm equipment seamlessly.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-1 md:gap-6">
           {/* Choose Equipment & Sync Method */}
           <div className="lg:col-span-2 space-y-6">
             <Card title="Choose Equipment Type">
@@ -199,7 +199,7 @@ const EquipmentSyncPage: React.FC = () => {
             </Card>
 
             <Card title="Select Sync Method">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-3 gap-4">
                 {syncMethods.map(({ method, icon: Icon, description }) => (
                   <button
                     key={method}
@@ -217,7 +217,7 @@ const EquipmentSyncPage: React.FC = () => {
                 ))}
               </div>
 
-              <button className="mt-6 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-800 transition-colors font-medium">
+              <button className="flex items-center m-auto lg:ml-0 mt-6 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-800 transition-colors font-medium">
                 Start Syncing
               </button>
             </Card>

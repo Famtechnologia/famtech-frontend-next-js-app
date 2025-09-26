@@ -53,7 +53,7 @@ const ExtensionOfficerDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="p-2 md:p-6 bg-gray-50 min-h-screen">
+    <div className="p-0 md:p-6 bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
@@ -67,7 +67,7 @@ const ExtensionOfficerDashboard: React.FC = () => {
           Trusted support for your farm — chat, upload photos, and get expert answers.
         </p>
 
-        <div className="flex space-x-4 border-b border-gray-200">
+        <div className="flex flex-wrap space-y-2 md:space-y-0 space-x-4 border-b border-gray-200">
           {tabs.map((tab) => (
             <button
               key={tab.id}
