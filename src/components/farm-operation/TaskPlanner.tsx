@@ -271,7 +271,7 @@ const fetchTasks = React.useCallback(async () => {
   } finally {
     setLoading(false);
   }
-}, [getTasks]); // or [] if getTasks is stable
+}, []); // or [] if getTasks is stable
 
 useEffect(() => {
   fetchTasks();
