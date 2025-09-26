@@ -11,16 +11,38 @@ import {
     getLivestockRecords,
     deleteCropRecord,
     deleteLivestockRecord,
-    CropRecord,
-    LivestockRecord,
+    // Renaming the imported types to clearly separate them from the component's internal types
+    CropRecord as BaseCropRecord, 
+    LivestockRecord as BaseLivestockRecord,
 } from '@/lib/services/croplivestock';
 
-// 1. New Interface for Crop Images (Inferred from usage)
-interface CropImage {
-    id: string;
-    url?: string;
-    file?: File; // Assuming it can also be a File object before upload
+
+// --- Revised Interfaces to resolve Type Mismatches (Code 2430 & 2322) ---
+
+/**
+ * Assumed interface for an image object, based on the missing properties error.
+ * This should match the 'RecordImage' type used internally by your service.
+ */
+interface RecordImage {
+    id?: string; // Optional if not all images have an id before saving
+    _id?: string; // Often MongoDB ID
+    fileId?: string; // ID used by file storage
+    url: string; // The public URL
 }
+
+// Use the RecordImage interface for crops
+interface CropRecord extends Omit<BaseCropRecord, 'image'> {
+    // cropImages holds all images fetched from the API (an array of image objects)
+    cropImages: RecordImage[]; 
+    // image is a computed property used only for the card thumbnail (Code 2339 fix)
+    image: RecordImage | null;
+}
+
+interface LivestockRecord extends BaseLivestockRecord {
+    // The base type might define this as string | File. We keep it flexible.
+    image: string | File | null | undefined; 
+}
+
 
 // 2. Interface for the Record Details component props
 interface RecordDetailsProps {
@@ -29,37 +51,58 @@ interface RecordDetailsProps {
     onClose: () => void;
 }
 
+// --- Helper Functions ---
+
+/**
+ * Safely determines the URL for an image source (string, File, or RecordImage object).
+ */
+const getImageUrl = (imageSource: string | File | RecordImage | null | undefined): string | null => {
+    if (!imageSource) return null;
+
+    if (typeof imageSource === 'string') {
+        return imageSource;
+    }
+    
+    // Check if it's a RecordImage object
+    if (typeof imageSource === 'object' && 'url' in imageSource) {
+        return imageSource.url ?? null;
+    }
+    
+    // Check if it's a File object (for forms)
+    if (imageSource instanceof File) {
+        return URL.createObjectURL(imageSource);
+    }
+    
+    return null;
+};
+
+
+// --- RecordDetails Component (FIXED) ---
+
 const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
     if (!record) return null;
 
-    // Narrow types
+    // Type narrowing
     const isCrop = type === 'Crops';
-    // Cast record to the appropriate type. The key issue is handling cropImages/image property
-    const crop = record as CropRecord & { cropImages?: (CropImage | File)[] }; // Temporary cast to include cropImages
+    const crop = record as CropRecord; 
     const livestock = record as LivestockRecord;
 
-    // Helper to get image array for crops
-    const cropImages = isCrop ? crop.cropImages : [];
+    // Get the array of images
+    const images = isCrop
+        ? crop.cropImages || []
+        : (livestock.image ? [livestock.image] : []);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Image(s) */}
-            <div className="w-full flex flex-wrap gap-2">
-                {/* Handle cropImages vs image */}
-                {isCrop && cropImages && cropImages.length > 0 ? (
-                    cropImages.map((img: CropImage | File, idx: number) => {
-                        // Determine the image source, but skip if it's not a valid URL or File
-                        const url = (img as CropImage).url 
-                                ? (img as CropImage).url 
-                                : img instanceof File 
-                                    ? URL.createObjectURL(img) 
-                                    : typeof img === 'string'
-                                        ? img
-                                        : null; // Set to null if no valid source is found
+            <div className="w-full flex flex-wrap gap-3 p-2 border-b border-gray-200">
+                {images.length > 0 ? (
+                    images.map((img, idx) => {
+                        // FIX: Use the unified RecordImage for type safety, allowing string or File as well
+                        const url = getImageUrl(img as string | File | RecordImage); 
 
                         if (!url) {
                             return (
-                                // Render simple placeholder for individual missing crop images
                                 <div key={idx} className="w-32 h-32 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md text-xs">
                                     No image
                                 </div>
@@ -67,10 +110,10 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                         }
 
                         return (
-                            <div key={(img as CropImage).id || idx} className="w-32 h-32 relative">
+                            <div key={idx} className="w-32 h-32 relative flex-shrink-0">
                                 <Image
-                                    src={url} // Guaranteed to be a string here
-                                    alt="Crop image"
+                                    src={url}
+                                    alt={isCrop ? `${crop.cropName} image ${idx + 1}` : `${livestock.specie} image`}
                                     fill
                                     sizes="128px"
                                     style={{ objectFit: 'cover' }}
@@ -79,69 +122,59 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                             </div>
                         );
                     })
-                ) : livestock.image ? (
-                    // This block handles single livestock image
-                    <div className="w-32 h-32 relative">
-                        <Image
-                            src={typeof livestock.image === 'string'
-                                ? livestock.image
-                                : URL.createObjectURL(livestock.image)
-                            }
-                            alt="Livestock image"
-                            fill
-                            sizes="128px"
-                            style={{ objectFit: 'cover' }}
-                            className="rounded-md"
-                        />
-                    </div>
                 ) : (
-                    // This block is for when there are no images for the entire record
                     <div className="w-32 h-32 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md">
-                        No image
+                        No image available
                     </div>
                 )}
             </div>
 
             {/* Basic info */}
-            <div>
-                <h2 className="text-xl font-semibold">
+            <div className="px-1">
+                <h2 className="text-2xl font-bold text-gray-800">
                     {isCrop ? crop.cropName : livestock.specie}
                 </h2>
                 <p className="text-gray-600 text-sm">
                     {isCrop
-                        ? `${crop.variety} • ${crop.location}`
-                        : `${livestock.numberOfAnimal} animals • ${livestock.ageGroup}`}
+                        ? `${crop.variety || 'N/A'} • ${crop.location}`
+                        : `${livestock.numberOfAnimal} ${livestock.specie} • ${livestock.ageGroup}`}
                 </p>
             </div>
 
-            {/* Details */}
+            {/* Details (using optional chaining for safety) */}
             {isCrop ? (
-                <div className="text-sm space-y-2">
+                <div className="text-sm space-y-2 p-1">
+                    <p><b>Variety:</b> {crop.variety}</p>
                     <p><b>Planting Date:</b> {new Date(crop.plantingDate).toLocaleDateString()}</p>
                     <p><b>Expected Harvest:</b> {new Date(crop.expectedHarvestDate).toLocaleDateString()}</p>
                     <p><b>Growth Stage:</b> {crop.currentGrowthStage}</p>
-                    <p><b>Health Status:</b> {crop.healthStatus}</p>
-                    <p><b>Area:</b> {crop.area.value} {crop.area.unit}</p>
-                    <p><b>Seed Quantity:</b> {crop.seedQuantity.value} {crop.area.unit}</p>
-                    <p><b>Note:</b> {crop.note}</p>
+                    <p><b>Health Status:</b> <span className={`capitalize font-medium ${crop.healthStatus?.toLowerCase() === 'poor' ? 'text-red-600' : 'text-green-600'}`}>{crop.healthStatus}</span></p>
+                    <p><b>Area:</b> {crop.area?.value} {crop.area?.unit}</p>
+                    <p><b>Seed Quantity:</b> {crop.seedQuantity?.value} {crop.seedQuantity?.unit}</p>
+                    <p><b>Note:</b> {crop.note || 'N/A'}</p>
                 </div>
             ) : (
-                <div className="text-sm space-y-2">
-                    <p><b>Acquisition Date:</b> {new Date(livestock.acquisitionDate).toLocaleDateString()}</p>
-                    <p><b>Health Status:</b> {livestock.healthStatus ?? 'N/A'}</p>
+                <div className="text-sm space-y-2 p-1">
+                    <p><b>Breed:</b> {livestock.breed || 'N/A'}</p>
                     <p><b>Number of Animals:</b> {livestock.numberOfAnimal}</p>
+                    <p><b>Acquisition Date:</b> {new Date(livestock.acquisitionDate).toLocaleDateString()}</p>
+                    <p><b>Health Status:</b> <span className={`capitalize font-medium ${livestock.healthStatus?.toLowerCase() === 'poor' ? 'text-red-600' : 'text-green-600'}`}>{livestock.healthStatus ?? 'N/A'}</span></p>
+                    <p><b>Feed Schedule:</b> {livestock.feedSchedule ?? 'N/A'}</p>
+                    <p><b>Note:</b> {livestock.note || 'N/A'}</p>
                 </div>
             )}
+            <div className="p-4 bg-gray-50 text-xs text-gray-500 rounded-md">
+                Record ID: {record.id}
+            </div>
         </div>
     );
 };
 
 // ----------------------------------------------------------------------
-// CROP LIVESTOCK RECORDS COMPONENT
+// CROP LIVESTOCK RECORDS COMPONENT (FIXED)
 // ----------------------------------------------------------------------
 
 const CropLivestockRecords: React.FC = () => {
-    // State to manage active tab and modals
     const [activeRecordTab, setActiveRecordTab] = useState<'Crops' | 'Livestock'>('Crops');
     const [isRecordModalOpen, setIsRecordModalOpen] = useState<boolean>(false);
     const [isAddCropModalOpen, setIsAddCropModalOpen] = useState<boolean>(false);
@@ -149,7 +182,6 @@ const CropLivestockRecords: React.FC = () => {
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
     const [selectedRecord, setSelectedRecord] = useState<CropRecord | LivestockRecord | null>(null);
 
-    // State to store data fetched from API
     const [cropRecords, setCropRecords] = useState<CropRecord[]>([]);
     const [livestockRecords, setLivestockRecords] = useState<LivestockRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -158,8 +190,17 @@ const CropLivestockRecords: React.FC = () => {
     const fetchCropData = async () => {
         setLoading(true);
         try {
-            const data = await getCropRecords();
-            setCropRecords(data);
+            const data: BaseCropRecord[] = await getCropRecords(); 
+            // FIX: Map the fetched data to the component's internal CropRecord interface
+            const mappedData: CropRecord[] = data.map(r => {
+                const images: RecordImage[] = Array.isArray(r.cropImages) ? r.cropImages.filter(img => img.url) : (r.cropImages ? [r.cropImages] : []);
+                return {
+                    ...r,
+                    cropImages: images, 
+                    image: images.length > 0 ? images[0] : null, // Set single image for card thumbnail
+                }
+            }) as CropRecord[];
+            setCropRecords(mappedData);
             setError(null);
         } catch (err) {
             setError(err as Error);
@@ -173,7 +214,7 @@ const CropLivestockRecords: React.FC = () => {
         setLoading(true);
         try {
             const data = await getLivestockRecords();
-            setLivestockRecords(data);
+            setLivestockRecords(data as LivestockRecord[]);
             setError(null);
         } catch (err) {
             setError(err as Error);
@@ -182,7 +223,7 @@ const CropLivestockRecords: React.FC = () => {
             setLoading(false);
         }
     };
-
+    
     useEffect(() => {
         if (activeRecordTab === 'Crops') {
             fetchCropData();
@@ -207,6 +248,7 @@ const CropLivestockRecords: React.FC = () => {
     };
 
     const handleDelete = async (record: CropRecord | LivestockRecord) => {
+        // ... (Deletion logic remains unchanged) ...
         try {
             if (activeRecordTab === 'Crops') {
                 await deleteCropRecord(record.id);
@@ -224,6 +266,14 @@ const CropLivestockRecords: React.FC = () => {
         setSelectedRecord(record);
         setIsUpdateModalOpen(true);
     };
+
+    const getHealthStatusColor = (status: string | null | undefined): string => {
+        const lowerStatus = status?.toLowerCase() || 'good';
+        if (lowerStatus.includes('poor') || lowerStatus.includes('sick')) return 'bg-red-500';
+        if (lowerStatus.includes('fair') || lowerStatus.includes('moderate')) return 'bg-yellow-500';
+        return 'bg-green-500';
+    };
+
 
     return (
         <div className="p-2 lg:p-6">
@@ -263,104 +313,110 @@ const CropLivestockRecords: React.FC = () => {
                 </div>
             </div>
 
-            {loading && (
-                <div className="text-center py-8 text-gray-500">Loading records...</div>
-            )}
-            {error && (
-                <div className="text-center py-8 text-red-500">Error: Could not fetch records. Please check your network and try again.</div>
-            )}
-
+            {/* Status Messages */}
+            {loading && (<div className="text-center py-8 text-gray-500">Loading records...</div>)}
+            {error && (<div className="text-center py-8 text-red-500">Error: Could not fetch records. Please check your network and try again.</div>)}
             {!loading && !error && currentRecords.length === 0 && (
                 <div className="text-center py-8 text-gray-500">No {activeRecordTab.toLowerCase()} records found.</div>
             )}
 
+            {/* Records Grid */}
             {!loading && !error && currentRecords.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {currentRecords.map(record => (
-                        <div key={record.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer" onClick={() => openViewRecordModal(record)}>
-                            <div className="relative w-full h-48">
-                                {/* FIX: Conditional render to show Image or "No Image" div */}
-                                {record.image ? (
-                                    <Image
-                                        src={typeof record.image === 'string'
-                                            ? record.image
-                                            : URL.createObjectURL(record.image)
+                    {currentRecords.map(record => {
+                        const isCurrentCrop = activeRecordTab === 'Crops';
+                        const cropRecord = record as CropRecord;
+                        const livestockRecord = record as LivestockRecord;
+                        
+                        const recordTitle = isCurrentCrop ? cropRecord.cropName : livestockRecord.specie;
+                        const recordStatus = isCurrentCrop ? cropRecord.healthStatus : livestockRecord.healthStatus;
+                        // FIX: Access the 'image' property which is now explicitly on the internal interfaces
+                        const recordImageSource = isCurrentCrop ? cropRecord.image : livestockRecord.image;
+                        const imageUrl = getImageUrl(recordImageSource);
+
+                        return (
+                            <div key={record.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden" onClick={() => openViewRecordModal(record)}>
+                                <div className="relative w-full h-48">
+                                    {imageUrl ? (
+                                        <Image
+                                            src={imageUrl}
+                                            alt={recordTitle}
+                                            fill
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                            style={{ objectFit: 'cover' }}
+                                            className="transition duration-300 ease-in-out hover:scale-[1.03]"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
+                                            No Image
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="relative p-4">
+                                    {/* Health Status Badge */}
+                                    <div className={`absolute top-0 right-4 -translate-y-1/2 px-3 py-1 rounded-full text-xs font-semibold text-white capitalize ${getHealthStatusColor(recordStatus)}`}>
+                                        {recordStatus || 'N/A'}
+                                    </div>
+
+                                    <h3 className="font-semibold text-gray-800 text-lg">
+                                        {recordTitle}
+                                    </h3>
+                                    <p className="text-gray-500 text-sm mt-1">
+                                        {isCurrentCrop ?
+                                            `${cropRecord.variety || 'N/A'} • ${cropRecord.location}` :
+                                            `${livestockRecord.breed || 'N/A'} • ${livestockRecord.numberOfAnimal} animals`
                                         }
-                                        alt={activeRecordTab === 'Crops' ? (record as CropRecord).cropName : (record as LivestockRecord).specie}
-                                        fill
-                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        style={{ objectFit: 'cover' }}
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
-                                        No Image
-                                    </div>
-                                )}
-                            </div>
-                            <div className="relative p-4">
-                                <div className="absolute top-0 right-4 -translate-y-1/2 px-2 py-1 rounded-full text-xs font-semibold text-white
-                                        bg-green-500">
-                                    Good
-                                </div>
-                                <h3 className="font-semibold text-gray-800 text-lg">
-                                    {activeRecordTab === 'Crops' ? (record as CropRecord).cropName : (record as LivestockRecord).specie}
-                                </h3>
-                                <p className="text-gray-500 text-sm mt-1">
-                                    {activeRecordTab === 'Crops' ?
-                                        `${(record as CropRecord).variety || ''} • ${(record as CropRecord).location}` :
-                                        `${(record as LivestockRecord).breed || ''} • ${(record as LivestockRecord).numberOfAnimal} animals`
-                                    }
-                                </p>
+                                    </p>
 
-                                {/* Progress bar and planted date */}
-                                {activeRecordTab === 'Crops' ? (
-                                    <>
-                                        <div className="mt-4">
-                                            <p className="text-sm text-gray-600 mb-1">Growth Stage: <span className="text-black font-semibold">Mature</span></p>
-                                            <div className="flex items-center">
-                                                <div className="w-full h-2 bg-gray-200 rounded-full">
-                                                    <div className="h-2 bg-green-500 rounded-full" style={{ width: `${(record as CropRecord).currentGrowthStage}%` }}></div>
+                                    {/* Progress/Details Section */}
+                                    {isCurrentCrop ? (
+                                        <>
+                                            <div className="mt-4">
+                                                <p className="text-sm text-gray-600 mb-1">Growth: <span className="text-black font-semibold">{cropRecord.currentGrowthStage}</span></p>
+                                                <div className="flex items-center">
+                                                    <div className="w-full h-2 bg-gray-200 rounded-full">
+                                                        <div className="h-2 bg-green-500 rounded-full" style={{ width: `${parseInt(cropRecord.currentGrowthStage.replace('%', '')) || 0}%` }}></div>
+                                                    </div>
+                                                    <span className="text-gray-800 text-xs ml-2">{parseInt(cropRecord.currentGrowthStage.replace('%', '')) || 0}%</span>
                                                 </div>
-                                                <span className="text-gray-800 text-xs ml-2">{(record as CropRecord).currentGrowthStage}%</span>
                                             </div>
+                                            <div className="mt-4 text-sm text-gray-600">
+                                                <p>Planted: <span className="text-gray-800 font-semibold">{new Date(cropRecord.plantingDate).toLocaleDateString()}</span></p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="mt-4 text-sm text-gray-600 space-y-2">
+                                            <p><b>Age:</b> {livestockRecord.ageGroup}</p>
+                                            <p><b>Last Checkup:</b> {new Date(livestockRecord.acquisitionDate).toLocaleDateString()}</p>
                                         </div>
-                                        <div className="mt-4 text-sm text-gray-600">
-                                            <p>Planted: <span className="text-gray-800 font-semibold">{new Date((record as CropRecord).plantingDate).toLocaleDateString()}</span></p>
-                                             <p><b>Note:</b>{(record as CropRecord).note}</p>
+                                    )}
+                                    
+                                    {/* Actions */}
+                                    <div className="mt-4 border-t border-gray-200 pt-4 flex justify-between items-center">
+                                        <div className="flex space-x-2 md:space-x-4 text-gray-400">
+                                            <button onClick={(e) => { e.stopPropagation(); openViewRecordModal(record); }} className="hover:text-green-600" title="View Details">
+                                                <FolderOpen className="h-5 w-5" />
+                                            </button>
+                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(record); }} className="hover:text-red-600" title="Delete Record">
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
                                         </div>
-                                    </>
-                                ) : (
-                                    <div className="mt-4 text-sm text-gray-600 space-y-2">
-                                        <p><b>Age Group:</b> {(record as LivestockRecord).ageGroup}</p>
-                                        <p><b>Last Health Checkup:</b> {new Date((record as LivestockRecord).acquisitionDate).toLocaleDateString()}</p>
 
-                                         <p><b>Note:</b>{(record as LivestockRecord).note}</p>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleUpdate(record); }}
+                                            className="text-green-600 hover:text-green-700 text-sm font-semibold"
+                                        >
+                                            Update Record
+                                        </button>
                                     </div>
-                                )}
-                                <div className="mt-4 border-t border-gray-200 pt-4 flex justify-between items-center">
-                                     <div className="flex space-x-2 md:space-x-4 text-gray-400">
-                                         <button onClick={(e) => { e.stopPropagation(); openViewRecordModal(record); }} className="hover:text-green-600">
-                                             <FolderOpen className="h-5 w-5" />
-                                         </button>
-                                         <button onClick={(e) => { e.stopPropagation(); handleDelete(record); }} className="hover:text-red-600">
-                                             <Trash2 className="h-5 w-5" />
-                                         </button>
-                                     </div>
-
-                                     <button
-                                         onClick={(e) => { e.stopPropagation(); handleUpdate(record); }}
-                                         className="text-green-600 hover:text-green-700 text-sm font-semibold"
-                                     >
-                                         Update Record
-                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
-            {/* Modals remain unchanged */}
+            {/* Modals */}
             <Modal
                 show={isRecordModalOpen}
                 onClose={() => setIsRecordModalOpen(false)}
@@ -368,20 +424,14 @@ const CropLivestockRecords: React.FC = () => {
             >
                 <RecordDetails record={selectedRecord} type={activeRecordTab} onClose={() => setIsRecordModalOpen(false)} />
             </Modal>
-            <Modal
-                show={isAddCropModalOpen}
-                onClose={() => setIsAddCropModalOpen(false)}
-                title="Add New Crop Record"
-            >
+            
+            <Modal show={isAddCropModalOpen} onClose={() => setIsAddCropModalOpen(false)} title="Add New Crop Record">
                 <AddCropForm onClose={() => setIsAddCropModalOpen(false)} onRecordAdded={fetchCropData} />
             </Modal>
-            <Modal
-                show={isAddLivestockModalOpen}
-                onClose={() => setIsAddLivestockModalOpen(false)}
-                title="Add New Livestock Record"
-            >
+            <Modal show={isAddLivestockModalOpen} onClose={() => setIsAddLivestockModalOpen(false)} title="Add New Livestock Record">
                 <AddLivestockForm onClose={() => setIsAddLivestockModalOpen(false)} onRecordAdded={fetchLivestockData} />
             </Modal>
+            
             <Modal
                 show={isUpdateModalOpen}
                 onClose={() => setIsUpdateModalOpen(false)}
@@ -397,14 +447,8 @@ const CropLivestockRecords: React.FC = () => {
                     <UpdateLivestockForm
                         record={{
                             ...(selectedRecord as LivestockRecord),
-                            healthStatus: (selectedRecord as LivestockRecord)?.healthStatus ?? "good",
-                            image:
-                                typeof (selectedRecord as LivestockRecord)?.image === "string"
-                                    ? (selectedRecord as LivestockRecord)?.image
-                                    : (selectedRecord as LivestockRecord)?.image instanceof File
-                                        ? URL.createObjectURL((selectedRecord as LivestockRecord)?.image as File)
-                                        : undefined
-                        } as Omit<LivestockRecord, "image"> & { image?: string }}
+                            image: getImageUrl((selectedRecord as LivestockRecord)?.image),
+                        }}
                         onClose={() => setIsUpdateModalOpen(false)}
                         onRecordUpdated={fetchLivestockData}
                     />

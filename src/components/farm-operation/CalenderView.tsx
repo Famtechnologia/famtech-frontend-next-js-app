@@ -257,7 +257,7 @@ useEffect(() => {
   const blankDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
 
   return (
-    <div className="p-2 lg::p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
+    <div className="bg-white p-2 lg::p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
       {/* Left Sidebar for Calendar and Filters */}
       <div className="w-full md:w-64 space-y-6">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">

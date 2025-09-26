@@ -55,7 +55,7 @@ export default function FarmOperationsPage() {
     }, [activeTabKey]);
 
     return (
-        <div className="p-0 md:p-6">
+        <div className="p-0 md:p-6 bg-white">
             <h1 className="text-3xl font-semibold text-green-700 mb-6">Farm Operations</h1>
 
             {/* Internal Tab Navigation Driven by URL Query */}
