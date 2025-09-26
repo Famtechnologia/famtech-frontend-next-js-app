@@ -226,7 +226,7 @@ const CropLivestockRecords: React.FC = () => {
     };
 
     return (
-        <div className="p-2 md:p-6">
+        <div className="p-2 lg:p-6">
             <div className="flex items-center justify-start border-b border-gray-200 mb-6 -mt-2">
                 <button
                     onClick={() => setActiveRecordTab('Crops')}

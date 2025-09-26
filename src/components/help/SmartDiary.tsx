@@ -3,7 +3,7 @@ import React from 'react';
 const App = () => {
   const SmartDiaryPage = () => {
     return (
-      <div className="p-0 md:p-4 bg-gray-100 min-h-screen font-sans">
+      <div className="p-0 lg:p-4 bg-gray-100 min-h-screen font-sans">
         {/* Purpose Section */}
         <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4">
           <h3 className="text-xl font-semibold text-gray-800 mb-2">
@@ -18,7 +18,7 @@ const App = () => {
         </div>
         
         {/* Main Content Sections */}
-        <div className="flex flex-col md:flex-row md:space-x-6 mt-4">
+        <div className="flex flex-col md:flex-row md:space-x-3 lg:space-x-6 mt-4">
           {/* Left section: Smart Diary - Saved Advice */}
           <div className="w-full md:w-3/5 mb-4 md:mb-0">
             <div className="bg-white rounded-lg shadow-md p-6 h-full flex flex-col">

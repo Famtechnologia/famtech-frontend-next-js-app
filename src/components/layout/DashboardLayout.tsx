@@ -142,26 +142,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     expandable: false,
                 },
                 {
-                    name: 'Farm Operations',
-                    icon: Tractor,
-                    key: 'farm-operations',
-                    expandable: true,
-                    children: [
-                        { name: 'Field Management', href: `/farm-operation` },
-                        {
-                            name: 'Crop and Livestock Records',
-                            href: `/farm-operation/${subRole}/records`,
-                        },
-                        {
-                            name: 'Equipment Usage',
-                            href: `/farm-operation/${subRole}/equipment`,
-                        },
-                        {
-                            name: 'Inventory Management',
-                            href: `/farm-operation/${subRole}/inventory`,
-                        },
-                    ],
-                },
+    name: 'Farm Operations',
+    icon: Tractor,
+    key: 'farm-operations',
+    expandable: true,
+    children: [
+        // Use query parameters to designate the active tab view
+        { name: 'Task Planner', href: `/farm-operation?tab=planner` }, // Simplified for the root page
+        { name: 'Crop and Livestock Records', href: `/farm-operation?tab=records` },
+        { name: 'Calendar View', href: `/farm-operation?tab=calendar` },
+        { name: 'Inventory Management', href: `/farm-operation?tab=inventory` },
+        // ... any others ...
+    ],
+},
                 {
                     name: 'AI Insights',
                     icon: Brain,

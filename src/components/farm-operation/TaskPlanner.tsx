@@ -230,7 +230,9 @@ const App: React.FC = () => {
   const [formTaskType, setFormTaskType] = useState('General task');
   const [formDueDate, setFormDueDate] = useState('');
   const [formDueTime, setFormDueTime] = useState('');
-type ApiTaskWithId = ApiTask & { id: string };
+ 
+ 
+  type ApiTaskWithId = ApiTask & { id: string };
   
 
 const fetchTasks = React.useCallback(async () => {
@@ -421,7 +423,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="p-2 md:p-6 bg-gray-50 min-h-screen">
+    <div className="p-2 lg:p-6 bg-white min-h-screen">
       <div className="container mx-auto max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 w-full">
           <h1 className="text-2xl font-bold text-gray-800 hidden md:block">Task Dashboard</h1>
