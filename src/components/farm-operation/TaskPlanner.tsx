@@ -230,16 +230,13 @@ const App: React.FC = () => {
   const [formTaskType, setFormTaskType] = useState('General task');
   const [formDueDate, setFormDueDate] = useState('');
   const [formDueTime, setFormDueTime] = useState('');
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
 type ApiTaskWithId = ApiTask & { id: string };
- const fetchTasks = async () => {
+  
+
+const fetchTasks = React.useCallback(async () => {
   setLoading(true);
   setError(null);
   try {
-    // type returned from getTasks already
     const data = await getTasks() as ApiTaskWithId[];
 
     const mappedTasks: Task[] = data.map((task) => {
@@ -253,7 +250,7 @@ type ApiTaskWithId = ApiTask & { id: string };
         : 'N/A';
 
       return {
-        id: task.id, // ✅ no more any
+        id: task.id,
         type: task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1),
         name: task.title,
         time: task.timeline?.dueTime || 'N/A',
@@ -274,7 +271,12 @@ type ApiTaskWithId = ApiTask & { id: string };
   } finally {
     setLoading(false);
   }
-};
+}, [getTasks]); // or [] if getTasks is stable
+
+useEffect(() => {
+  fetchTasks();
+}, [fetchTasks]); // no more warning
+
 
 
 

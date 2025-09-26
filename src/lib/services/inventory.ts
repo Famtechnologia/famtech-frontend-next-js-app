@@ -21,10 +21,14 @@ export const getInventoryItems = async (): Promise<InventoryItem[]> => {
  * Creates a new inventory item.
  * The input data is now a more precise `Omit` type.
  */
-export const createInventoryItem = async (inventoryData: Omit<InventoryItem, '_id' | 'timestamp'>): Promise<InventoryItem> => {
-    const response = await apiClient.post(INVENTORY_BASE_URL, inventoryData);
-    return response.data;
+// service
+export const createInventoryItem = async (
+  item: Omit<InventoryItem, 'id' | 'timestamp' | '_id'>
+): Promise<InventoryItem> => {
+  const res = await apiClient.post(INVENTORY_BASE_URL, item);
+  return res.data;
 };
+
 
 /**
  * Fetches a single inventory item by its ID.

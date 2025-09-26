@@ -7,11 +7,13 @@ import { getInventoryItems, createInventoryItem, deleteInventoryItem, updateInve
 
 // Create a union type for all possible new item data, excluding generated fields
 type NewInventoryItemData =
-    Omit<SeedItem, '_id' | 'timestamp'> |
-    Omit<FeedItem, '_id' | 'timestamp'> |
-    Omit<FertilizerItem, '_id' | 'timestamp'> |
-    Omit<ToolItem, '_id' | 'timestamp'> |
-    Omit<EquipmentPartItem, '_id' | 'timestamp'>;
+  | (Omit<SeedItem, 'id' | 'timestamp'> & { category: 'seeds' })
+  | (Omit<FeedItem, 'id' | 'timestamp'> & { category: 'feed' })
+  | (Omit<FertilizerItem, 'id' | 'timestamp'> & { category: 'fertilizer' })
+  | (Omit<ToolItem, 'id' | 'timestamp'> & { category: 'tools' })
+  | (Omit<EquipmentPartItem, 'id' | 'timestamp'> & { category: 'equipment parts' });
+
+
 
 // Create a union type for all possible updated item data, including generated fields
 type UpdateInventoryItemData =
@@ -25,13 +27,10 @@ const InventoryManagement: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [formData, setFormData] = useState<NewInventoryItemData>({
-        category: 'seeds',
-        name: '',
-        quantity: 0,
-        reorderLevel: 0,
-    } as NewInventoryItemData);
-
+   const [formData, setFormData] = useState<NewInventoryItemData>(
+  // your initial state, e.g.:
+  { category: 'seeds', name: '', quantity: 0, reorderLevel: 0 } as NewInventoryItemData
+);
     const [updateFormData, setUpdateFormData] = useState<UpdateInventoryItemData | null>(null);
 
     useEffect(() => {
@@ -115,28 +114,47 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
         return newFormData as unknown as UpdateInventoryItemData;
     });
 };
-    const handleCreateItem = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            let payload: any;
+   const handleCreateItem = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    // payload without id, since backend generates it
+    let payload: Omit<InventoryItem, "id">;
 
-            if (formData.category === 'tools') {
-                const { category, ...toolData } = formData;
-                payload = { category, toolData };
-            } else if (formData.category === 'equipment parts') {
-                const { category, ...equipmentPartsData } = formData;
-                payload = { category, equipmentPartsData };
-            } else {
-                payload = formData;
-            }
+    switch (formData.category) {
+      case "tools": {
+        // Narrow to ToolItem
+        const {  ...toolData } = formData as ToolItem;
+        payload = toolData;
+        break;
+      }
+      case "equipment parts": {
+        const {  ...equipmentPartsData } = formData as EquipmentPartItem;
+        payload = equipmentPartsData;
+        break;
+      }
+      case "fertilizer": {
+        const {  ...fertilizerData } = formData as FertilizerItem;
+        payload = fertilizerData;
+        break;
+      }
+      case "feed": {
+        const {  ...feedData } = formData as FeedItem;
+        payload = feedData;
+        break;
+      }
+      default: {
+        const {  ...seedData } = formData as SeedItem;
+        payload = seedData;
+      }
+    }
 
-            const newItem = await createInventoryItem(payload);
-            setInventoryItems(prev => [...prev, newItem]);
-            setShowAddItemModal(false);
-        } catch (err) {
-            console.error('Failed to add item:', err);
-        }
-    };
+    const newItem = await createInventoryItem(payload);
+    setInventoryItems((prev) => [...prev, newItem]);
+    setShowAddItemModal(false);
+  } catch (err) {
+    console.error("Failed to add item:", err);
+  }
+};
 
     const handleUpdateItem = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -193,8 +211,11 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
         }
     };
 
-    const renderFormFields = (data: any, handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void) => {
-        switch (data.category) {
+    const renderFormFields = (
+  data: NewInventoryItemData,
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+) => {
+  switch (data.category)  {
             case 'seeds':
                 const seedData = data as Omit<SeedItem, '_id' | 'timestamp'>;
                 return (
