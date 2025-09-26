@@ -222,7 +222,7 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
                     <>
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Seed Name</label>
-                            <input type="text" id="name" name="name" required value={seedData.name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., Maize Seeds" />
+                            <input type="text" id="name" name="name" required value={seedData.name} onChange={handleChange} className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., Maize Seeds" />
                         </div>
                         <div>
                             <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity (kg)</label>
