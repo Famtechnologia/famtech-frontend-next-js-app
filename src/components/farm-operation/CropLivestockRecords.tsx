@@ -4,47 +4,41 @@ import Modal from '../ui/Modal';
 import { useState, useEffect } from 'react';
 
 import { ListFilter, Plus, Search, FolderOpen, Trash2 } from 'lucide-react';
-import { AddCropForm, UpdateCropForm } from './Crops';
-import { AddLivestockForm, UpdateLivestockForm } from './Livestocks';
+import { AddCropForm, UpdateCropForm } from './Crops'; // Assuming these are correctly imported
+import { AddLivestockForm, UpdateLivestockForm } from './Livestocks'; // Assuming these are correctly imported
 import {
     getCropRecords,
     getLivestockRecords,
     deleteCropRecord,
     deleteLivestockRecord,
+    RecordImage,
     // Renaming the imported types to clearly separate them from the component's internal types
     CropRecord as BaseCropRecord, 
     LivestockRecord as BaseLivestockRecord,
 } from '@/lib/services/croplivestock';
 
 
-// --- Revised Interfaces to resolve Type Mismatches (Code 2430 & 2322) ---
+// --- Revised Interfaces to resolve Type Mismatches and implement card view logic ---
 
 /**
- * Assumed interface for an image object, based on the missing properties error.
- * This should match the 'RecordImage' type used internally by your service.
+ * Assumed interface for an image object, matching the service's RecordImage.
  */
-interface RecordImage {
-    id?: string; // Optional if not all images have an id before saving
-    _id?: string; // Often MongoDB ID
-    fileId?: string; // ID used by file storage
-    url: string; // The public URL
-}
 
-// Use the RecordImage interface for crops
+
+// Internal CropRecord for component state, adding 'image' for thumbnail preview
 interface CropRecord extends Omit<BaseCropRecord, 'image'> {
-    // cropImages holds all images fetched from the API (an array of image objects)
     cropImages: RecordImage[]; 
-    // image is a computed property used only for the card thumbnail (Code 2339 fix)
     image: RecordImage | null;
 }
 
+// Internal LivestockRecord for component state, adding 'image' for thumbnail preview
 interface LivestockRecord extends BaseLivestockRecord {
-    // The base type might define this as string | File. We keep it flexible.
-    image: string | File | null | undefined; 
+    // This derived property is used for the card thumbnail
+    image: RecordImage | null; 
 }
 
 
-// 2. Interface for the Record Details component props
+// Interface for the Record Details component props
 interface RecordDetailsProps {
     record: CropRecord | LivestockRecord | null;
     type: 'Crops' | 'Livestock';
@@ -54,30 +48,18 @@ interface RecordDetailsProps {
 // --- Helper Functions ---
 
 /**
- * Safely determines the URL for an image source (string, File, or RecordImage object).
+ * Safely determines the URL for an image source.
+ * Note: Only `RecordImage` objects from fetched data are expected here.
  */
-const getImageUrl = (imageSource: string | File | RecordImage | null | undefined): string | null => {
-    if (!imageSource) return null;
-
-    if (typeof imageSource === 'string') {
-        return imageSource;
-    }
-    
-    // Check if it's a RecordImage object
-    if (typeof imageSource === 'object' && 'url' in imageSource) {
+const getImageUrl = (imageSource: RecordImage | null | undefined): string | null => {
+    if (imageSource && typeof imageSource === 'object' && 'url' in imageSource) {
         return imageSource.url ?? null;
     }
-    
-    // Check if it's a File object (for forms)
-    if (imageSource instanceof File) {
-        return URL.createObjectURL(imageSource);
-    }
-    
     return null;
 };
 
 
-// --- RecordDetails Component (FIXED) ---
+// --- RecordDetails Component (FIXED for livestockImages and feedSchedule) ---
 
 const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
     if (!record) return null;
@@ -87,10 +69,10 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
     const crop = record as CropRecord; 
     const livestock = record as LivestockRecord;
 
-    // Get the array of images
-    const images = isCrop
+    // FIX: Read the image array from the correct property (cropImages or livestockImages)
+    const images: RecordImage[] = isCrop
         ? crop.cropImages || []
-        : (livestock.image ? [livestock.image] : []);
+        : livestock.livestockImages || []; 
 
     return (
         <div className="space-y-6">
@@ -98,8 +80,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
             <div className="w-full flex flex-wrap gap-3 p-2 border-b border-gray-200">
                 {images.length > 0 ? (
                     images.map((img, idx) => {
-                        // FIX: Use the unified RecordImage for type safety, allowing string or File as well
-                        const url = getImageUrl(img as string | File | RecordImage); 
+                        const url = getImageUrl(img); 
 
                         if (!url) {
                             return (
@@ -141,7 +122,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                 </p>
             </div>
 
-            {/* Details (using optional chaining for safety) */}
+            {/* Details */}
             {isCrop ? (
                 <div className="text-sm space-y-2 p-1">
                     <p><b>Variety:</b> {crop.variety}</p>
@@ -159,7 +140,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                     <p><b>Number of Animals:</b> {livestock.numberOfAnimal}</p>
                     <p><b>Acquisition Date:</b> {new Date(livestock.acquisitionDate).toLocaleDateString()}</p>
                     <p><b>Health Status:</b> <span className={`capitalize font-medium ${livestock.healthStatus?.toLowerCase() === 'poor' ? 'text-red-600' : 'text-green-600'}`}>{livestock.healthStatus ?? 'N/A'}</span></p>
-                    <p><b>Feed Schedule:</b> {livestock.feedSchedule ?? 'N/A'}</p>
+                    <p><b>Feed Schedule:</b> {livestock.feedSchedule ?? 'N/A'}</p> {/* <-- FIXED: Added feedSchedule */}
                     <p><b>Note:</b> {livestock.note || 'N/A'}</p>
                 </div>
             )}
@@ -171,7 +152,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
 };
 
 // ----------------------------------------------------------------------
-// CROP LIVESTOCK RECORDS COMPONENT (FIXED)
+// CROP LIVESTOCK RECORDS COMPONENT (FIXED Data Fetching & Prop Passing)
 // ----------------------------------------------------------------------
 
 const CropLivestockRecords: React.FC = () => {
@@ -191,7 +172,7 @@ const CropLivestockRecords: React.FC = () => {
         setLoading(true);
         try {
             const data: BaseCropRecord[] = await getCropRecords(); 
-            // FIX: Map the fetched data to the component's internal CropRecord interface
+            // Map the fetched data to the component's internal CropRecord interface
             const mappedData: CropRecord[] = data.map(r => {
                 const images: RecordImage[] = Array.isArray(r.cropImages) ? r.cropImages.filter(img => img.url) : (r.cropImages ? [r.cropImages] : []);
                 return {
@@ -213,8 +194,18 @@ const CropLivestockRecords: React.FC = () => {
     const fetchLivestockData = async () => {
         setLoading(true);
         try {
-            const data = await getLivestockRecords();
-            setLivestockRecords(data as LivestockRecord[]);
+            const data: BaseLivestockRecord[] = await getLivestockRecords();
+            // FIX: Map the fetched data to the component's internal LivestockRecord interface
+            const mappedData: LivestockRecord[] = data.map(r => {
+                const images: RecordImage[] = Array.isArray(r.livestockImages) ? r.livestockImages.filter(img => img.url) : [];
+                return {
+                    ...r,
+                    // Set the single 'image' property from the first item in livestockImages for card thumbnail
+                    image: images.length > 0 ? images[0] : null,
+                }
+            }) as LivestockRecord[];
+            
+            setLivestockRecords(mappedData);
             setError(null);
         } catch (err) {
             setError(err as Error);
@@ -230,6 +221,8 @@ const CropLivestockRecords: React.FC = () => {
         } else {
             fetchLivestockData();
         }
+        // Cleanup function for object URLs isn't strictly necessary here since we only use URLs from fetched records, 
+        // but it's good practice if you were managing File objects here.
     }, [activeRecordTab]);
 
     const currentRecords = activeRecordTab === 'Crops' ? cropRecords : livestockRecords;
@@ -248,7 +241,6 @@ const CropLivestockRecords: React.FC = () => {
     };
 
     const handleDelete = async (record: CropRecord | LivestockRecord) => {
-        // ... (Deletion logic remains unchanged) ...
         try {
             if (activeRecordTab === 'Crops') {
                 await deleteCropRecord(record.id);
@@ -330,12 +322,12 @@ const CropLivestockRecords: React.FC = () => {
                         
                         const recordTitle = isCurrentCrop ? cropRecord.cropName : livestockRecord.specie;
                         const recordStatus = isCurrentCrop ? cropRecord.healthStatus : livestockRecord.healthStatus;
-                        // FIX: Access the 'image' property which is now explicitly on the internal interfaces
+                        // Access the 'image' property which is derived during fetch for the card thumbnail
                         const recordImageSource = isCurrentCrop ? cropRecord.image : livestockRecord.image;
                         const imageUrl = getImageUrl(recordImageSource);
 
                         return (
-                            <div key={record.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden" onClick={() => openViewRecordModal(record)}>
+                            <div key={record.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer" onClick={() => openViewRecordModal(record)}>
                                 <div className="relative w-full h-48">
                                     {imageUrl ? (
                                         <Image
@@ -391,7 +383,7 @@ const CropLivestockRecords: React.FC = () => {
                                         </div>
                                     )}
                                     
-                                    {/* Actions */}
+                                    {/* Actions (Stop propagation to prevent modal from opening on button click) */}
                                     <div className="mt-4 border-t border-gray-200 pt-4 flex justify-between items-center">
                                         <div className="flex space-x-2 md:space-x-4 text-gray-400">
                                             <button onClick={(e) => { e.stopPropagation(); openViewRecordModal(record); }} className="hover:text-green-600" title="View Details">
@@ -439,16 +431,14 @@ const CropLivestockRecords: React.FC = () => {
             >
                 {activeRecordTab === 'Crops' ? (
                     <UpdateCropForm
-                        record={selectedRecord as CropRecord}
+                        record={selectedRecord as BaseCropRecord}
                         onClose={() => setIsUpdateModalOpen(false)}
                         onRecordUpdated={fetchCropData}
                     />
                 ) : (
+                    // FIX: Pass the record as BaseLivestockRecord, as the UpdateForm expects the data structure from the API
                     <UpdateLivestockForm
-                        record={{
-                            ...(selectedRecord as LivestockRecord),
-                            image: getImageUrl((selectedRecord as LivestockRecord)?.image),
-                        }}
+                        record={selectedRecord as BaseLivestockRecord} 
                         onClose={() => setIsUpdateModalOpen(false)}
                         onRecordUpdated={fetchLivestockData}
                     />

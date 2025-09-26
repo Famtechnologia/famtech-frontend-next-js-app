@@ -345,6 +345,15 @@ useEffect(() => {
     setIsModalOpen(true);
   };
 
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${day}-${month}-${year}`;
+};
   const openEditTaskModal = (task: Task) => {
     setSelectedTask(task);
     setModalMode('edit');
@@ -354,7 +363,7 @@ useEffect(() => {
     setFormAssignee(task.user);
     setFormNotes(task.notes || '');
     setFormTaskType(task.type);
-    setFormDueDate(task.dueDate || '');
+     setFormDueDate(formatDate(task.dueDate || '')); 
     setFormDueTime(task.time || '');
     setIsModalOpen(true);
   };
@@ -396,6 +405,7 @@ useEffect(() => {
     return matchesFilter && matchesSearch;
   });
 
+   
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
