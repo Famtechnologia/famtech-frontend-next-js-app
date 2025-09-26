@@ -10,7 +10,7 @@ import {
   Settings,
 } from 'lucide-react';
 import Modal from '../ui/Modal';
-import { getTasks, createTask, updateTask, deleteTask } from '../../lib/services/taskplanner';
+import { getTasks, createTask, updateTask, deleteTask , Task as ApiTask } from '../../lib/services/taskplanner';
 
 interface Task {
   id: string;
@@ -234,45 +234,49 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
+type ApiTaskWithId = ApiTask & { id: string };
+ const fetchTasks = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    // type returned from getTasks already
+    const data = await getTasks() as ApiTaskWithId[];
 
-  const fetchTasks = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getTasks();
-      // ... (inside the fetchTasks function)
-      const mappedTasks: Task[] = data.map((task: any) => {
-        const dateObject = new Date(task.timeline?.dueDate || 'N/A');
-        const formattedDate = dateObject.toLocaleDateString('en-US', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-        const formattedTime = task.timeline?.dueTime || 'N/A';
+    const mappedTasks: Task[] = data.map((task) => {
+      const dateObject = task.timeline?.dueDate ? new Date(task.timeline.dueDate) : null;
+      const formattedDate = dateObject
+        ? dateObject.toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })
+        : 'N/A';
 
-        return {
-          id: task.id,
-          type: task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1),
-          name: task.title,
-          time: formattedTime,
-          user: task.assignee,
-          priority: task.priority as 'low' | 'medium' | 'high',
-          completed: task.status === 'completed',
-          status: task.status as 'pending' | 'ongoing' | 'completed',
-          description: task.note,
-          notes: task.note,
-          dueDate: formattedDate,
-        };
-      });
-      // ...
-      setTasks(mappedTasks);
-    } catch (err) {
-      console.error(err);
-      setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return {
+        id: task.id, // ✅ no more any
+        type: task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1),
+        name: task.title,
+        time: task.timeline?.dueTime || 'N/A',
+        user: task.assignee,
+        priority: (task.priority?.toLowerCase() as 'low' | 'medium' | 'high') ?? 'low',
+        completed: task.status === 'completed',
+        status: (task.status as 'pending' | 'ongoing' | 'completed') ?? 'pending',
+        description: task.note ?? '',
+        notes: task.note,
+        dueDate: formattedDate,
+      };
+    });
+
+    setTasks(mappedTasks);
+  } catch (err) {
+    console.error(err);
+    setError(err as Error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();

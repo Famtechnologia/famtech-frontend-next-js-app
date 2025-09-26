@@ -170,7 +170,7 @@ const NewEventForm: React.FC<{ onSave: (taskData: Omit<Task, '_id'>) => void }> 
 const AddEventDialog: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
   const [showModal, setShowModal] = useState(false);
 
-  const handleOpenModal = () => setShowModal(true);
+  {/*Const handleOpenModal = () => setShowModal(true);*/}
   const handleCloseModal = () => setShowModal(false);
 
   const handleSave = async (taskData: Omit<Task, '_id'>) => {

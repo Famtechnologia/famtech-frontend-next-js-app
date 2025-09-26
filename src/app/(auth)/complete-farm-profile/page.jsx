@@ -915,7 +915,7 @@ export default function ModernFarmRegistration() {
         
         {renderStepIndicator()}
         
-        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 md:p-12">
+        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 lg:p-12">
           {renderCurrentStep()}
           
           {registrationError && (
