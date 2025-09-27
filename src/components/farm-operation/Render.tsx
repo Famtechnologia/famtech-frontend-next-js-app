@@ -1,5 +1,5 @@
 import React from 'react'
-import { InventoryItem, SeedItem, FeedItem, FertilizerItem, ToolItem, EquipmentPartItem, } from '@/types/inventory';
+import { SeedItem, FeedItem, FertilizerItem, ToolItem, EquipmentPartItem, } from '@/types/inventory';
  type NewInventoryItemData =
   | (Omit<SeedItem, 'id' | 'timestamp'> & { category: 'seeds' })
   | (Omit<FeedItem, 'id' | 'timestamp'> & { category: 'feed' })
