@@ -13,7 +13,7 @@ import {
     deleteLivestockRecord,
     RecordImage,
     // Renaming the imported types to clearly separate them from the component's internal types
-    CropRecord as BaseCropRecord, 
+    CropRecord as BaseCropRecord,
     LivestockRecord as BaseLivestockRecord,
 } from '@/lib/services/croplivestock';
 
@@ -27,14 +27,14 @@ import {
 
 // Internal CropRecord for component state, adding 'image' for thumbnail preview
 interface CropRecord extends Omit<BaseCropRecord, 'image'> {
-    cropImages: RecordImage[]; 
+    cropImages: RecordImage[];
     image: RecordImage | null;
 }
 
 // Internal LivestockRecord for component state, adding 'image' for thumbnail preview
 interface LivestockRecord extends BaseLivestockRecord {
     // This derived property is used for the card thumbnail
-    image: RecordImage | null; 
+    image: RecordImage | null;
 }
 
 
@@ -58,6 +58,30 @@ const getImageUrl = (imageSource: RecordImage | null | undefined): string | null
     return null;
 };
 
+// --- NEW HELPER FUNCTION FOR GROWTH STAGE TO PERCENTAGE MAPPING ---
+/**
+ * Maps a crop's growth stage to a percentage (20%, 40%, 60%, 80%, 100%)
+ * based on the assumption of 5 stages.
+ * @param stage The current growth stage string from the crop record.
+ * @returns The percentage value (0-100).
+ */
+const getGrowthPercentageFromStage = (stage: string | null | undefined): number => {
+    if (!stage) return 0;
+
+    // Normalize and trim the stage name for robust matching
+    const normalizedStage = stage.trim().toLowerCase();
+
+    // Define your 5 stages and their percentage steps (20% each)
+    if (normalizedStage.includes('seeding') || normalizedStage.includes('planting')) return 20;
+    if (normalizedStage.includes('vegetative') || normalizedStage.includes('early growth')) return 40;
+    if (normalizedStage.includes('flowering') || normalizedStage.includes('tasseling')) return 60;
+    if (normalizedStage.includes('fruiting') || normalizedStage.includes('maturation') || normalizedStage.includes('ripening')) return 80;
+    if (normalizedStage.includes('harvest') || normalizedStage.includes('completed')) return 100;
+
+    // Fallback in case a stage name doesn't match a defined keyword
+    return 0;
+};
+
 
 // --- RecordDetails Component (FIXED for livestockImages and feedSchedule) ---
 
@@ -66,13 +90,13 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
 
     // Type narrowing
     const isCrop = type === 'Crops';
-    const crop = record as CropRecord; 
+    const crop = record as CropRecord;
     const livestock = record as LivestockRecord;
 
     // FIX: Read the image array from the correct property (cropImages or livestockImages)
     const images: RecordImage[] = isCrop
         ? crop.cropImages || []
-        : livestock.livestockImages || []; 
+        : livestock.livestockImages || [];
 
     return (
         <div className="space-y-6">
@@ -80,7 +104,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
             <div className="w-full flex flex-wrap gap-3 p-2 border-b border-gray-200">
                 {images.length > 0 ? (
                     images.map((img, idx) => {
-                        const url = getImageUrl(img); 
+                        const url = getImageUrl(img);
 
                         if (!url) {
                             return (
@@ -105,7 +129,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                     })
                 ) : (
                     <div className="w-32 h-32 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md">
-                        No image available
+                        No image
                     </div>
                 )}
             </div>
@@ -162,6 +186,8 @@ const CropLivestockRecords: React.FC = () => {
     const [isAddLivestockModalOpen, setIsAddLivestockModalOpen] = useState<boolean>(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
     const [selectedRecord, setSelectedRecord] = useState<CropRecord | LivestockRecord | null>(null);
+    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false); // NEW state for delete confirmation
+    const [isDeleting, setIsDeleting] = useState(false); // NEW state for delete loading
 
     const [cropRecords, setCropRecords] = useState<CropRecord[]>([]);
     const [livestockRecords, setLivestockRecords] = useState<LivestockRecord[]>([]);
@@ -171,13 +197,13 @@ const CropLivestockRecords: React.FC = () => {
     const fetchCropData = async () => {
         setLoading(true);
         try {
-            const data: BaseCropRecord[] = await getCropRecords(); 
+            const data: BaseCropRecord[] = await getCropRecords();
             // Map the fetched data to the component's internal CropRecord interface
             const mappedData: CropRecord[] = data.map(r => {
                 const images: RecordImage[] = Array.isArray(r.cropImages) ? r.cropImages.filter(img => img.url) : (r.cropImages ? [r.cropImages] : []);
                 return {
                     ...r,
-                    cropImages: images, 
+                    cropImages: images,
                     image: images.length > 0 ? images[0] : null, // Set single image for card thumbnail
                 }
             }) as CropRecord[];
@@ -204,7 +230,7 @@ const CropLivestockRecords: React.FC = () => {
                     image: images.length > 0 ? images[0] : null,
                 }
             }) as LivestockRecord[];
-            
+
             setLivestockRecords(mappedData);
             setError(null);
         } catch (err) {
@@ -214,15 +240,13 @@ const CropLivestockRecords: React.FC = () => {
             setLoading(false);
         }
     };
-    
+
     useEffect(() => {
         if (activeRecordTab === 'Crops') {
             fetchCropData();
         } else {
             fetchLivestockData();
         }
-        // Cleanup function for object URLs isn't strictly necessary here since we only use URLs from fetched records, 
-        // but it's good practice if you were managing File objects here.
     }, [activeRecordTab]);
 
     const currentRecords = activeRecordTab === 'Crops' ? cropRecords : livestockRecords;
@@ -240,19 +264,31 @@ const CropLivestockRecords: React.FC = () => {
         setIsRecordModalOpen(true);
     };
 
-    const handleDelete = async (record: CropRecord | LivestockRecord) => {
+    const handleDeleteClick = (record: CropRecord | LivestockRecord) => {
+        setSelectedRecord(record);
+        setIsConfirmDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedRecord) return;
+        setIsDeleting(true);
+
         try {
             if (activeRecordTab === 'Crops') {
-                await deleteCropRecord(record.id);
+                await deleteCropRecord(selectedRecord.id);
                 fetchCropData();
             } else {
-                await deleteLivestockRecord(record.id);
+                await deleteLivestockRecord(selectedRecord.id);
                 fetchLivestockData();
             }
+            setIsConfirmDeleteOpen(false); // Close the modal on success
         } catch (err) {
             console.error('Failed to delete record:', err);
+        } finally {
+            setIsDeleting(false);
         }
     };
+
 
     const handleUpdate = (record: CropRecord | LivestockRecord) => {
         setSelectedRecord(record);
@@ -319,7 +355,7 @@ const CropLivestockRecords: React.FC = () => {
                         const isCurrentCrop = activeRecordTab === 'Crops';
                         const cropRecord = record as CropRecord;
                         const livestockRecord = record as LivestockRecord;
-                        
+
                         const recordTitle = isCurrentCrop ? cropRecord.cropName : livestockRecord.specie;
                         const recordStatus = isCurrentCrop ? cropRecord.healthStatus : livestockRecord.healthStatus;
                         // Access the 'image' property which is derived during fetch for the card thumbnail
@@ -363,15 +399,23 @@ const CropLivestockRecords: React.FC = () => {
                                     {/* Progress/Details Section */}
                                     {isCurrentCrop ? (
                                         <>
-                                            <div className="mt-4">
-                                                <p className="text-sm text-gray-600 mb-1">Growth: <span className="text-black font-semibold">{cropRecord.currentGrowthStage}</span></p>
-                                                <div className="flex items-center">
-                                                    <div className="w-full h-2 bg-gray-200 rounded-full">
-                                                        <div className="h-2 bg-green-500 rounded-full" style={{ width: `${parseInt(cropRecord.currentGrowthStage.replace('%', '')) || 0}%` }}></div>
+                                            {/* Logic to map the growth stage to percentage */}
+                                            {(() => {
+                                                const growthPercentage = getGrowthPercentageFromStage(cropRecord.currentGrowthStage);
+                                                return (
+                                                    <div className="mt-4">
+                                                        <p className="text-sm text-gray-600 mb-1">Growth: <span className="text-black font-semibold">{cropRecord.currentGrowthStage}</span></p>
+                                                        <div className="flex items-center">
+                                                            <div className="w-full h-2 bg-gray-200 rounded-full">
+                                                                {/* Progress Bar width based on the calculated percentage */}
+                                                                <div className="h-2 bg-green-500 rounded-full" style={{ width: `${growthPercentage}%` }}></div>
+                                                            </div>
+                                                            {/* Percentage text based on the calculated percentage */}
+                                                            <span className="text-gray-800 text-xs ml-2">{growthPercentage}%</span>
+                                                        </div>
                                                     </div>
-                                                    <span className="text-gray-800 text-xs ml-2">{parseInt(cropRecord.currentGrowthStage.replace('%', '')) || 0}%</span>
-                                                </div>
-                                            </div>
+                                                );
+                                            })()}
                                             <div className="mt-4 text-sm text-gray-600">
                                                 <p>Planted: <span className="text-gray-800 font-semibold">{new Date(cropRecord.plantingDate).toLocaleDateString()}</span></p>
                                             </div>
@@ -379,17 +423,19 @@ const CropLivestockRecords: React.FC = () => {
                                     ) : (
                                         <div className="mt-4 text-sm text-gray-600 space-y-2">
                                             <p><b>Age:</b> {livestockRecord.ageGroup}</p>
+                                            {/* ADDED Feed Schedule to Card View */}
+                                            <p><b>Feed Schedule:</b> <span className="text-gray-800 font-semibold">{livestockRecord.feedSchedule || 'N/A'}</span></p>
                                             <p><b>Last Checkup:</b> {new Date(livestockRecord.acquisitionDate).toLocaleDateString()}</p>
                                         </div>
                                     )}
-                                    
+
                                     {/* Actions (Stop propagation to prevent modal from opening on button click) */}
                                     <div className="mt-4 border-t border-gray-200 pt-4 flex justify-between items-center">
                                         <div className="flex space-x-2 md:space-x-4 text-gray-400">
                                             <button onClick={(e) => { e.stopPropagation(); openViewRecordModal(record); }} className="hover:text-green-600" title="View Details">
                                                 <FolderOpen className="h-5 w-5" />
                                             </button>
-                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(record); }} className="hover:text-red-600" title="Delete Record">
+                                            <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(record); }} className="hover:text-red-600" title="Delete Record">
                                                 <Trash2 className="h-5 w-5" />
                                             </button>
                                         </div>
@@ -416,14 +462,14 @@ const CropLivestockRecords: React.FC = () => {
             >
                 <RecordDetails record={selectedRecord} type={activeRecordTab} onClose={() => setIsRecordModalOpen(false)} />
             </Modal>
-            
+
             <Modal show={isAddCropModalOpen} onClose={() => setIsAddCropModalOpen(false)} title="Add New Crop Record">
                 <AddCropForm onClose={() => setIsAddCropModalOpen(false)} onRecordAdded={fetchCropData} />
             </Modal>
             <Modal show={isAddLivestockModalOpen} onClose={() => setIsAddLivestockModalOpen(false)} title="Add New Livestock Record">
                 <AddLivestockForm onClose={() => setIsAddLivestockModalOpen(false)} onRecordAdded={fetchLivestockData} />
             </Modal>
-            
+
             <Modal
                 show={isUpdateModalOpen}
                 onClose={() => setIsUpdateModalOpen(false)}
@@ -438,11 +484,46 @@ const CropLivestockRecords: React.FC = () => {
                 ) : (
                     // FIX: Pass the record as BaseLivestockRecord, as the UpdateForm expects the data structure from the API
                     <UpdateLivestockForm
-                        record={selectedRecord as BaseLivestockRecord} 
+                        record={selectedRecord as BaseLivestockRecord}
                         onClose={() => setIsUpdateModalOpen(false)}
                         onRecordUpdated={fetchLivestockData}
                     />
                 )}
+            </Modal>
+            
+            {/* NEW: Delete Confirmation Modal */}
+            <Modal
+                show={isConfirmDeleteOpen}
+                onClose={() => setIsConfirmDeleteOpen(false)}
+                title="Confirm Deletion"
+            >
+                <div className="p-6">
+                    <h3 className="text-xl font-bold mb-4 text-gray-800">
+                        Are you sure you want to delete this record?
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                        This action cannot be undone. All data associated with this
+                        record will be permanently removed.
+                    </p>
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsConfirmDeleteOpen(false)}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50"
+                            disabled={isDeleting}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleConfirmDelete}
+                            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

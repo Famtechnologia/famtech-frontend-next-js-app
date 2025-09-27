@@ -471,7 +471,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({ record
                 </div>
                 {/* acquisitionDate */}
                 <div>
-                    <label htmlFor="acquisitionDate" className="block text-sm font-medium text-gray-700 mb-1">Acquisition Date<span className="text-red-500">*</span></label>
+                    <label htmlFor="acquisitionDate" className="block text-sm font-medium text-gray-700 mb-1">Last Checkup<span className="text-red-500">*</span></label>
                     <input type="date" id="acquisitionDate" value={formData.acquisitionDate} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-md text-gray-800" />
                 </div>
                 {/* healthStatus */}

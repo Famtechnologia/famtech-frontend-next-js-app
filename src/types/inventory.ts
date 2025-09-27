@@ -1,6 +1,6 @@
 // Base interface with common properties for all inventory items
 export interface InventoryItemBase {
-    id: string; // Unique ID from the database
+    id: string; 
     name: string;
     quantity: number;
     reorderLevel: number;

@@ -8,6 +8,7 @@ import {
   Sprout,
   PawPrint,
   Settings,
+  AlertTriangle,
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 import { getTasks, createTask, updateTask, deleteTask , Task as ApiTask } from '../../lib/services/taskplanner';
@@ -47,6 +48,7 @@ interface TaskFormProps {
   onSave: (e: React.FormEvent) => void;
   onClose: () => void;
   onDelete: () => void;
+  isSaving: boolean; // NEW: Indicates if a save/delete operation is in progress
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
@@ -70,6 +72,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onSave,
   onClose,
   onDelete,
+  isSaving, // Destructured
 }) => {
   return (
     <form onSubmit={onSave} className="space-y-6">
@@ -84,7 +87,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           />
         </div>
         <div>
@@ -95,7 +99,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             id="status"
             value={status}
             onChange={(e) => setStatus(e.target.value as 'Pending' | 'Ongoing' | 'Completed')}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           >
             <option>Pending</option>
             <option>Ongoing</option>
@@ -110,7 +115,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             id="priority"
             value={priority}
             onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High')}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           >
             <option>Low</option>
             <option>Medium</option>
@@ -125,7 +131,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             id="taskType"
             value={taskType}
             onChange={(e) => setTaskType(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           >
             <option value="General task">General task</option>
             <option value="Crop task">Crop task</option>
@@ -142,7 +149,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             value={assignee}
             onChange={(e) => setAssignee(e.target.value)}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           />
         </div>
         <div>
@@ -155,7 +163,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             required
-            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 disabled:bg-gray-50"
           />
         </div>
         <div>
@@ -168,7 +177,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
             value={dueTime}
             onChange={(e) => setDueTime(e.target.value)}
             required
-            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800"
+            disabled={isSaving}
+            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 disabled:bg-gray-50"
           />
         </div>
       </div>
@@ -181,31 +191,38 @@ const TaskForm: React.FC<TaskFormProps> = ({
           rows={4}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md resize-none text-gray-800"
+          disabled={isSaving}
+          className="w-full p-2 border border-gray-300 rounded-md resize-none text-gray-800 disabled:bg-gray-50"
         ></textarea>
       </div>
       <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
         {mode === 'edit' && (
           <button
             type="button"
-            className="px-4 py-2 text-sm font-medium text-red-600 rounded-md border border-gray-300 hover:bg-red-50"
+            className="px-4 py-2 text-sm font-medium text-red-600 rounded-md border border-gray-300 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onDelete}
+            disabled={isSaving}
           >
             Delete Task
           </button>
         )}
         <button
           type="button"
-          className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100"
+          className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={onClose}
+          disabled={isSaving}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
+          className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:bg-green-700 disabled:cursor-not-allowed"
+          disabled={isSaving}
         >
-          {mode === 'new' ? 'Create Task' : 'Save Changes'}
+          {isSaving 
+            ? 'Saving...' 
+            : (mode === 'new' ? 'Create Task' : 'Save Changes')
+          }
         </button>
       </div>
     </form>
@@ -222,6 +239,9 @@ const App: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [modalMode, setModalMode] = useState<'new' | 'edit'>('new');
 
+  // NEW state for the Delete Confirmation modal
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+
   const [formTitle, setFormTitle] = useState('');
   const [formStatus, setFormStatus] = useState<'Pending' | 'Ongoing' | 'Completed'>('Pending');
   const [formPriority, setFormPriority] = useState<'Low' | 'Medium' | 'High'>('Low');
@@ -230,8 +250,8 @@ const App: React.FC = () => {
   const [formTaskType, setFormTaskType] = useState('General task');
   const [formDueDate, setFormDueDate] = useState('');
   const [formDueTime, setFormDueTime] = useState('');
- 
- 
+  
+  
   type ApiTaskWithId = ApiTask & { id: string };
   
 
@@ -243,7 +263,8 @@ const fetchTasks = React.useCallback(async () => {
 
     const mappedTasks: Task[] = data.map((task) => {
       const dateObject = task.timeline?.dueDate ? new Date(task.timeline.dueDate) : null;
-      const formattedDate = dateObject
+      
+      const formattedDateForDisplay = dateObject
         ? dateObject.toLocaleDateString('en-US', {
             day: '2-digit',
             month: '2-digit',
@@ -262,7 +283,7 @@ const fetchTasks = React.useCallback(async () => {
         status: (task.status as 'pending' | 'ongoing' | 'completed') ?? 'pending',
         description: task.note ?? '',
         notes: task.note,
-        dueDate: formattedDate,
+        dueDate: formattedDateForDisplay,
       };
     });
 
@@ -273,17 +294,19 @@ const fetchTasks = React.useCallback(async () => {
   } finally {
     setLoading(false);
   }
-}, []); // or [] if getTasks is stable
+}, []); 
 
 useEffect(() => {
   fetchTasks();
-}, [fetchTasks]); // no more warning
-
-
+}, [fetchTasks]); 
 
 
   const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Convert taskType: "General task" -> "general_task" for the API
+    const taskTypeForApi = formTaskType.toLowerCase();
+
     const taskData = {
       title: formTitle,
       status: formStatus.toLowerCase(),
@@ -293,7 +316,7 @@ useEffect(() => {
         dueTime: formDueTime,
       },
       note: formNotes,
-      taskType: formTaskType.toLowerCase(),
+      taskType: taskTypeForApi, 
       assignee: formAssignee,
       entity_id: 'sample_entity_id',
     };
@@ -315,19 +338,31 @@ useEffect(() => {
     }
   };
 
-  const handleDeleteTask = async () => {
-    if (selectedTask && window.confirm('Are you sure you want to delete this task?')) {
-      setLoading(true);
-      try {
-        await deleteTask(selectedTask.id);
-        setIsModalOpen(false);
-        fetchTasks();
-      } catch (err) {
-        console.error('Failed to delete task:', err);
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
+  // 1. Function to open the confirmation modal (replaces window.confirm)
+  const handleDeleteClick = () => {
+    if (selectedTask) {
+      // Close the main task form modal and open the confirmation modal
+      setIsModalOpen(false);
+      setIsConfirmDeleteOpen(true);
+    }
+  };
+
+  // 2. Function to execute the actual deletion
+  const handleConfirmDelete = async () => {
+    if (!selectedTask) return;
+
+    // Close the confirmation modal
+    setIsConfirmDeleteOpen(false); 
+
+    setLoading(true);
+    try {
+      await deleteTask(selectedTask.id);
+      fetchTasks();
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+      setError(err as Error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -345,15 +380,22 @@ useEffect(() => {
     setIsModalOpen(true);
   };
 
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return '';
+  // Helper to convert DD-MM-YYYY to YYYY-MM-DD for date input
+  const convertDateToInputFormat = (dateString: string): string => {
+    if (!dateString || dateString === 'N/A') return '';
+    // Assuming dateString is "DD-MM-YYYY" from the fetchTasks mapping
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+    }
+    // Simple check for already formatted dates
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${day}-${month}-${year}`;
-};
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+    return '';
+  };
+
   const openEditTaskModal = (task: Task) => {
     setSelectedTask(task);
     setModalMode('edit');
@@ -363,7 +405,7 @@ useEffect(() => {
     setFormAssignee(task.user);
     setFormNotes(task.notes || '');
     setFormTaskType(task.type);
-     setFormDueDate(formatDate(task.dueDate || '')); 
+    setFormDueDate(convertDateToInputFormat(task.dueDate || '')); 
     setFormDueTime(task.time || '');
     setIsModalOpen(true);
   };
@@ -376,7 +418,10 @@ useEffect(() => {
 
   const filteredTasks = tasks.filter((task) => {
     const now = new Date();
-    const due = task.dueDate ? new Date(task.dueDate) : null;
+    // Reformat for filtering since task.dueDate is DD-MM-YYYY format
+    const dueParts = task.dueDate?.split('-') || [];
+    const due = dueParts.length === 3 ? new Date(`${dueParts[2]}-${dueParts[1]}-${dueParts[0]}`) : null;
+
 
     let matchesFilter = false;
 
@@ -385,13 +430,13 @@ useEffect(() => {
     } else if (activeFilter === 'Completed') {
       matchesFilter = task.completed;
     } else if (activeFilter === 'This Week') {
-      if (due) {
+      if (due && !isNaN(due.getTime())) {
         const weekFromNow = new Date();
         weekFromNow.setDate(now.getDate() + 7);
         matchesFilter = due >= now && due <= weekFromNow;
       }
     } else if (activeFilter === 'Overdue') {
-      if (due) {
+      if (due && !isNaN(due.getTime())) {
         matchesFilter = due < now && !task.completed;
       }
     } else {
@@ -405,7 +450,7 @@ useEffect(() => {
     return matchesFilter && matchesSearch;
   });
 
-   
+    
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -514,7 +559,7 @@ useEffect(() => {
                 <h3 className="text-2xl font-semibold text-gray-500 uppercase">
                   {getTaskTypeLabel(activeFilter)} ({filteredTasks.length})
                 </h3>
-                <div className="space-y-1 bg-white shadow-xl  rounded-xl overflow-hidden divide-y-t divide-gray-200">
+                <div className="space-y-1 bg-white shadow-xl  rounded-xl overflow-hidden divide-y-t divide-gray-200">
                   {filteredTasks.map((task) => (
                     <div
                       key={task.id}
@@ -522,7 +567,7 @@ useEffect(() => {
                       onClick={() => openEditTaskModal(task)}
                     >
                       <div className="flex items-start space-x-3">
-                        <CheckCircle className={`h-10 w-10 md:h-5 md:w-5  ${task.completed ? 'text-green-600' : 'text-gray-400'}`} />
+                        <CheckCircle className={`h-10 w-10 md:h-5 md:w-5  ${task.completed ? 'text-green-600' : 'text-gray-400'}`} />
 
                         <div className="space-y-3">
                           <p className="text-xl font-semibold text-gray-800">{task.name}</p>
@@ -555,6 +600,10 @@ useEffect(() => {
         </div>
       </div>
 
+      {/* ========================================
+        1. MAIN TASK FORM MODAL (Edit/New)
+        ========================================
+      */}
       <Modal
         show={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -580,8 +629,51 @@ useEffect(() => {
           setNotes={setFormNotes}
           onSave={handleSaveTask}
           onClose={() => setIsModalOpen(false)}
-          onDelete={handleDeleteTask}
+          onDelete={handleDeleteClick} // Triggers the Confirmation Modal
+          isSaving={loading} // Pass loading state to disable buttons
         />
+      </Modal>
+
+      {/* ========================================
+        2. DELETE CONFIRMATION MODAL
+        ========================================
+      */}
+      <Modal
+        show={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        title="Confirm Deletion"
+      >
+        <div className="p-6">
+          <div className="flex items-center space-x-4 mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-500" />
+            <h3 className="text-xl font-semibold text-gray-800">
+              Permanently Delete Task
+            </h3>
+          </div>
+          <p className="text-gray-600 mb-6">
+            Are you absolutely sure you want to delete the task: 
+            <span className="font-bold text-red-600"> "{selectedTask?.name}"</span>? 
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => setIsConfirmDeleteOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete} // Executes the actual API call
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? 'Deleting...' : 'Yes, Delete It'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
