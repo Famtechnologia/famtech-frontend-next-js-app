@@ -652,7 +652,7 @@ useEffect(() => {
           </div>
           <p className="text-gray-600 mb-6">
             Are you absolutely sure you want to delete the task: 
-            <span className="font-bold text-red-600"> &34;{selectedTask?.name}&34;</span>? 
+            <span className="font-bold text-red-600"> {selectedTask?.name}</span>? 
             This action cannot be undone.
           </p>
           <div className="flex justify-end space-x-3">

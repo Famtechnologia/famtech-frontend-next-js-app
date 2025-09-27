@@ -17,14 +17,7 @@ interface SignupFormInputs {
   language: string;
 }
 
-// Regular Expression for the new strong password validation:
-// ^                 # start of the string
-// (?=.*[a-z])       # lookahead: at least one lowercase letter
-// (?=.*[A-Z])       # lookahead: at least one uppercase letter
-// (?=.*\d)          # lookahead: at least one digit
-// (?=.*[!@#$%^&*])  # lookahead: at least one special character
-// .{8,}             # at least 8 characters total of any kind
-// $                 # end of the string
+
 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
 export default function SignupPage() {
