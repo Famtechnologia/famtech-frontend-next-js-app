@@ -146,7 +146,7 @@ export default function VerifyEmailPage() {
   const goToDashboard = () => {
     // Clear any pending verification flags
     localStorage.removeItem("pendingEmailVerification");
-    window.location.href = "/dashboard";
+    window.location.href = "/";
   };
 
   const openEmailApp = () => {
