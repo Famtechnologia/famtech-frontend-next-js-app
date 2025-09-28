@@ -142,19 +142,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     expandable: false,
                 },
                 {
-    name: 'Farm Operations',
-    icon: Tractor,
-    key: 'farm-operations',
-    expandable: true,
-    children: [
-        // Use query parameters to designate the active tab view
-        { name: 'Task Planner', href: `/farm-operation?tab=planner` }, // Simplified for the root page
-        { name: 'Crop and Livestock Records', href: `/farm-operation?tab=records` },
-        { name: 'Calendar View', href: `/farm-operation?tab=calendar` },
-        { name: 'Inventory Management', href: `/farm-operation?tab=inventory` },
-        // ... any others ...
-    ],
-},
+                    name: 'Farm Operations',
+                    icon: Tractor,
+                    key: 'farm-operations',
+                    expandable: true,
+                    // ⭐ ADDED: Mark Farm Operations as coming soon
+                    comingSoon: true, 
+                    children: [
+                        // Use query parameters to designate the active tab view
+                        { name: 'Task Planner', href: `/farm-operation?tab=planner` }, // Simplified for the root page
+                        { name: 'Crop and Livestock Records', href: `/farm-operation?tab=records` },
+                        { name: 'Calendar View', href: `/farm-operation?tab=calendar` },
+                        { name: 'Inventory Management', href: `/farm-operation?tab=inventory` },
+                        // ... any others ...
+                    ],
+                },
                 {
                     name: 'AI Insights',
                     icon: Brain,
@@ -350,7 +352,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                         <div 
                                             // Handle mouse events for flyout when collapsed
                                             onMouseEnter={sidebarCollapsed ? () => setHoveredMenuKey(item.key) : undefined}
-                                            onClick={sidebarCollapsed ? () => toggleMenu(item.key) : undefined}
+                                            onClick={
+                                                sidebarCollapsed
+                                                ? item.comingSoon // ⭐ UPDATED: Check comingSoon on collapsed parent click
+                                                    ? () => setShowComingSoon(true)
+                                                    : () => toggleMenu(item.key) 
+                                                : undefined
+                                            }
                                         >
                                             <button
                                                 onClick={
@@ -432,6 +440,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                     ) : (
                                         <Link
                                             href={item.comingSoon ? '#' : item.href || '#'}
+                                            onMouseEnter={sidebarCollapsed && item.expandable ? () => setHoveredMenuKey(item.key) : undefined}
                                             onClick={(e) => {
                                                 if (item.comingSoon || item.href === '#') {
                                                     e.preventDefault();

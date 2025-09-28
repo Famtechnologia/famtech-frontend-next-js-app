@@ -12,6 +12,7 @@ export interface ToolData {
 }
 
 export interface EquipmentPartData {
+    model: EquipmentPartData | undefined;
     partNumber?: string;
     manufacturer?: string;
     warrantyExpiry?: string;

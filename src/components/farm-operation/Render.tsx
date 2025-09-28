@@ -2,10 +2,12 @@ import React from 'react';
 // Assuming these are imported from your type file
 import { UnifiedInventoryItem, ToolData, EquipmentPartData } from '@/types/inventory'; 
 
+// --- TYPE DEFINITIONS ---
 
+// This type covers both the creation form data (no id) and the update form data (with id)
 type InventoryFormData = Omit<UnifiedInventoryItem, 'id' | 'timestamp' | 'userId'> | UnifiedInventoryItem;
 
-
+// Define props for the InputField helper
 interface InputFieldProps {
     label: string;
     name: string;
@@ -42,22 +44,13 @@ const InputField: React.FC<InputFieldProps> = ({ label, name, type = 'text', val
 
 
 // --- 1. Fields common to Seeds, Feed, and Fertilizer (Consumables) ---
+// NOTE: ReorderLevel has been MOVED OUT of this component.
 const ConsumableFields = ({ data, handleChange }: { 
     data: InventoryFormData, 
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void 
 }) => {
     return (
         <>
-            {/* Reorder Level (Applies ONLY to Seeds, Feed, Fertilizer per backend spec) */}
-            <InputField
-                label="Reorder Level"
-                name="reorderLevel"
-                type="number"
-                value={data.reorderLevel}
-                onChange={handleChange}
-                placeholder="e.g., 50 (when to re-order)"
-            />
-            
             {/* Usage Rate (Seeds/Fertilizer/Feed) */}
             <InputField
                 label="Usage Rate (Optional)"
@@ -98,7 +91,7 @@ const ToolSpecificFields = ({ toolData, handleChange }: {
             <InputField label="Last Serviced Date" name="toolData.lastServiced" type="date" value={toolData.lastServiced} onChange={handleChange} />
             <InputField label="Warranty Expiry Date" name="toolData.warrantyExpiry" type="date" value={toolData.warrantyExpiry} onChange={handleChange} />
             
-            {/* Price Field - CHANGED TO type="text" */}
+            {/* Price Field (text for currency input) */}
             <InputField 
                 label="Purchase Price" 
                 name="toolData.price" 
@@ -124,7 +117,7 @@ const EquipmentPartSpecificFields = ({ equipmentPartData, handleChange }: {
             <InputField label="Manufacturer" name="equipmentPartData.manufacturer" value={equipmentPartData.manufacturer} onChange={handleChange} />
             <InputField label="Condition" name="equipmentPartData.condition" value={equipmentPartData.condition} onChange={handleChange} placeholder="e.g., New, Used, Refurbished"/>
             
-            {/* Price Field - CHANGED TO type="text" */}
+            {/* Price Field (text for currency input) */}
             <InputField 
                 label="Unit Price" 
                 name="equipmentPartData.price" 
@@ -165,12 +158,22 @@ export const renderFormFields = (
 
             <InputField label="Item Name" name="name" value={data.name} onChange={handleChange} required placeholder="e.g., High-Yield Maize, Shovel" />
             <InputField label={quantityLabel} name="quantity" type="number" value={data.quantity} onChange={handleChange} required placeholder="e.g., 250" />
+            
+            {/* REORDER LEVEL MOVED HERE to be a Common Field for ALL Categories */}
+            <InputField
+                label="Reorder Level"
+                name="reorderLevel"
+                type="number"
+                value={data.reorderLevel}
+                onChange={handleChange}
+                placeholder="e.g., 50 (when to re-order)"
+            />
 
             {/* ---------------------------------- */}
             {/* --- 2. Conditional Fields based on Category --- */}
             {/* ---------------------------------- */}
 
-            {/* ** A. Consumable Fields (ReorderLevel, UsageRate, ExpireDate) ** */}
+            {/* ** A. Consumable Fields (UsageRate, ExpireDate) ** */}
             {isConsumable && <ConsumableFields data={data} handleChange={handleChange} />}
             
             {/* ** B. Fertilizer Specific Fields (N-P-K and Type) ** */}
