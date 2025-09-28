@@ -1,162 +1,213 @@
-import React from 'react'
-import { SeedItem, FeedItem, FertilizerItem, ToolItem, EquipmentPartItem, } from '@/types/inventory';
- type NewInventoryItemData =
-  | (Omit<SeedItem, 'id' | 'timestamp'> & { category: 'seeds' })
-  | (Omit<FeedItem, 'id' | 'timestamp'> & { category: 'feed' })
-  | (Omit<FertilizerItem, 'id' | 'timestamp'> & { category: 'fertilizer' })
-  | (Omit<ToolItem, 'id' | 'timestamp'> & { category: 'tools' })
-  | (Omit<EquipmentPartItem, 'id' | 'timestamp'> & { category: 'equipment parts' });
+import React from 'react';
+// Assuming these are imported from your type file
+import { UnifiedInventoryItem, ToolData, EquipmentPartData } from '@/types/inventory'; 
 
 
+type InventoryFormData = Omit<UnifiedInventoryItem, 'id' | 'timestamp' | 'userId'> | UnifiedInventoryItem;
 
 
+interface InputFieldProps {
+    label: string;
+    name: string;
+    type?: string;
+    value: any;
+    placeholder?: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    required?: boolean;
+}
+
+// Helper component for a generic text/number/date input
+const InputField: React.FC<InputFieldProps> = ({ label, name, type = 'text', value, placeholder, onChange, required = false }) => {
+    // If the value is a date, strip the timestamp part for the input field
+    const displayValue = type === 'date' && typeof value === 'string' ? value.split('T')[0] : value ?? '';
+
+    return (
+        <div>
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+                {label} {required && <span className="text-red-500">*</span>}
+            </label>
+            <input
+                type={type}
+                name={name}
+                id={name}
+                value={displayValue}
+                onChange={onChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+                required={required}
+                placeholder={placeholder}
+            />
+        </div>
+    );
+};
 
 
-const renderFormFields = (
-  data: NewInventoryItemData,
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+// --- 1. Fields common to Seeds, Feed, and Fertilizer (Consumables) ---
+const ConsumableFields = ({ data, handleChange }: { 
+    data: InventoryFormData, 
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void 
+}) => {
+    return (
+        <>
+            {/* Reorder Level (Applies ONLY to Seeds, Feed, Fertilizer per backend spec) */}
+            <InputField
+                label="Reorder Level"
+                name="reorderLevel"
+                type="number"
+                value={data.reorderLevel}
+                onChange={handleChange}
+                placeholder="e.g., 50 (when to re-order)"
+            />
+            
+            {/* Usage Rate (Seeds/Fertilizer/Feed) */}
+            <InputField
+                label="Usage Rate (Optional)"
+                name="usageRate"
+                type="text"
+                value={data.usageRate}
+                onChange={handleChange}
+                placeholder="e.g., 10 kg/week or 5 L/acre"
+            />
+
+            {/* Expiry Date (Seeds/Fertilizer/Feed) */}
+            <InputField
+                label="Expiry Date"
+                name="expireDate"
+                type="date"
+                value={data.expireDate}
+                onChange={handleChange}
+            />
+        </>
+    );
+};
+
+// --- 2. Fields specific to Tools ---
+const ToolSpecificFields = ({ toolData, handleChange }: { 
+    toolData: ToolData, 
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void 
+}) => {
+    return (
+        <div className="border-t pt-4 mt-4 border-gray-200 space-y-3">
+            <h3 className="text-md font-semibold mb-2">Tool Details</h3>
+            
+            <InputField label="Tool Type" name="toolData.toolType" value={toolData.toolType} onChange={handleChange} placeholder="e.g., Handheld, Motorized"/>
+            <InputField label="Brand" name="toolData.brand" value={toolData.brand} onChange={handleChange} />
+            <InputField label="Model" name="toolData.model" value={toolData.model} onChange={handleChange} />
+            <InputField label="Condition" name="toolData.condition" value={toolData.condition} onChange={handleChange} placeholder="e.g., Good, Fair, Needs Repair"/>
+            
+            {/* Date Fields */}
+            <InputField label="Last Serviced Date" name="toolData.lastServiced" type="date" value={toolData.lastServiced} onChange={handleChange} />
+            <InputField label="Warranty Expiry Date" name="toolData.warrantyExpiry" type="date" value={toolData.warrantyExpiry} onChange={handleChange} />
+            
+            {/* Price Field - CHANGED TO type="text" */}
+            <InputField 
+                label="Purchase Price" 
+                name="toolData.price" 
+                type="text" 
+                value={toolData.price} 
+                onChange={handleChange} 
+                placeholder="e.g., $150.00 or KSh 2,500" 
+            />
+        </div>
+    );
+};
+
+// --- 3. Fields specific to Equipment Parts ---
+const EquipmentPartSpecificFields = ({ equipmentPartData, handleChange }: { 
+    equipmentPartData: EquipmentPartData, 
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void 
+}) => {
+    return (
+        <div className="border-t pt-4 mt-4 border-gray-200 space-y-3">
+            <h3 className="text-md font-semibold mb-2">Equipment Part Details</h3>
+            
+            <InputField label="Part Number" name="equipmentPartData.partNumber" value={equipmentPartData.partNumber} onChange={handleChange} placeholder="e.g., 7789-A" />
+            <InputField label="Manufacturer" name="equipmentPartData.manufacturer" value={equipmentPartData.manufacturer} onChange={handleChange} />
+            <InputField label="Condition" name="equipmentPartData.condition" value={equipmentPartData.condition} onChange={handleChange} placeholder="e.g., New, Used, Refurbished"/>
+            
+            {/* Price Field - CHANGED TO type="text" */}
+            <InputField 
+                label="Unit Price" 
+                name="equipmentPartData.price" 
+                type="text" 
+                value={equipmentPartData.price} 
+                onChange={handleChange} 
+                placeholder="e.g., $450.00 or KSh 9,000" 
+            />
+            
+            {/* Date Field */}
+            <InputField label="Warranty Expiry Date" name="equipmentPartData.warrantyExpiry" type="date" value={equipmentPartData.warrantyExpiry} onChange={handleChange} />
+        </div>
+    );
+};
+
+// --- Main Render Function ---
+
+export const renderFormFields = (
+    data: InventoryFormData,
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
 ) => {
-  switch (data.category)  {
-            case 'seeds':
-                const seedData = data as Omit<SeedItem, '_id' | 'timestamp'>;
-                return (
-                    <>
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Seed Name</label>
-                            <input type="text" id="name" name="name" required value={seedData.name} onChange={handleChange} className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., Maize Seeds" />
-                        </div>
-                        <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity (kg)</label>
-                            <input type="number" id="quantity" name="quantity" required value={seedData.quantity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 250" />
-                        </div>
-                        <div>
-                            <label htmlFor="reorderLevel" className="block text-sm font-medium text-gray-700">Reorder Level (kg)</label>
-                            <input type="number" id="reorderLevel" name="reorderLevel" required value={seedData.reorderLevel} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 50" />
-                        </div>
-                        <div>
-                            <label htmlFor="usageRate" className="block text-sm font-medium text-gray-700">Usage Rate (kg/week)</label>
-                            <input type="text" id="usageRate" name="usageRate" value={seedData.usageRate || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 10" />
-                        </div>
-                        <div>
-                            <label htmlFor="expireDate" className="block text-sm font-medium text-gray-700">Expiry Date</label>
-                            <input type="date" id="expireDate" name="expireDate" value={seedData.expireDate || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" />
-                        </div>
-                    </>
-                );
-            case 'feed':
-                const feedData = data as Omit<FeedItem, '_id' | 'timestamp'>;
-                return (
-                    <>
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Feed Name</label>
-                            <input type="text" id="name" name="name" required value={feedData.name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., Alfalfa Hay" />
-                        </div>
-                        <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity (Bags)</label>
-                            <input type="number" id="quantity" name="quantity" required value={feedData.quantity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 50" />
-                        </div>
-                        <div>
-                            <label htmlFor="reorderLevel" className="block text-sm font-medium text-gray-700">Reorder Level (Bags)</label>
-                            <input type="number" id="reorderLevel" name="reorderLevel" required value={feedData.reorderLevel} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 10" />
-                        </div>
-                        <div>
-                            <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
-                            <select id="type" name="type" value={feedData.type} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
-                                <option value="Concentrate">Concentrate</option>
-                                <option value="Hay">Hay</option>
-                                <option value="Silage">Silage</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="expireDate" className="block text-sm font-medium text-gray-700">Expiry Date</label>
-                            <input type="date" id="expireDate" name="expireDate" value={feedData.expireDate || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" />
-                        </div>
-                    </>
-                );
-            case 'fertilizer':
-                const fertData = data as Omit<FertilizerItem, '_id' | 'timestamp'>;
-                return (
-                    <>
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Fertilizer Name</label>
-                            <input type="text" id="name" name="name" required value={fertData.name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 10-10-10" />
-                        </div>
-                        <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity (Bags)</label>
-                            <input type="number" id="quantity" name="quantity" required value={fertData.quantity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 20" />
-                        </div>
-                        <div>
-                            <label htmlFor="reorderLevel" className="block text-sm font-medium text-gray-700">Reorder Level (Bags)</label>
-                            <input type="number" id="reorderLevel" name="reorderLevel" required value={fertData.reorderLevel} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 5" />
-                        </div>
-                        <div>
-                            <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
-                            <select id="type" name="type" value={fertData.type} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
-                                <option value="Liquid">Liquid</option>
-                                <option value="Granular">Granular</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="n" className="block text-sm font-medium text-gray-700">Nitrogen (N %)</label>
-                            <input type="number" id="n" name="n" value={fertData.n || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 10" />
-                        </div>
-                        <div>
-                            <label htmlFor="p" className="block text-sm font-medium text-gray-700">Phosphorus (P %)</label>
-                            <input type="number" id="p" name="p" value={fertData.p || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 10" />
-                        </div>
-                        <div>
-                            <label htmlFor="k" className="block text-sm font-medium text-gray-700">Potassium (K %)</label>
-                            <input type="number" id="k" name="k" value={fertData.k || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 10" />
-                        </div>
-                        <div>
-                            <label htmlFor="expireDate" className="block text-sm font-medium text-gray-700">Expiry Date</label>
-                            <input type="date" id="expireDate" name="expireDate" value={fertData.expireDate || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" />
-                        </div>
-                    </>
-                );
-            case 'tools':
-                const toolData = data as Omit<ToolItem, ''>; // Cast for correct type inference
-                return (
-                    <>
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Tool Name</label>
-                            <input type="text" id="name" name="name" required value={toolData.name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., Shovel" />
-                        </div>
-                        <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity (Units)</label>
-                            <input type="number" id="quantity" name="quantity" required value={toolData.quantity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 5" />
-                        </div>
-                        <div>
-                            <label htmlFor="reorderLevel" className="block text-sm font-medium text-gray-700">Reorder Level (Units)</label>
-                            <input type="number" id="reorderLevel" name="reorderLevel" required value={toolData.reorderLevel} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 1" />
-                        </div>
-                    </>
-                );
-            case 'equipment parts':
-                const equipmentPartData = data as Omit<EquipmentPartItem, ''>; // Cast for correct type inference
-                return (
-                    <>
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Part Name</label>
-                            <input type="text" id="name" name="name" required value={equipmentPartData.name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., Tractor Oil Filter" />
-                        </div>
-                        <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Quantity (Units)</label>
-                            <input type="number" id="quantity" name="quantity" required value={equipmentPartData.quantity} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 3" />
-                        </div>
-                        <div>
-                            <label htmlFor="reorderLevel" className="block text-sm font-medium text-gray-700">Reorder Level (Units)</label>
-                            <input type="number" id="reorderLevel" name="reorderLevel" required value={equipmentPartData.reorderLevel} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., 1" />
-                        </div>
-                        <div>
-                            <label htmlFor="model" className="block text-sm font-medium text-gray-700">Model</label>
-                            <input type="text" id="model" name="model" required value={equipmentPartData.model} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g., John Deere 404" />
-                        </div>
-                    </>
-                );
-            default:
-                return null;
-        }
-    };
+    
+    // Determine if the current category is a consumable that uses the common fields
+    const isConsumable = ['seeds', 'feed', 'fertilizer'].includes(data.category);
+    
+    // Determine the field label for quantity based on category
+    const quantityLabel = 
+        data.category === 'seeds' ? 'Quantity (kg/units)' :
+        data.category === 'feed' ? 'Quantity (Bags/Units)' :
+        data.category === 'fertilizer' ? 'Quantity (Bags/Liters)' :
+        'Quantity (Units)';
 
-export default renderFormFields
+    return (
+        <div className="space-y-4">
+            {/* ---------------------------------- */}
+            {/* --- 1. Common Fields for ALL Categories --- */}
+            {/* ---------------------------------- */}
+
+            <InputField label="Item Name" name="name" value={data.name} onChange={handleChange} required placeholder="e.g., High-Yield Maize, Shovel" />
+            <InputField label={quantityLabel} name="quantity" type="number" value={data.quantity} onChange={handleChange} required placeholder="e.g., 250" />
+
+            {/* ---------------------------------- */}
+            {/* --- 2. Conditional Fields based on Category --- */}
+            {/* ---------------------------------- */}
+
+            {/* ** A. Consumable Fields (ReorderLevel, UsageRate, ExpireDate) ** */}
+            {isConsumable && <ConsumableFields data={data} handleChange={handleChange} />}
+            
+            {/* ** B. Fertilizer Specific Fields (N-P-K and Type) ** */}
+            {data.category === 'fertilizer' && (
+                <>
+                    <InputField label="Fertilizer Type" name="type" value={data.type} onChange={handleChange} placeholder="e.g., Liquid, Granular" />
+                    <div className="grid grid-cols-3 gap-3">
+                        {/* N-P-K inputs */}
+                        {['n', 'p', 'k'].map(key => (
+                            <InputField key={key} label={`${key.toUpperCase()} %`} name={key} type="number" value={data[key as 'n' | 'p' | 'k']} onChange={handleChange} placeholder="e.g., 10" />
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* ** C. Feed Type Select ** */}
+            {data.category === 'feed' && (
+                <InputField label="Feed Type" name="type" value={data.type} onChange={handleChange} placeholder="e.g., Concentrate, Hay" />
+            )}
+
+            {/* ** D. Tool Specific Nested Fields ** */}
+            {data.category === 'tools' && data.toolData && (
+                <ToolSpecificFields 
+                    toolData={data.toolData} 
+                    handleChange={handleChange} 
+                />
+            )}
+
+            {/* ** E. Equipment Part Specific Nested Fields ** */}
+            {data.category === 'equipment parts' && data.equipmentPartData && (
+                <EquipmentPartSpecificFields 
+                    equipmentPartData={data.equipmentPartData} 
+                    handleChange={handleChange} 
+                />
+            )}
+        </div>
+    );
+};
+
+export default renderFormFields;

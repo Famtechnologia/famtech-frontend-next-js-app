@@ -63,7 +63,7 @@ const Login: React.FC = () => {
       }
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Login failed";
+        error instanceof Error ? error.message : "Oops looks like your connection dropped, kindly refresh";
       toast.error(errorMessage);
       setCheckingProfile(false);
     } finally {
@@ -124,7 +124,7 @@ const Login: React.FC = () => {
           </div>
 
           <a
-            href="/onboarding/forgot-password"
+            href="/forgot-password"
             className="self-end text-red-400 block text-right"
           >
             Forgot Password?

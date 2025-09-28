@@ -2,36 +2,50 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Leaf, Heart, FileText, HardHat, Grid, X, TriangleAlert, CheckCircle, ListFilter, LayoutGrid, LayoutList, Download } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Card from '@/components/ui/Card';
-import { InventoryItem, SeedItem, FeedItem, FertilizerItem, ToolItem, EquipmentPartItem, } from '@/types/inventory';
+
+// Use UnifiedInventoryItem for all inventory data
+import { UnifiedInventoryItem, ToolData, EquipmentPartData } from '@/types/inventory';
 import { getInventoryItems, createInventoryItem, deleteInventoryItem, updateInventoryItem } from '@/lib/services/inventory';
-import renderFormFields from './Render';
-// Create a union type for all possible new item data, excluding generated fields
-
-type NewInventoryItemData =
-  | (Omit<SeedItem, 'id' | 'timestamp'> & { category: 'seeds' })
-  | (Omit<FeedItem, 'id' | 'timestamp'> & { category: 'feed' })
-  | (Omit<FertilizerItem, 'id' | 'timestamp'> & { category: 'fertilizer' })
-  | (Omit<ToolItem, 'id' | 'timestamp'> & { category: 'tools' })
-  | (Omit<EquipmentPartItem, 'id' | 'timestamp'> & { category: 'equipment parts' });
+import { renderFormFields } from './Render'; 
 
 
+// --- NEW TYPE DEFINITIONS FOR STATE ---
 
-// Create a union type for all possible updated item data, including generated fields
-type UpdateInventoryItemData =
-    SeedItem | FeedItem | FertilizerItem | ToolItem | EquipmentPartItem;
+// The structure for new item data (excluding generated fields like id, timestamp, userId)
+type NewInventoryItemData = Omit<UnifiedInventoryItem, 'id' | 'timestamp' | 'userId'>;
+
+// The structure for update data (must include 'id')
+type UpdateInventoryItemData = UnifiedInventoryItem;
+
+// Base type for form state used in the generic input handler
+type BaseFormData = NewInventoryItemData | UpdateInventoryItemData;
+
+// Helper type for safely updating state (allowing nested access)
+type FormValue = string | number | null | undefined;
+type FormDataType = Record<string, FormValue | ToolData | EquipmentPartData | undefined>;
+
 
 const InventoryManagement: React.FC = () => {
     const [activeInventoryTab, setActiveInventoryTab] = useState<string>('seeds');
     const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
     const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
-    const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+    
+    // Using UnifiedInventoryItem everywhere inventory is stored
+    const [inventoryItems, setInventoryItems] = useState<UnifiedInventoryItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-   const [formData, setFormData] = useState<NewInventoryItemData>(
-  // your initial state, e.g.:
-  { category: 'seeds', name: '', quantity: 0, reorderLevel: 0 } as NewInventoryItemData
-);
+    
+    // Initial state set to the structure of NewInventoryItemData
+    const [formData, setFormData] = useState<NewInventoryItemData>({
+        category: 'seeds',
+        name: '',
+        quantity: 0,
+        reorderLevel: 0,
+        toolData: {},
+        equipmentPartData: {},
+    } as NewInventoryItemData); 
+
     const [updateFormData, setUpdateFormData] = useState<UpdateInventoryItemData | null>(null);
 
     useEffect(() => {
@@ -42,7 +56,8 @@ const InventoryManagement: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const items = await getInventoryItems();
+            // Assuming getInventoryItems now returns UnifiedInventoryItem[]
+            const items = await getInventoryItems(); 
             setInventoryItems(items);
         } catch (err) {
             setError('Failed to fetch inventory items');
@@ -52,115 +67,118 @@ const InventoryManagement: React.FC = () => {
         }
     };
 
+    // --- LOGIC FOR SEARCH AND DISPLAY ---
+
     const getItemsToDisplay = useMemo(() => {
         let filteredItems = inventoryItems.filter(item => item.category === activeInventoryTab);
 
         if (searchTerm) {
+            const term = searchTerm.toLowerCase();
             filteredItems = filteredItems.filter(item => {
-                // Handle nested `toolData` and `equipmentPartData` for search
-                if ('tool' in item) {
-                    return item.name.toLowerCase().includes(searchTerm.toLowerCase());
+                // Search top-level name
+                if (item.name.toLowerCase().includes(term)) return true;
+
+                // Search toolData fields
+                if (item.category === 'tools' && item.toolData) {
+                    return Object.values(item.toolData).some(val => 
+                        typeof val === 'string' && val.toLowerCase().includes(term));
                 }
-                if ('equipmentPart' in item) {
-                    return item.name.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                // Search equipmentPartData fields
+                if (item.category === 'equipment parts' && item.equipmentPartData) {
+                    return Object.values(item.equipmentPartData).some(val => 
+                        typeof val === 'string' && val.toLowerCase().includes(term));
                 }
-                // For other items, search the top-level 'name' property
-                return item.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+                return false;
             });
         }
 
         return filteredItems;
     }, [inventoryItems, activeInventoryTab, searchTerm]);
 
+    // --- HANDLERS ---
+
     const handleTabChange = (category: string) => {
         setActiveInventoryTab(category);
         setFormData({
-            category: category,
+            category: category as NewInventoryItemData['category'],
             name: '',
             quantity: 0,
             reorderLevel: 0,
+            toolData: {},
+            equipmentPartData: {},
         } as NewInventoryItemData);
     };
-type FormDataType = Record<string, string | number | null | undefined>;
-   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => {
-        // Use FormDataType for the local variable to allow dynamic assignment
-        const newFormData: FormDataType = { ...prev, [name]: value };
-        
-        // Use a type guard for the keys that should be numbers
-        if (name === 'quantity' || name === 'reorderLevel' || name === 'n' || name === 'p' || name === 'k') {
-            newFormData[name] = Number(value);
+
+    /**
+     * Creates a generic input handler that works for both formData (NewInventoryItemData)
+     * and updateFormData (UnifiedInventoryItem).
+     */
+    const createInputHandler = <T extends BaseFormData>(
+        targetFormData: React.Dispatch<React.SetStateAction<T | null>>
+    ) => {
+        return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+            const { name, value } = e.target;
+            
+            targetFormData(prev => {
+                if (!prev) return null;
+
+                // Create a mutable copy of the previous state
+                const newFormData: FormDataType = { ...prev };
+                
+                // Handle nested field updates (e.g., "toolData.brand")
+                if (name.includes('.')) {
+                    const [parentKey, childKey] = name.split('.');
+                    
+                    // Safely access and clone the nested object
+                    const parentObject = newFormData[parentKey] as FormDataType;
+
+                    if (typeof parentObject === 'object' && parentObject !== null) {
+                        const isNumeric = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'price'].includes(childKey);
+                        
+                        // Update the nested object property
+                        parentObject[childKey] = isNumeric ? Number(value) : value;
+
+                        // Reassign the spread object back to the parent key for immutability
+                        (newFormData[parentKey] as any) = { ...parentObject }; 
+                    }
+                } 
+                // Handle top-level field updates (e.g., "name", "quantity")
+                else {
+                    const isNumeric = ['quantity', 'reorderLevel', 'n', 'p', 'k'].includes(name);
+                    (newFormData[name as keyof T] as FormValue) = isNumeric ? Number(value) : value;
+                }
+                
+                // Return the updated state, asserted back to the generic type T
+                return newFormData as T; 
+            });
+        };
+    };
+
+    const handleInputChange = createInputHandler(setFormData);
+    const handleUpdateInputChange = createInputHandler(setUpdateFormData);
+
+
+    const handleCreateItem = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            // formData already holds the correct structure (Omit<UnifiedInventoryItem, id|timestamp|userId>)
+            const payload: NewInventoryItemData = formData; 
+
+            const newItem = await createInventoryItem(payload);
+            setInventoryItems((prev) => [...prev, newItem]);
+            setShowAddItemModal(false);
+        } catch (err) {
+            console.error("Failed to add item:", err);
         }
-        
-        // Assert the final result back to the expected specific type
-        return newFormData as NewInventoryItemData;
-    });
-};
-
-const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setUpdateFormData(prev => {
-        if (!prev) return null;
-        
-        // Use FormDataType for the local variable to allow dynamic assignment
-        const newFormData: FormDataType = { ...prev, [name]: value };
-        
-        // Use a type guard for the keys that should be numbers
-        if (name === 'quantity' || name === 'reorderLevel' || name === 'n' || name === 'p' || name === 'k') {
-            newFormData[name] = Number(value);
-        }
-        
-        // Assert the final result back to the expected specific type
-        return newFormData as unknown as UpdateInventoryItemData;
-    });
-};
-   const handleCreateItem = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    // payload without id, since backend generates it
-    let payload: Omit<InventoryItem, "id">;
-
-    switch (formData.category) {
-      case "tools": {
-        // Narrow to ToolItem
-        const {  ...toolData } = formData as ToolItem;
-        payload = toolData;
-        break;
-      }
-      case "equipment parts": {
-        const {  ...equipmentPartsData } = formData as EquipmentPartItem;
-        payload = equipmentPartsData;
-        break;
-      }
-      case "fertilizer": {
-        const {  ...fertilizerData } = formData as FertilizerItem;
-        payload = fertilizerData;
-        break;
-      }
-      case "feed": {
-        const {  ...feedData } = formData as FeedItem;
-        payload = feedData;
-        break;
-      }
-      default: {
-        const {  ...seedData } = formData as SeedItem;
-        payload = seedData;
-      }
-    }
-
-    const newItem = await createInventoryItem(payload);
-    setInventoryItems((prev) => [...prev, newItem]);
-    setShowAddItemModal(false);
-  } catch (err) {
-    console.error("Failed to add item:", err);
-  }
-};
+    };
 
     const handleUpdateItem = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!updateFormData) return;
         try {
+            // updateFormData already holds the complete UnifiedInventoryItem
             const updatedItem = await updateInventoryItem(updateFormData.id, updateFormData);
             setInventoryItems(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
             setShowUpdateModal(false);
@@ -179,18 +197,20 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
         }
     };
     
-    const handleUpdateClick = (item: InventoryItem) => {
+    const handleUpdateClick = (item: UnifiedInventoryItem) => {
         setUpdateFormData(item);
         setShowUpdateModal(true);
     };
 
-    const getItemStatus = (item: InventoryItem): string => {
-        // Handle nested quantity and reorderLevel for tools and equipment parts
-        const quantity = ('toolData' in item) ? item.quantity : ('equipmentPartData' in item) ? item.quantity : item.quantity;
-        const reorderLevel = ('toolData' in item) ? item.reorderLevel : ('equipmentPartData' in item) ? item.reorderLevel : item.reorderLevel;
+    // --- UTILITIES FOR RENDERING ---
+    
+    // Uses top-level quantity and reorderLevel from UnifiedInventoryItem
+    const getItemStatus = (item: UnifiedInventoryItem): string => {
+        if (item.quantity === 0) return 'Out of Stock';
+        // reorderLevel is optional, use 0 as a default if null/undefined
+        const reorderLevel = item.reorderLevel || 0; 
 
-        if (quantity === 0) return 'Out of Stock';
-        if (quantity <= reorderLevel) return 'Low Stock';
+        if (item.quantity <= reorderLevel) return 'Low Stock';
         return 'In Stock';
     };
 
@@ -212,19 +232,26 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
         }
     };
 
-   
+    
     const formatDate = (dateString: string): string => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${day}-${month}-${year}`;
-};
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${day}-${month}-${year}`;
+    };
 
 
-    const inventoryTabs = [
+    // Define the type to fix TS7034/TS7005
+    type InventoryTab = {
+        name: string;
+        icon: React.ReactNode;
+        value: string;
+    };
+
+    const inventoryTabs: InventoryTab[] = [
         { name: 'Seeds', icon: <Leaf className="h-4 w-4 mr-2" />, value: 'seeds' },
         { name: 'Feed', icon: <Heart className="h-4 w-4 mr-2" />, value: 'feed' },
         { name: 'Fertilizer', icon: <FileText className="h-4 w-4 mr-2" />, value: 'fertilizer' },
@@ -290,16 +317,16 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
                 </div>
                 <div className="flex flex-wrap items-center space-y-2 md:space-y-0 space-x-2 lg:space-x-4">
                     <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
-                        <ListFilter className="h-4 w-4 mr-2" />
+                        <ListFilter className="h-4 w-4 mr-2" /> Filter
                     </button>
                     <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
-                        <LayoutGrid className="h-4 w-4 mr-2" />
+                        <LayoutGrid className="h-4 w-4 mr-2" /> Grid
                     </button>
                     <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
-                        <LayoutList className="h-4 w-4 mr-2" />
+                        <LayoutList className="h-4 w-4 mr-2" /> List
                     </button>
                     <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="h-4 w-4 mr-2" /> Export
                     </button>
                     <button onClick={() => setShowAddItemModal(true)} className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700">
                         <Plus className="h-4 w-4 mr-2" /> Add Item
@@ -309,39 +336,27 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {getItemsToDisplay.length > 0 ? (
-                    getItemsToDisplay.map((item: InventoryItem) => {
+                    getItemsToDisplay.map((item: UnifiedInventoryItem) => {
                         const status = getItemStatus(item);
                         return (
-                            <Card key={item.id}
-                                title={
-                                    'toolData' in item ? item.name :
-                                        'equipmentPartData' in item ? item.name :
-                                            item.name
-                                }>
+                            <Card key={item.id} title={item.name}>
                                 <div className="space-y-2">
                                     <p className="flex justify-between text-sm">
                                         <span className="text-gray-500">Quantity:</span>
-                                        <span className="font-semibold text-gray-800">
-                                            {'toolData' in item ? item.quantity :
-                                                'equipmentPartData' in item ? item.quantity :
-                                                    item.quantity}
-                                        </span>
+                                        <span className="font-semibold text-gray-800">{item.quantity}</span>
                                     </p>
                                     <p className="flex justify-between text-sm">
                                         <span className="text-gray-500">Reorder Level:</span>
-                                        <span className="font-semibold text-gray-800">
-                                            {'toolData' in item ? item.reorderLevel :
-                                                'equipmentPartData' in item ? item.reorderLevel :
-                                                    item.reorderLevel}
-                                        </span>
+                                        <span className="font-semibold text-gray-800">{item.reorderLevel ?? 0}</span>
                                     </p>
-                                    {"usageRate" in item && item.usageRate && (
+                                    
+                                    {item.usageRate && (
                                         <p className="flex justify-between text-sm">
                                             <span className="text-gray-500">Usage Rate:</span>
                                             <span className="font-semibold text-gray-800">{item.usageRate}</span>
                                         </p>
                                     )}
-                                    {"expireDate" in item && item.expireDate && (
+                                    {item.expireDate && (
                                         <p className="flex justify-between text-sm">
                                             <span className="text-gray-500">Expiry Date:</span>
                                             <span className="font-semibold text-gray-800">
@@ -350,19 +365,19 @@ const handleUpdateInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSel
                                         </p>
                                     )}
 
-                                    {"type" in item && (
+                                    {item.type && (
                                         <p className="flex justify-between text-sm">
                                             <span className="text-gray-500">Type:</span>
                                             <span className="font-semibold text-gray-800">{item.type}</span>
                                         </p>
                                     )}
-                                    {"equipmentPartData" in item && (
+                                    {item.equipmentPartData && item.equipmentPartData.model && (
                                         <p className="flex justify-between text-sm">
                                             <span className="text-gray-500">Model:</span>
-                                            <span className="font-semibold text-gray-800">{item.model}</span>
+                                            <span className="font-semibold text-gray-800">{item.equipmentPartData.model}</span>
                                         </p>
                                     )}
-                                    {"n" in item && typeof item.n === 'number' && (
+                                    {typeof item.n === 'number' && typeof item.p === 'number' && typeof item.k === 'number' && (
                                         <p className="flex justify-between text-sm">
                                             <span className="text-gray-500">N-P-K:</span>
                                             <span className="font-semibold text-gray-800">{item.n}-{item.p}-{item.k}</span>
