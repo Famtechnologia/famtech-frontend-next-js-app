@@ -4,6 +4,7 @@ import Modal from '@/components/ui/Modal';
 import Card from '@/components/ui/Card';
 
 // Use UnifiedInventoryItem for all inventory data
+// Assuming your updated types file is correct: price is string on ToolData/EquipmentPartData
 import { UnifiedInventoryItem, ToolData, EquipmentPartData } from '@/types/inventory';
 import { getInventoryItems, createInventoryItem, deleteInventoryItem, updateInventoryItem } from '@/lib/services/inventory';
 import { renderFormFields } from './Render'; 
@@ -30,7 +31,7 @@ const InventoryManagement: React.FC = () => {
     const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
     const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
     
-    // NEW: State for update/delete loading
+    // State for update/delete loading
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const [isDeleting, setIsDeleting] = useState<{ [key: string]: boolean }>({});
     
@@ -39,33 +40,51 @@ const InventoryManagement: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     
-    // Initial state setup
-    const [formData, setFormData] = useState<NewInventoryItemData>({
+    // CORRECTED: Initial state setup - align with NewInventoryItemData
+    const initialFormData: NewInventoryItemData = {
         category: 'seeds',
         name: '',
         quantity: 0,
         reorderLevel: 0,
-        // Assuming your UnifiedInventoryItem includes these optional fields with null/undefined defaults
-        // Setting to default/empty values for consistency.
-        type: '', // For Feed Type
-        usageRate: 0,
-        expireDate: '',
-        n: 0,
-        p: 0,
-        k: 0,
-        feedType: '', // For Feed Category
-
+        usageRate: undefined, // undefined for optional number/string fields
+        expireDate: undefined,
+        
+        // Consumable details
+        type: undefined, // For Feed Type
+        n: undefined,
+        p: undefined,
+        k: undefined,
+        
+        // Nested data must be present as empty objects to allow property access in handlers
         toolData: {
-            brand: '',
-            price: '' as unknown as number,
-            condition: '',
-        } as unknown as ToolData,
+            toolType: undefined,
+            brand: undefined,
+            model: undefined,
+            condition: undefined,
+            lastServiced: undefined,
+            warrantyExpiry: undefined,
+            price: undefined, // Price is string, undefined is fine for initial state
+        },
         equipmentPartData: {
-            model: '',
-            price: '' as unknown as number,
-        } as unknown as EquipmentPartData,
-    } as unknown as NewInventoryItemData); 
+            model: undefined,
+            partNumber: undefined,
+            manufacturer: undefined,
+            warrantyExpiry: undefined,
+            price: undefined, // Price is string, undefined is fine for initial state
+            condition: undefined,
+        },
+        // 'model' and 'timestamp' are optional root fields
+        model: undefined,
+        timestamp: undefined,
+    };
 
+    // Use a function to reset the form state
+    const getInitialFormData = (category: string): NewInventoryItemData => ({
+        ...initialFormData,
+        category: category as NewInventoryItemData['category'],
+    });
+
+    const [formData, setFormData] = useState<NewInventoryItemData>(initialFormData); 
     const [updateFormData, setUpdateFormData] = useState<UpdateInventoryItemData | null>(null);
 
     useEffect(() => {
@@ -94,13 +113,17 @@ const InventoryManagement: React.FC = () => {
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             filteredItems = filteredItems.filter(item => {
+                // Check common fields
                 if (item.name.toLowerCase().includes(term)) return true;
+                if (item.model && item.model.toLowerCase().includes(term)) return true;
 
+                // Check nested toolData fields
                 if (item.category === 'tools' && item.toolData) {
                     return Object.values(item.toolData).some(val => 
                         typeof val === 'string' && val.toLowerCase().includes(term));
                 }
                 
+                // Check nested equipmentPartData fields
                 if (item.category === 'equipment parts' && item.equipmentPartData) {
                     return Object.values(item.equipmentPartData).some(val => 
                         typeof val === 'string' && val.toLowerCase().includes(term));
@@ -117,33 +140,13 @@ const InventoryManagement: React.FC = () => {
 
     const handleTabChange = (category: string) => {
         setActiveInventoryTab(category);
-        setFormData({
-            category: category as NewInventoryItemData['category'],
-            name: '',
-            quantity: 0,
-            reorderLevel: 0,
-            type: '',
-            usageRate: 0,
-            expireDate: '',
-            n: 0,
-            p: 0,
-            k: 0,
-            feedType: '',
-            toolData: {
-                brand: '',
-                price: '' as unknown as number,
-                condition: '',
-            } as unknown as ToolData,
-            equipmentPartData: {
-                model: '',
-                price: '' as unknown as number,
-            } as unknown as EquipmentPartData,
-        } as unknown as NewInventoryItemData);
+        // Reset form data to the default state for the new category
+        setFormData(getInitialFormData(category));
     };
 
     /**
-     * Utility function to clean and parse a value for numeric fields.
-     * Returns an empty string if the input is cleared (for display in form).
+     * Utility function to clean and parse a value for numeric fields (non-price).
+     * Returns an empty string if the input is cleared (for form display).
      * Returns a number (0 if invalid) otherwise (for storage/logic).
      */
     const cleanAndParseNumber = (value: string | number): number | string => {
@@ -162,7 +165,7 @@ const InventoryManagement: React.FC = () => {
     /**
      * Creates a generic input handler that works for state that can be null (Update).
      */
-    const createUpdateInputHandler = <T extends UpdateInventoryItemData>(
+    const createUpdateInputHandler = <T extends UpdateInventoryItemData | NewInventoryItemData>(
         targetFormData: React.Dispatch<React.SetStateAction<T | null>>
     ) => {
         return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -171,19 +174,21 @@ const InventoryManagement: React.FC = () => {
             targetFormData(prev => {
                 if (!prev) return null;
 
-                // Fields that should be treated as numbers. 
-                const numericKeys = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'price', 'usageRate'];
+                // FIX: 'price' is removed from numericKeys because it is a STRING to hold currency symbol.
+                const numericKeys = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'usageRate'];
 
                 const newFormData: FormDataType = { ...prev };
                 
                 if (name.includes('.')) {
                     const [parentKey, childKey] = name.split('.');
                     
+                    // Ensure the parent object exists before trying to access childKey
                     const parentObject = (newFormData[parentKey] as FormDataType) || {};
 
                     if (typeof parentObject === 'object' && parentObject !== null) {
                         const isNumeric = numericKeys.includes(childKey);
                         
+                        // FIX: Price is handled as a plain string here
                         parentObject[childKey] = isNumeric 
                             ? cleanAndParseNumber(value)
                             : value;
@@ -209,47 +214,56 @@ const InventoryManagement: React.FC = () => {
      * Specific input handler for formData (which is never null).
      */
     const handleAddInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-
+        // Use the generic handler logic, but ensure the state is always NewInventoryItemData
         setFormData(prev => {
-            const numericKeys = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'price', 'usageRate'];
-            const newFormData: FormDataType = { ...prev };
-
-            if (name.includes('.')) {
-                const [parentKey, childKey] = name.split('.');
-                const parentObject = (newFormData[parentKey] as FormDataType) || {};
-
-                if (typeof parentObject === 'object' && parentObject !== null) {
-                    const isNumeric = numericKeys.includes(childKey);
-                    
-                    parentObject[childKey] = isNumeric 
-                        ? cleanAndParseNumber(value)
-                        : value;
-
-                    (newFormData[parentKey] as any) = { ...parentObject }; 
-                }
-            } else {
-                const isNumeric = numericKeys.includes(name);
-                
-                (newFormData[name as keyof NewInventoryItemData] as FormValue) = isNumeric
-                    ? cleanAndParseNumber(value)
-                    : value;
-            }
-            return newFormData as NewInventoryItemData;
+            const handler = createUpdateInputHandler(setFormData);
+            // We pass a synthetic event to the created handler
+            handler(e as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>);
+            return prev; // The actual setFormData is handled inside the handler logic
         });
     };
     
     const handleUpdateInputChange = createUpdateInputHandler(setUpdateFormData);
 
 
+    /**
+     * Prepares the payload for the API by converting empty strings in numeric fields to 0.
+     */
+   /**
+     * Prepares the payload for the API by converting empty strings in numeric fields to 0,
+     * and ensuring price fields are cleaned of currency symbols before submission.
+     */
     const processPayload = <T extends BaseFormData>(data: T): T => {
-        // Recursively convert empty strings in numeric fields back to 0 for API submission
+        // Numeric keys for API submission (excluding price)
+        const numericKeysForAPI = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'usageRate'];
+        
+        // Convert to string and back to safely apply recursion
         return JSON.parse(JSON.stringify(data), (key, value) => {
-            // Apply this logic to all fields that should be numbers in the final payload
-            if (['quantity', 'reorderLevel', 'n', 'p', 'k', 'price', 'usageRate'].includes(key) && value === '') {
-                return 0;
+            // 1. Clean up numeric fields (quantity, reorderLevel, NPK, usageRate)
+            if (numericKeysForAPI.includes(key) && value === '') {
+                return 0; // Convert empty string to 0 for numbers
             }
-            // Ensure any string fields that were empty remain empty strings, not null/undefined
+            
+            // 2. Clean up PRICE fields: Remove currency symbols and convert to a clean numeric string.
+            if (key === 'price' && typeof value === 'string') {
+                // Remove all non-numeric characters EXCEPT the decimal point
+                const cleanPrice = value.replace(/[^\d.]/g, '');
+                
+                // If the cleaned string is empty or just '.', return undefined/null (or '0' if the backend requires a string, but typically null/undefined for optional fields)
+                if (cleanPrice === '' || cleanPrice === '.') {
+                    return undefined; 
+                }
+                
+                // Return the clean numeric string (e.g., "6000" or "19.99")
+                return cleanPrice; 
+            }
+
+            // 3. Convert root-level empty strings to undefined to clean up optional fields
+            if (value === '') {
+                 // Return undefined so the key is omitted if empty, which is cleaner for optional fields
+                 return undefined;
+            }
+
             return value;
         }) as T;
     }
@@ -257,13 +271,20 @@ const InventoryManagement: React.FC = () => {
     const handleCreateItem = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            // Note: No loading state here, as it's a quick modal submit
-            const payload: NewInventoryItemData = processPayload(formData);
-            const newItem = await createInventoryItem(payload);
+            // FIX: Ensure 'userId' is included in the payload. Assuming a way to get it (e.g., from auth context).
+            const userId = 'CURRENT_USER_ID'; // Replace with actual user ID context/hook
+            const payload: NewInventoryItemData = processPayload({ ...formData, userId });
+            
+            // The API service expects Omit<UnifiedInventoryItem, 'id' | 'timestamp' | '_id'>
+            const { userId: _, ...apiPayload } = payload; // Destructure and ignore the temporary userId field
+            
+            const newItem = await createInventoryItem(apiPayload);
             setInventoryItems((prev) => [...prev, newItem]);
             setShowAddItemModal(false);
+            setFormData(getInitialFormData(activeInventoryTab)); // Reset form after success
         } catch (err) {
             console.error("Failed to add item:", err);
+            // Optionally show user a toast/notification
         }
     };
 
@@ -271,74 +292,87 @@ const InventoryManagement: React.FC = () => {
         e.preventDefault();
         if (!updateFormData || isUpdating) return;
         
-        setIsUpdating(true); // Start loading
+        setIsUpdating(true);
         try {
-            const payload: UpdateInventoryItemData = processPayload(updateFormData);
-            const updatedItem = await updateInventoryItem(updateFormData.id, payload);
+            // The API service expects Partial<Omit<UnifiedInventoryItem, 'id' | '_id' | 'timestamp'>>
+            const { id, timestamp, ...dataToUpdate } = processPayload(updateFormData);
+            
+            const updatedItem = await updateInventoryItem(id, dataToUpdate);
             setInventoryItems(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
             setShowUpdateModal(false);
             setUpdateFormData(null);
         } catch (err) {
             console.error('Failed to update item:', err);
         } finally {
-            setIsUpdating(false); // Stop loading
+            setIsUpdating(false);
         }
     };
 
     const handleDeleteItem = async (id: string) => {
         if (isDeleting[id]) return;
 
-        setIsDeleting(prev => ({ ...prev, [id]: true })); // Start loading
+        setIsDeleting(prev => ({ ...prev, [id]: true }));
         try {
             await deleteInventoryItem(id);
             setInventoryItems(prev => prev.filter(item => item.id !== id));
         } catch (err) {
             console.error('Failed to delete item:', err);
         } finally {
-            setIsDeleting(prev => ({ ...prev, [id]: false })); // Stop loading
+            setIsDeleting(prev => ({ ...prev, [id]: false }));
         }
     };
     
     const handleUpdateClick = (item: UnifiedInventoryItem) => {
-        // Deep clone the item to avoid modifying the array state directly
-        const prepareItemForForm = (i: UnifiedInventoryItem): UpdateInventoryItemData => {
-            const copy = JSON.parse(JSON.stringify(i));
-            
-            // Helper to convert 0 or '0' values to an empty string for form pre-filling.
-            const setZeroToEmptyString = (obj: any, key: string) => {
-                if (obj && (obj[key] === 0 || obj[key] === '0')) {
-                    obj[key] = '';
-                }
-            };
-            
-            // Core numeric fields
-            setZeroToEmptyString(copy, 'quantity');
-            setZeroToEmptyString(copy, 'reorderLevel');
-            setZeroToEmptyString(copy, 'usageRate');
-            setZeroToEmptyString(copy, 'n'); // FIX: Ensure N-P-K prefill correctly
-            setZeroToEmptyString(copy, 'p');
-            setZeroToEmptyString(copy, 'k');
-
-            // Nested fields
-            if (copy.toolData) {
-                setZeroToEmptyString(copy.toolData, 'price');
+        // Deep clone the item
+        const copy: UpdateInventoryItemData = JSON.parse(JSON.stringify(item));
+        
+        // Helper to convert 0 or '0' values to an empty string for form pre-filling.
+        const setZeroToEmptyString = (obj: any, key: string) => {
+            // Only apply to numeric fields that should be displayed as blank if they are zero.
+            if (obj && (obj[key] === 0 || obj[key] === '0')) {
+                obj[key] = '';
             }
-            if (copy.equipmentPartData) {
-                setZeroToEmptyString(copy.equipmentPartData, 'price');
-            }
-            
-            // FIX: Ensure feedType (and any other select/string fields that default to '') is set correctly.
-            // If the value is null or undefined, set it to an empty string for the select box default.
-            if (copy.feedType === null || copy.feedType === undefined) {
-                copy.feedType = '';
-            }
-            
-            return copy as UpdateInventoryItemData;
         };
+        
+        // Numeric fields that should be empty string if 0 in the database
+        setZeroToEmptyString(copy, 'quantity');
+        setZeroToEmptyString(copy, 'reorderLevel');
+        setZeroToEmptyString(copy, 'usageRate');
+        setZeroToEmptyString(copy, 'n'); 
+        setZeroToEmptyString(copy, 'p');
+        setZeroToEmptyString(copy, 'k');
 
-        setUpdateFormData(prepareItemForForm(item));
+        // Nested fields
+        if (copy.toolData) {
+             // FIX: Do NOT apply setZeroToEmptyString to price, as it's a string (e.g., "$0.00") and we want to preserve the value.
+             // setZeroToEmptyString(copy.toolData, 'price'); // REMOVED
+        }
+        if (copy.equipmentPartData) {
+            // FIX: Do NOT apply setZeroToEmptyString to price.
+            // setZeroToEmptyString(copy.equipmentPartData, 'price'); // REMOVED
+        }
+        
+        // Set undefined/null string fields to an empty string for select/input fields
+        const stringFields: Array<keyof UnifiedInventoryItem> = ['type', 'usageRate', 'expireDate', 'model'];
+        stringFields.forEach(key => {
+            if (copy[key] === null || copy[key] === undefined) {
+                (copy[key] as any) = '';
+            }
+        });
+
+        // Set tool/part data to empty object if null/undefined in DB to avoid crashes in form access
+        if (copy.toolData === null || copy.toolData === undefined) {
+            copy.toolData = {} as ToolData;
+        }
+        if (copy.equipmentPartData === null || copy.equipmentPartData === undefined) {
+            copy.equipmentPartData = {} as EquipmentPartData;
+        }
+
+        setUpdateFormData(copy);
         setShowUpdateModal(true);
     };
+
+    // ... (rest of the component logic for rendering tabs, cards, modals)
 
     // --- UTILITIES FOR RENDERING ---
     
@@ -509,7 +543,14 @@ const InventoryManagement: React.FC = () => {
                                             <span className="font-semibold text-gray-800">{item.type}</span>
                                         </p>
                                     )}
-                                    {item.equipmentPartData && item.equipmentPartData.model && (
+                                    {/* FIX: Use toolData.model if present for tools, else equipmentPartData.model for parts */}
+                                    {item.category === 'tools' && item.toolData?.model && (
+                                         <p className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Model:</span>
+                                            <span className="font-semibold text-gray-800">{item.toolData.model}</span>
+                                        </p>
+                                    )}
+                                    {item.category === 'equipment parts' && item.equipmentPartData?.model && (
                                         <p className="flex justify-between text-sm">
                                             <span className="text-gray-500">Model:</span>
                                             <span className="font-semibold text-gray-800">{item.equipmentPartData.model}</span>
@@ -566,7 +607,8 @@ const InventoryManagement: React.FC = () => {
             <Modal show={showUpdateModal} onClose={() => setShowUpdateModal(false)} title={`Update ${updateFormData?.name || ''}`}>
                 {updateFormData && (
                     <form onSubmit={handleUpdateItem} className="space-y-4">
-                        {renderFormFields(updateFormData, handleUpdateInputChange)}
+                        {/* FIX: Ensure updateFormData has the correct category set for renderFormFields */}
+                        {renderFormFields(updateFormData, handleUpdateInputChange)} 
                         <div className="pt-4 border-t border-gray-200">
                             <button 
                                 type="submit" 
