@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuthStore, User } from "@/lib/store/authStore";
 
 import { Camera, X} from 'lucide-react';
 import Image from 'next/image';
@@ -33,6 +34,7 @@ interface AddLivestockFormProps {
 
 
 export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onRecordAdded }) => {
+    const userData = useAuthStore.getState().user as User;
     
     // State is strictly typed as LivestockFormData
     const [formData, setFormData] = useState<LivestockFormData>({
@@ -108,16 +110,17 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
         const data: FormData = new FormData();
         data.append('specie', formData.specie);
         data.append('breed', formData.breed);
-        data.append('numberOfAnimal', formData.numberOfAnimal.toString());
+        data.append('numberOfAnimal', formData.numberOfAnimal.toFixed());
         data.append('ageGroup', formData.ageGroup);
         data.append('acquisitionDate', formData.acquisitionDate);
         data.append('healthStatus', formData.healthStatus);
         data.append('feedSchedule', formData.feedSchedule);
         data.append('note', formData.note);
+        data.append("userId", userData.id);
         
         // Append the single image file
         if (imageFile) {
-            data.append('image', imageFile, imageFile.name);
+            data.append('livestockImages', imageFile, imageFile.name);
         }
 
         try {

@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'farm-operations',
                     expandable: true,
                     // ⭐ ADDED: Mark Farm Operations as coming soon
-                    comingSoon: true, 
+                    // comingSoon: true, 
                     children: [
                         // Use query parameters to designate the active tab view
                         { name: 'Task Planner', href: `/farm-operation?tab=planner` }, // Simplified for the root page

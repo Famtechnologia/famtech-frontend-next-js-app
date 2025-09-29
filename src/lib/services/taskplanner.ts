@@ -23,8 +23,8 @@ type TaskCreationData = Omit<Task, 'createdTime'>;
 
 // Fetches all tasks from the API using apiClient.
 // This automatically attaches the authentication token.
-export const getTasks = async (): Promise<Task[]> => {
-  const response = await apiClient.get(BASE_URL);
+export const getTasks = async (id: string): Promise<Task[]> => {
+  const response = await apiClient.get(`${BASE_URL}/assignee/${id}`);
   // axios returns the data in the 'data' property
   return response.data;
 };
