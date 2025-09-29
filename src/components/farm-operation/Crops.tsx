@@ -283,13 +283,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
                             value={formData.areaValue || ''} // Use || '' to allow the user to clear the input
                             onChange={handleChange}
                             required
-                            className="flex-1 p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="flex-1 px-1 py-2 border border-gray-300 rounded-md text-gray-800"
                         />
                         <select
                             id="areaUnit"
                             value={formData.areaUnit}
                             onChange={handleChange}
-                            className="p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         >
                             <option>ac</option>
                             <option>ha</option>
@@ -310,13 +310,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
                             placeholder="0.00"
                             value={formData.seedQuantityValue || ''} // Use || '' to allow the user to clear the input
                             onChange={handleChange}
-                            className="flex-1 p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="flex-1 px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         />
                         <select
                             id="seedQuantityUnit"
                             value={formData.seedQuantityUnit}
                             onChange={handleChange}
-                            className="p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         >
                             <option>kg</option>
                             <option>lb</option>
@@ -341,12 +341,12 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
                 ></textarea>
             </div>
             <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Crop Image(s)</div>
+                <div className="text-sm font-medium text-gray-700 mb-2">Crop Image</div>
                 {/* Image upload area */}
                 <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
                     <Camera className="h-8 w-8 mb-2" />
                     <p className="text-center">
-                        Drag and drop image(s) here, or click to select file(s)
+                        Drag and drop image here, or click to select file
                     </p>
                     <input
                         type="file"
@@ -360,18 +360,18 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
                         htmlFor="images"
                         className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer"
                     >
-                        Select Image(s)
+                        Select Image
                     </label>
                 </div>
                 {/* Conditional rendering for the image previews */}
                 {imagePreviewUrls.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-4 items-center justify-center">
-                        <p className="w-full text-center text-sm text-gray-500 mb-2">Image Previews:</p>
+                        <p className="w-full text-center text-sm text-gray-500 mb-2">Image Preview:</p>
                         {imagePreviewUrls.map((url, index) => (
                             <Image
                                 key={index}
                                 src={url}
-                                alt={`Image Preview ${index + 1}`}
+                                alt={`Image Preview `}
                                 width={120}
                                 height={120}
                                 className="rounded-md object-cover"
@@ -437,7 +437,7 @@ const formatDate = (dateString: string | Date | undefined): string => {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${day}-${month}-${year}`;
 };
 
 // --- Component ---
@@ -612,7 +612,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             {/* --- Existing Images Display --- */}
             {existingImages.length > 0 && (
                 <div className="mb-6 border p-4 rounded-lg bg-gray-50">
-                    <p className="text-sm font-medium text-gray-700 mb-3">Existing Images ({existingImages.length})</p>
+                    <p className="text-sm font-medium text-gray-700 mb-3">Existing Image </p>
                     <div className="flex flex-wrap gap-4 justify-center">
                         {existingImages.map((img) => (
                             <div key={img.fileId} className="relative group">
@@ -782,13 +782,13 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
                             value={formData.areaValue}
                             onChange={handleChange}
                             required
-                            className="flex-1 p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="flex-1 px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         />
                         <select
                             id="areaUnit"
                             value={formData.areaUnit}
                             onChange={handleChange}
-                            className="p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         >
                             <option>ac</option>
                             <option>ha</option>
@@ -810,13 +810,13 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
                             placeholder="0.00"
                             value={formData.seedQuantityValue}
                             onChange={handleChange}
-                            className="flex-1 p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="flex-1 px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         />
                         <select
                             id="seedQuantityUnit"
                             value={formData.seedQuantityUnit}
                             onChange={handleChange}
-                            className="p-2 border border-gray-300 rounded-md text-gray-800"
+                            className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
                         >
                             <option>kg</option>
                             <option>lb</option>
@@ -845,11 +845,11 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
 
             {/* --- New Image Upload --- */}
             <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Add New Crop Images</div>
+                <div className="text-sm font-medium text-gray-700 mb-2">Add New Crop Image</div>
                 <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
                     <Camera className="h-8 w-8 mb-2" />
                     <p className="text-center">
-                        Drag and drop image(s) here, or click to select new files to add
+                        Drag and drop image here, or click to select new file to add
                     </p>
                     <input
                         type="file"
@@ -863,7 +863,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
                         htmlFor="newImages"
                         className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer"
                     >
-                        Select New Image(s)
+                        Select New Image
                     </label>
                 </div>
             </div>

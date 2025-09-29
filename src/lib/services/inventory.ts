@@ -1,7 +1,7 @@
 import apiClient, { API_URL } from "../api/inventory";
 
 // Import the new, refined types
-import {InventoryItem} from '@/types/inventory';
+import {UnifiedInventoryItem } from '@/types/inventory';
 const INVENTORY_BASE_URL = `${API_URL}/api/inventory-management`;
 
 export interface DeleteResponse {
@@ -12,7 +12,7 @@ export interface DeleteResponse {
  * Fetches all inventory items from the API.
  * The return type is now the specific `InventoryItem` union type.
  */
-export const getInventoryItems = async (): Promise<InventoryItem[]> => {
+export const getInventoryItems = async (): Promise<UnifiedInventoryItem []> => {
     const response = await apiClient.get(INVENTORY_BASE_URL);
     return response.data;
 };
@@ -23,8 +23,8 @@ export const getInventoryItems = async (): Promise<InventoryItem[]> => {
  */
 // service
 export const createInventoryItem = async (
-  item: Omit<InventoryItem, 'id' | 'timestamp' | '_id'>
-): Promise<InventoryItem> => {
+  item: Omit<UnifiedInventoryItem , 'id' | 'timestamp' | '_id'>
+): Promise<UnifiedInventoryItem > => {
   const res = await apiClient.post(INVENTORY_BASE_URL, item);
   return res.data;
 };
@@ -34,7 +34,7 @@ export const createInventoryItem = async (
  * Fetches a single inventory item by its ID.
  * The return type is the specific `InventoryItem` union type.
  */
-export const getInventoryItemById = async (id: string): Promise<InventoryItem> => {
+export const getInventoryItemById = async (id: string): Promise<UnifiedInventoryItem > => {
     const response = await apiClient.get(`${INVENTORY_BASE_URL}/${id}`);
     return response.data;
 };
@@ -43,7 +43,7 @@ export const getInventoryItemById = async (id: string): Promise<InventoryItem> =
  * Updates an existing inventory item by its ID.
  * Uses a Partial of the precise `InventoryItem` type.
  */
-export const updateInventoryItem = async (id: string, inventoryData: Partial<Omit<InventoryItem, '_id' | 'timestamp'>>): Promise<InventoryItem> => {
+export const updateInventoryItem = async (id: string, inventoryData: Partial<Omit<UnifiedInventoryItem , '_id' | 'timestamp'>>): Promise<InventoryItem> => {
     const response = await apiClient.put(`${INVENTORY_BASE_URL}/${id}`, inventoryData);
     return response.data;
 };

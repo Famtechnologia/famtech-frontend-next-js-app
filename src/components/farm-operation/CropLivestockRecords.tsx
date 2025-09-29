@@ -58,13 +58,7 @@ const getImageUrl = (imageSource: RecordImage | null | undefined): string | null
     return null;
 };
 
-// --- NEW HELPER FUNCTION FOR GROWTH STAGE TO PERCENTAGE MAPPING ---
-/**
- * Maps a crop's growth stage to a percentage (20%, 40%, 60%, 80%, 100%)
- * based on the assumption of 5 stages.
- * @param stage The current growth stage string from the crop record.
- * @returns The percentage value (0-100).
- */
+
 const getGrowthPercentageFromStage = (stage: string | null | undefined): number => {
     if (!stage) return 0;
 
@@ -72,11 +66,11 @@ const getGrowthPercentageFromStage = (stage: string | null | undefined): number 
     const normalizedStage = stage.trim().toLowerCase();
 
     // Define your 5 stages and their percentage steps (20% each)
-    if (normalizedStage.includes('seeding') || normalizedStage.includes('planting')) return 20;
+    if (normalizedStage.includes('seeding') || normalizedStage.includes('planting')) return 20 ;
     if (normalizedStage.includes('vegetative') || normalizedStage.includes('early growth')) return 40;
     if (normalizedStage.includes('flowering') || normalizedStage.includes('tasseling')) return 60;
     if (normalizedStage.includes('fruiting') || normalizedStage.includes('maturation') || normalizedStage.includes('ripening')) return 80;
-    if (normalizedStage.includes('harvest') || normalizedStage.includes('completed')) return 100;
+    if (normalizedStage.includes('maturity') || normalizedStage.includes('completed')) return 100;
 
     // Fallback in case a stage name doesn't match a defined keyword
     return 0;
@@ -118,7 +112,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                             <div key={idx} className="w-32 h-32 relative flex-shrink-0">
                                 <Image
                                     src={url}
-                                    alt={isCrop ? `${crop.cropName} image ${idx + 1}` : `${livestock.specie} image`}
+                                    alt={isCrop ? `${crop.cropName} image ` : `${livestock.specie} image`}
                                     fill
                                     sizes="128px"
                                     style={{ objectFit: 'cover' }}
@@ -162,7 +156,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
                 <div className="text-sm space-y-2 p-1">
                     <p><b>Breed:</b> {livestock.breed || 'N/A'}</p>
                     <p><b>Number of Animals:</b> {livestock.numberOfAnimal}</p>
-                    <p><b>Acquisition Date:</b> {new Date(livestock.acquisitionDate).toLocaleDateString()}</p>
+                    <p><b>Last Checkup:</b> {new Date(livestock.acquisitionDate).toLocaleDateString()}</p>
                     <p><b>Health Status:</b> <span className={`capitalize font-medium ${livestock.healthStatus?.toLowerCase() === 'poor' ? 'text-red-600' : 'text-green-600'}`}>{livestock.healthStatus ?? 'N/A'}</span></p>
                     <p><b>Feed Schedule:</b> {livestock.feedSchedule ?? 'N/A'}</p> {/* <-- FIXED: Added feedSchedule */}
                     <p><b>Note:</b> {livestock.note || 'N/A'}</p>
