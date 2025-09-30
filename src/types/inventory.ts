@@ -1,5 +1,5 @@
-// 1. Define the specific data structures for Tools and Equipment Parts
-// The 'price' is a string to accommodate the currency symbol (e.g., "$120.50").
+
+
 
 export interface ToolData {
     toolType?: string;
@@ -12,8 +12,7 @@ export interface ToolData {
 }
 
 export interface EquipmentPartData {
-    // CORRECTED: 'model' is now a string, representing the equipment's model number/name, 
-    // not a recursive EquipmentPartData object.
+    
     model?: string; 
     partNumber?: string;
     manufacturer?: string;
@@ -22,23 +21,17 @@ export interface EquipmentPartData {
     condition?: string;
 }
 
-// 2. Define the main unified Inventory Item
-// This structure correctly uses optional fields (?) for conditional data 
-// (e.g., toolData only for category 'tools').
 export interface UnifiedInventoryItem {
-    // Common Fields
-    id: string; // Essential for inventory tracking
+    
+    id: string;
     userId: string;
     category: 'seeds' | 'feed' | 'fertilizer' | 'tools' | 'equipment parts';
     name: string;
     quantity: number;
-
-    // Fields that apply ONLY to 'seeds', 'fertilizer', 'feed'
     reorderLevel?: number;
     usageRate?: string;
     expireDate?: string; 
     
-    // Specific Consumable Details (for 'feed' and 'fertilizer')
     type?: 'Concentrate' | 'Hay' | 'Silage' | 'Liquid' | 'Granular'; 
     n?: number; // Nitrogen percentage (for fertilizer)
     p?: number; // Phosphorus percentage (for fertilizer)

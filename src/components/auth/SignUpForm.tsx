@@ -53,7 +53,7 @@ export default function SignupPage() {
       console.log("Signup response:", res);
 
       const { data: resData, message } = res;
-      const { user: responseUser } = resData;
+      const { user: responseUser } = resData; 
 
       if (!responseUser) {
         throw new Error("No user returned from server");

@@ -96,8 +96,8 @@ export interface UpdateLivestockPayload {
 
 // --- Crop Record API Functions ---
 
-export const getCropRecords = async (): Promise<CropRecord[]> => {
-    const response = await apiClient.get(CROP_BASE_URL);
+export const getCropRecords = async (id: string): Promise<CropRecord[]> => {
+    const response = await apiClient.get(`${CROP_BASE_URL}/user/${id}`);
     return response.data;
 };
 
@@ -152,8 +152,8 @@ export const deleteCropImages = async (
 
 // --- Livestock Record API Functions (ALL EXPORTED) ---
 
-export const getLivestockRecords = async (): Promise<LivestockRecord[]> => {
-    const response = await apiClient.get(LIVESTOCK_BASE_URL);
+export const getLivestockRecords = async (id: string): Promise<LivestockRecord[]> => {
+    const response = await apiClient.get(`${LIVESTOCK_BASE_URL}/user/${id}`);
     return response.data;
 };
 

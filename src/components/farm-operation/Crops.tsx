@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Camera, TriangleAlert, X} from 'lucide-react';
 import Image from 'next/image';
+import { useAuthStore, User } from "@/lib/store/authStore";
+
 
 import {
      updateCropRecord, CropRecord,
@@ -50,6 +52,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         seedQuantityUnit: "kg",
         note: "",
     });
+    const userData = useAuthStore.getState().user as User;
 
     // State to store the selected file objects
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -122,6 +125,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         data.append("area.unit", formData.areaUnit);
         data.append("seedQuantity.value", formData.seedQuantityValue.toString());
         data.append("seedQuantity.unit", formData.seedQuantityUnit);
+        data.append("userId", userData.id);
         
         data.append("note", formData.note);
 

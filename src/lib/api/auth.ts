@@ -86,12 +86,35 @@ export const register = async (
     );
     return data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const message =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        "Registration failed";
-      throw new Error(message);
+    if (axios.isAxiosError(error) && error.response) {
+      const responseData = error.response.data;
+      let errorMessage = "Registration failed"; // Default message
+
+      if (responseData) {
+        if (responseData.errors && typeof responseData.errors === 'object' && Object.keys(responseData.errors).length > 0) {
+          const errorMessages = Object.values(responseData.errors)
+            .flat()
+            .map((error: unknown) => {
+              if (typeof error === 'string') {
+                return error;
+              }
+              // Assuming the error object has a 'message' property
+              if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+                return error.message;
+              }
+              // Fallback for unexpected error structures
+              return "An unknown validation error occurred.";
+            });
+          
+          // Join the messages, filtering out any null/undefined entries.
+          errorMessage = errorMessages.filter(Boolean).join('. ');
+        } else if (responseData.message || responseData.error) {
+          errorMessage = responseData.message || responseData.error;
+        }
+      }
+      
+      // Ensure a final message is always available
+      throw new Error(errorMessage || "Registration failed");
     }
     throw new Error("Network error occurred");
   }
@@ -129,7 +152,7 @@ export const useLogout = () => {
       console.error("Logout failed:", err);
     } finally {
       logout();
-      router.push("/auth/login");
+      router.push("/login");
     }
   };
 
@@ -177,4 +200,3 @@ export const resetPassword = async (
     throw new Error("Network error occurred");
   }
 };
-
