@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react"; // ADDED useCallback
 import Image from "next/image";
 import Modal from "../ui/Modal";
-import { useAuthStore, User } from "@/lib/store/authStore";
+import { useAuthStore} from "@/lib/store/authStore";
 
 import { ListFilter, Plus, Search, FolderOpen, Trash2 } from "lucide-react";
 // Assuming these are correctly imported

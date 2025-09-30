@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
 import { Plus, Search, Leaf, Heart, FileText, HardHat, Grid, X, TriangleAlert, CheckCircle, ListFilter, LayoutGrid, LayoutList, Download, Loader2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
@@ -33,6 +34,7 @@ type OptionalUserIdNewInventoryItemData = Omit<NewInventoryItemData, 'userId'> &
 type UpdateInventoryItemData = UnifiedInventoryItem;
 type BaseFormData = OptionalUserIdNewInventoryItemData | UpdateInventoryItemData;
 type FormValue = string | number | null | undefined;
+// Adjusted FormDataType to be more specific for nested data structures
 type FormDataType = Record<string, FormValue | ToolData | EquipmentPartData | undefined>;
 
 // Helper type to correctly type the setter from useState<T | null>
@@ -76,7 +78,7 @@ const InventoryManagement: React.FC = () => {
             lastServiced: undefined,
             warrantyExpiry: undefined,
             price: undefined, 
-        },
+        } as ToolData,
         equipmentPartData: {
             model: undefined,
             partNumber: undefined,
@@ -84,7 +86,7 @@ const InventoryManagement: React.FC = () => {
             warrantyExpiry: undefined,
             price: undefined, 
             condition: undefined,
-        },
+        } as EquipmentPartData,
         
         model: undefined,
         // FIX 1: Use the retrieved user ID. This is 'string | undefined', now allowed by the type.
@@ -129,7 +131,7 @@ const InventoryManagement: React.FC = () => {
     useEffect(() => {
         fetchInventoryItems();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Note: dependency array is empty because requiredUserId is static (from getState() outside component)
+    }, []); 
     
     const handleTabChange = (category: string) => {
         setActiveInventoryTab(category);
@@ -167,14 +169,13 @@ const InventoryManagement: React.FC = () => {
             targetFormData(prev => {
                 if (!prev) return null;
 
-                const numericKeys = ['quantity', 'reorderLevel', 'n', 'p', 'k'];
+                const numericKeys = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'price']; 
                 
                 // Deep copy to ensure correct state update
                 const newFormData: T = JSON.parse(JSON.stringify(prev));
                 
                 if (name.includes('.')) {
                     const [parentKey, childKey] = name.split('.');
-                    
                     
                     const parentObject = (newFormData[parentKey as keyof T] as FormDataType) || {};
 
@@ -185,8 +186,13 @@ const InventoryManagement: React.FC = () => {
                             ? cleanAndParseNumber(value)
                             : value;
 
-                        // Type assertion needed for complex nested updates
-                        (newFormData[parentKey as keyof T] as any) = parentObject; 
+                        if (parentKey === 'toolData') {
+                            newFormData[parentKey as keyof T] = parentObject as ToolData as T[keyof T];
+                        } else if (parentKey === 'equipmentPartData') {
+                            newFormData[parentKey as keyof T] = parentObject as EquipmentPartData as T[keyof T];
+                        } else {
+                            newFormData[parentKey as keyof T] = parentObject as T[keyof T];
+                        }
                     }
                 } 
                 else {
@@ -242,7 +248,7 @@ const InventoryManagement: React.FC = () => {
                 return isNaN(parsed) ? 0 : parsed;
             }
             
-            // 4. Exclude undefined userId (should be caught by the check in handleCreateItem, but for safety)
+            // 4. Exclude undefined userId 
             if (key === 'userId' && value === undefined) {
                 return undefined;
             }
@@ -250,10 +256,11 @@ const InventoryManagement: React.FC = () => {
             return value;
         });
         
+        // FIX 1: Cast cleanedData to a generic record type for safe deletion
         // Remove backend-generated/unnecessary fields before sending
-        delete cleanedData.id;
-        delete cleanedData._id;
-        delete cleanedData.timestamp;
+        delete (cleanedData as Record<string, unknown>).id;
+        delete (cleanedData as Record<string, unknown>)._id; // FIX APPLIED
+        delete (cleanedData as Record<string, unknown>).timestamp;
         
         return cleanedData as Omit<T, 'id' | '_id' | 'timestamp'>;
     }
@@ -273,7 +280,6 @@ const handleCreateItem = async (e: React.FormEvent) => {
     // ⭐ CORE FIX: Validation to prevent sending an empty name ⭐
     if (formData.name.trim() === '') {
         setError('Item Name is required. Please fill in the name field.');
-        // You might want to visually indicate the name field is missing here
         return;
     }
 
@@ -297,6 +303,12 @@ const handleCreateItem = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!updateFormData || isUpdating) return;
         
+        // ⭐ CORE FIX: Validation for update form name ⭐
+        if (updateFormData.name.trim() === '') {
+            setError('Item Name is required for the update.');
+            return;
+        }
+
         setIsUpdating(true);
         try {
             
@@ -336,36 +348,44 @@ const handleCreateItem = async (e: React.FormEvent) => {
         
         const copy: UpdateInventoryItemData = JSON.parse(JSON.stringify(item));
         
-        const setNumericFieldForForm = (obj: any, key: string) => {
-            if (obj && (obj[key] === 0 || obj[key] === '0' || obj[key] === null)) {
-                obj[key] = '';
+        // FIX 2: Use a generic helper function to correctly handle keys
+        const setNumericFieldForForm = <T extends object, K extends keyof T>(
+            obj: T, 
+            key: K
+        ) => {
+            const value = obj[key];
+            
+            // Check for null, undefined, 0, or '0'
+            if (value === 0 || value === '0' || value === null || value === undefined) {
+                // Safely assign the empty string, relying on FormValue covering this.
+                (obj as Record<K, FormValue>)[key] = ''; 
             }
         };
         
-        setNumericFieldForForm(copy, 'quantity');
-        setNumericFieldForForm(copy, 'reorderLevel');
-        setNumericFieldForForm(copy, 'usageRate');
-        setNumericFieldForForm(copy, 'n'); 
-        setNumericFieldForForm(copy, 'p');
-        setNumericFieldForForm(copy, 'k');
+        setNumericFieldForForm(copy, 'quantity'); // FIXED
+        setNumericFieldForForm(copy, 'reorderLevel'); // FIXED
+        setNumericFieldForForm(copy, 'usageRate'); // FIXED
+        setNumericFieldForForm(copy, 'n'); // FIXED
+        setNumericFieldForForm(copy, 'p'); // FIXED
+        setNumericFieldForForm(copy, 'k'); // FIXED
 
         
         if (copy.toolData === null || copy.toolData === undefined) {
             copy.toolData = {} as ToolData;
         } else {
-            setNumericFieldForForm(copy.toolData, 'price');
+            setNumericFieldForForm(copy.toolData, 'price'); // FIXED
         }
 
         if (copy.equipmentPartData === null || copy.equipmentPartData === undefined) {
             copy.equipmentPartData = {} as EquipmentPartData;
         } else {
-             setNumericFieldForForm(copy.equipmentPartData, 'price');
+             setNumericFieldForForm(copy.equipmentPartData, 'price'); // FIXED
         }
         
         const stringFields: Array<keyof UnifiedInventoryItem> = ['type', 'usageRate', 'expireDate', 'model'];
         stringFields.forEach(key => {
             if (copy[key] === null || copy[key] === undefined) {
-                (copy[key] as any) = '';
+                (copy[key] as FormValue) = '';
             }
         });
 
@@ -544,10 +564,10 @@ const handleCreateItem = async (e: React.FormEvent) => {
                                     )}
                                     
                                     {item.category === 'tools' && item.toolData?.model && (
-                                                 <p className="flex justify-between text-sm">
-                                                     <span className="text-gray-500">Model:</span>
-                                                     <span className="font-semibold text-gray-800">{item.toolData.model}</span>
-                                                 </p>
+                                                <p className="flex justify-between text-sm">
+                                                    <span className="text-gray-500">Model:</span>
+                                                    <span className="font-semibold text-gray-800">{item.toolData.model}</span>
+                                                </p>
                                     )}
                                     {item.category === 'equipment parts' && item.equipmentPartData?.model && (
                                         <p className="flex justify-between text-sm">
@@ -594,7 +614,7 @@ const handleCreateItem = async (e: React.FormEvent) => {
 
             <Modal show={showAddItemModal} onClose={() => setShowAddItemModal(false)} title={`Add New ${activeInventoryTab} Item`}>
                 <form onSubmit={handleCreateItem} className="space-y-4">
-                    {renderFormFields(formData as any, handleAddInputChange)}
+                    {renderFormFields(formData as BaseFormData, handleAddInputChange)}
                     <div className="pt-4 border-t border-gray-200">
                         <button type="submit" className="w-full flex justify-center rounded-md border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700">
                             Save {activeInventoryTab}

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { User, MapPin, Phone, Wheat, Ruler } from 'lucide-react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios'; // Import AxiosError for better type checking
 import { API_URL } from '../../../../../config';
 import { useAuthStore } from "@/lib/store/authStore"; 
 
@@ -17,7 +17,10 @@ interface Location {
     state: string;
     city: string;
     address: string;
-    coordinates: {}; 
+    // FIX 1: Replaced {} with Record<string, unknown> or simply object
+    // Assuming coordinates is an object (e.g., { lat: number, lng: number })
+    // If you don't know the keys, use Record<string, unknown> or type it precisely.
+    coordinates: Record<string, unknown>; 
 }
 
 interface FarmProfileData {
@@ -47,7 +50,7 @@ const GET_PROFILE_URL = `${API_URL}${GET_PROFILE_ENDPOINT}`;
 const Settings: React.FC = () => {
   const token = useAuthStore(state => state.token);
   
-  // Explicitly typing state for type safety (Fixes Error 2345)
+  // Explicitly typing state for type safety
   const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null); 
@@ -77,19 +80,27 @@ const Settings: React.FC = () => {
             setError("Profile data is available but empty.");
         }
 
-      } catch (err: unknown) { // Use unknown for safety (Addresses Error 18046)
+      } catch (err: unknown) {
         console.error("Failed to fetch farm profile:", err);
         
-        // Safely check for axios error response
-        const status = (err as any).response?.status; 
+        // FIX 2: Safely check for AxiosError and access the status property
+        let errorMessage = "Failed to load profile due to an unknown error.";
+        
+        if (axios.isAxiosError(err)) {
+            const axiosError = err as AxiosError;
+            const status = axiosError.response?.status; // Safely access status
 
-        if (status === 401) {
-            setError("Authentication failed. Please log in again.");
-        } else if (status === 404) {
-            setError("Farm profile not found. Please create a profile.");
-        } else {
-            setError("Failed to load profile due to a server error.");
+            if (status === 401) {
+                errorMessage = "Authentication failed. Please log in again.";
+            } else if (status === 404) {
+                errorMessage = "Farm profile not found. Please create a profile.";
+            } else if (status !== undefined) {
+                errorMessage = `Server error (Status: ${status}). Failed to load profile.`;
+            }
         }
+        
+        setError(errorMessage);
+
       } finally {
         setIsLoading(false);
       }
@@ -162,7 +173,7 @@ const Settings: React.FC = () => {
           {/* Farm Location */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full  text-blue-600">
+              <div className="p-2 rounded-full  text-blue-600">
                 <MapPin className="h-6 w-6" />
               </div>
               <div>
@@ -217,7 +228,7 @@ const Settings: React.FC = () => {
           {/* Farm Size */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full  text-blue-600">
+              <div className="p-2 rounded-full  text-blue-600">
                 <Ruler className="h-6 w-6" />
               </div>
               <div>
