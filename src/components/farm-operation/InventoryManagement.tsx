@@ -233,60 +233,81 @@ const InventoryManagement: React.FC = () => {
      * Prepares the payload for the API by converting empty strings in numeric fields to 0,
      * and ensuring price fields are cleaned of currency symbols before submission.
      */
+   /**
+     * Prepares the payload for the API:
+     * 1. Converts empty strings in true numeric fields (not price) to 0.
+     * 2. Cleans price strings of currency symbols, omitting if blank.
+     * 3. Ensures REQUIRED string fields ('name', 'category') are NOT converted to undefined.
+     * 4. Converts OPTIONAL empty string fields to undefined for a clean payload.
+     */
     const processPayload = <T extends BaseFormData>(data: T): T => {
-        // Numeric keys for API submission (excluding price)
         const numericKeysForAPI = ['quantity', 'reorderLevel', 'n', 'p', 'k', 'usageRate'];
-        
-        // Convert to string and back to safely apply recursion
+        // The only two required fields the component needs to worry about are name and category.
+        const requiredKeys = ['name', 'category']; 
+
         return JSON.parse(JSON.stringify(data), (key, value) => {
-            // 1. Clean up numeric fields (quantity, reorderLevel, NPK, usageRate)
-            if (numericKeysForAPI.includes(key) && value === '') {
-                return 0; // Convert empty string to 0 for numbers
-            }
             
-            // 2. Clean up PRICE fields: Remove currency symbols and convert to a clean numeric string.
+            // 1. Handle PRICE cleanup
             if (key === 'price' && typeof value === 'string') {
-                // Remove all non-numeric characters EXCEPT the decimal point
                 const cleanPrice = value.replace(/[^\d.]/g, '');
-                
-                // If the cleaned string is empty or just '.', return undefined/null (or '0' if the backend requires a string, but typically null/undefined for optional fields)
                 if (cleanPrice === '' || cleanPrice === '.') {
                     return undefined; 
                 }
-                
-                // Return the clean numeric string (e.g., "6000" or "19.99")
                 return cleanPrice; 
             }
 
-            // 3. Convert root-level empty strings to undefined to clean up optional fields
+            // 2. Handle empty strings ('')
             if (value === '') {
-                 // Return undefined so the key is omitted if empty, which is cleaner for optional fields
-                 return undefined;
+                // If it's a numeric field, send 0.
+                if (numericKeysForAPI.includes(key)) {
+                     return 0;
+                }
+                
+                // If it's a required string field (name, category), keep the empty string ('') 
+                // so the backend validation can correctly throw "Name is required".
+                // This prevents the field from being silently removed from the payload object.
+                if (requiredKeys.includes(key)) {
+                    return ''; 
+                }
+                
+                // Otherwise, it's an optional string field, so omit it entirely.
+                return undefined;
+            }
+
+            // 3. Convert non-empty string numbers (e.g., "10") to actual numbers 10 for NPK, Quantity, etc.
+            if (numericKeysForAPI.includes(key) && typeof value === 'string') {
+                 return parseFloat(value);
             }
 
             return value;
         }) as T;
     }
 
-    const handleCreateItem = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            // FIX: Ensure 'userId' is included in the payload. Assuming a way to get it (e.g., from auth context).
-            const userId = 'CURRENT_USER_ID'; // Replace with actual user ID context/hook
-            const payload: NewInventoryItemData = processPayload({ ...formData, userId });
-            
-            // The API service expects Omit<UnifiedInventoryItem, 'id' | 'timestamp' | '_id'>
-            const { userId: _, ...apiPayload } = payload; // Destructure and ignore the temporary userId field
-            
-            const newItem = await createInventoryItem(apiPayload);
-            setInventoryItems((prev) => [...prev, newItem]);
-            setShowAddItemModal(false);
-            setFormData(getInitialFormData(activeInventoryTab)); // Reset form after success
-        } catch (err) {
-            console.error("Failed to add item:", err);
-            // Optionally show user a toast/notification
-        }
-    };
+    // Inside InventoryManagement.tsx
+
+// ... (Find the handleCreateItem function)
+
+const handleCreateItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+        // FIX: Process the form data to clean up numbers and price strings
+        const payload: NewInventoryItemData = processPayload(formData);
+        
+        // FIX: The service must be called with the payload that includes ALL data needed 
+        // by the backend, including category and name.
+        // Assuming userId is NOT part of NewInventoryItemData (as it's likely injected by middleware).
+        const newItem = await createInventoryItem(payload);
+        
+        setInventoryItems((prev) => [...prev, newItem]);
+        setShowAddItemModal(false);
+        setFormData(getInitialFormData(activeInventoryTab)); // Reset form after success
+    } catch (err) {
+        console.error("Failed to add item:", err);
+        // If you still get "Name is required" here, it means:
+        // 1. You submitted the form while the 'name' input was truly blank.
+        // 2. The issue is in how 'renderFormFields' is binding the name input value.
+    }
+};
 
     const handleUpdateItem = async (e: React.FormEvent) => {
         e.preventDefault();

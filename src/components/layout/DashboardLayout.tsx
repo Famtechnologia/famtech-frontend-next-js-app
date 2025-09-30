@@ -35,6 +35,8 @@ import Modal from '@/components/ui/Modal'; // adjust to your modal path
 interface NavChild {
     name: string;
     href: string;
+    // 💡 ADDED: Flag to mark individual sub-items as coming soon
+    comingSoon?: boolean; 
 }
 
 interface NavItem {
@@ -146,15 +148,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     icon: Tractor,
                     key: 'farm-operations',
                     expandable: true,
-                    // ⭐ ADDED: Mark Farm Operations as coming soon
-                    
+                    // Note: If you want to mark the entire section as coming soon, you'd add comingSoon: true here.
                     children: [
                         // Use query parameters to designate the active tab view
-                        { name: 'Task Planner', href: `/farm-operation?tab=planner` }, // Simplified for the root page
+                        { name: 'Task Planner', href: `/farm-operation?tab=planner` }, 
                         { name: 'Crop and Livestock Records', href: `/farm-operation?tab=records` },
                         { name: 'Calendar View', href: `/farm-operation?tab=calendar` },
                         { name: 'Inventory Management', href: `/farm-operation?tab=inventory` },
-                        // ... any others ...
                     ],
                 },
                 {
@@ -163,7 +163,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'ai-insights',
                     expandable: false,
                     href: `/dashboard/farmer/${subRole}/ai-insights`,
-                    premium: true,
+                    comingSoon: true,
                 },
                 {
                     name: 'Mapping & Geo Tools',
@@ -171,7 +171,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'mapping',
                     expandable: false,
                     href: `/dashboard/farmer/${subRole}/mapping`,
-                    premium: true,
+                    comingSoon: true,
                 },
                 {
                     name: 'Financials - SmartNet',
@@ -199,7 +199,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                     ],
                 },
-                // UPDATED ITEM: Equipment Sync
                 {
                     name: 'Equipment Sync',
                     icon: Settings,
@@ -231,6 +230,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         {
                             name: 'Notifications',
                             href: `/dashboard/farmer/${subRole}/settings/notifications`,
+                            // 🚀 TARGET: SETTINGS SUB-ITEM COMING SOON
+                            comingSoon: true, 
                         },
                     ],
                 },
@@ -240,9 +241,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'help',
                     expandable: true,
                     children: [
-                        { name: 'Documentation', href: `/dashboard/farmer/${subRole}/help/docs` },
+                        { 
+                            name: 'Documentation', 
+                            href: `/dashboard/farmer/${subRole}/help/docs`,
+                            // 🚀 TARGET: HELP SUB-ITEM COMING SOON
+                            comingSoon: true,
+                        },
                         { name: 'Contact Support', href: `/help/contact-support` },
-                        { name: 'Training', href: `/dashboard/farmer/${subRole}/help/training` },
+                        { 
+                            name: 'Training', 
+                            href: `/dashboard/farmer/${subRole}/help/training`,
+                            // 🚀 TARGET: HELP SUB-ITEM COMING SOON
+                            comingSoon: true,
+                        },
                         { name: 'FAQ', href: `/help/faq` },
                     ],
                 },
@@ -336,6 +347,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             const itemIsActive =
                                 isActive(item.href) || isParentActive(item.children);
 
+                            // Determine if the parent itself is "Coming Soon" or "Premium"
                             const badge = item.comingSoon ? (
                                 <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
                                     Soon
@@ -354,7 +366,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                             onMouseEnter={sidebarCollapsed ? () => setHoveredMenuKey(item.key) : undefined}
                                             onClick={
                                                 sidebarCollapsed
-                                                ? item.comingSoon // ⭐ UPDATED: Check comingSoon on collapsed parent click
+                                                ? item.comingSoon // If the parent is coming soon, show modal on click
                                                     ? () => setShowComingSoon(true)
                                                     : () => toggleMenu(item.key) 
                                                 : undefined
@@ -408,32 +420,38 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                 isExpanded &&
                                                 item.children && (
                                                     <div className="ml-6 mt-1 space-y-1">
-                                                        {item.children.map((child) => (
-                                                            <Link
-                                                                key={child.href}
-                                                                href={item.comingSoon || child.href === '#' ? '#' : child.href}
-                                                                onClick={(e) => {
-                                                                    if (item.comingSoon || child.href === '#') {
-                                                                        e.preventDefault();
-                                                                        setShowComingSoon(true);
-                                                                    } else {
-                                                                        setSidebarOpen(false); // Close mobile sidebar on navigation
-                                                                    }
-                                                                }}
-                                                                className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
-                                                                    child.href === pathname ? 'font-semibold' : ''
-                                                                }`}
-                                                            >
-                                                                <span className="flex items-center gap-2">
-                                                                    {child.name}
-                                                                    {(item.comingSoon || child.href === '#') && (
-                                                                        <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
-                                                                            Soon
-                                                                        </span>
-                                                                    )}
-                                                                </span>
-                                                            </Link>
-                                                        ))}
+                                                        {item.children.map((child) => {
+                                                            // 🚀 UPDATED LOGIC: Check both parent and child comingSoon status
+                                                            const isChildComingSoon = 
+                                                                item.comingSoon || child.comingSoon || child.href === '#';
+                                                            
+                                                            return (
+                                                                <Link
+                                                                    key={child.href}
+                                                                    href={isChildComingSoon ? '#' : child.href}
+                                                                    onClick={(e) => {
+                                                                        if (isChildComingSoon) {
+                                                                            e.preventDefault();
+                                                                            setShowComingSoon(true);
+                                                                        } else {
+                                                                            setSidebarOpen(false); // Close mobile sidebar on navigation
+                                                                        }
+                                                                    }}
+                                                                    className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
+                                                                        child.href === pathname ? 'font-semibold' : ''
+                                                                    }`}
+                                                                >
+                                                                    <span className="flex items-center gap-2">
+                                                                        {child.name}
+                                                                        {isChildComingSoon && (
+                                                                            <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                                                                Soon
+                                                                            </span>
+                                                                        )}
+                                                                    </span>
+                                                                </Link>
+                                                            );
+                                                        })}
                                                     </div>
                                                 )}
                                         </div>
@@ -506,15 +524,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             {/* Collapsed Sidebar Flyout Preview (Higher Z-index: 60) */}
-            {sidebarCollapsed && activeParentItem && (
+            {sidebarCollapsed && activeParentItem && activeParentItem.children && (
                 <div
                     ref={flyoutRef}
                     className="fixed left-16 top-0 h-full overflow-y-auto bg-white shadow-xl z-60 border-l border-gray-200 transition-opacity duration-150 ease-in-out"
                     style={{ 
-                        // Use a fixed width for the flyout preview
                         width: '200px', 
-                        // Match the vertical position of the clicked item (approximate, more complex calc needed for exact position)
-                        // For simplicity, we just fix it to the top.
                         paddingTop: '64px', // Space for the top header
                         paddingBottom: '64px', // Space for the bottom area
                     }}
@@ -523,33 +538,38 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <h3 className="text-sm font-semibold text-gray-900 mb-2 border-b pb-2">
                             {activeParentItem.name}
                         </h3>
-                        {activeParentItem.children?.map((child) => (
-                            <Link
-                                key={child.href}
-                                href={activeParentItem.comingSoon || child.href === '#' ? '#' : child.href}
-                                onClick={(e) => {
-                                    if (activeParentItem.comingSoon || child.href === '#') {
-                                        e.preventDefault();
-                                        setShowComingSoon(true);
-                                    } else {
-                                        setHoveredMenuKey(null); // Close flyout on navigation
-                                        // Optional: Close mobile sidebar if applicable, but usually flyout is only for desktop collapsed
-                                    }
-                                }}
-                                className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
-                                    child.href === pathname ? 'font-semibold bg-gray-50' : ''
-                                }`}
-                            >
-                                <span className="flex items-center gap-2">
-                                    {child.name}
-                                    {(activeParentItem.comingSoon || child.href === '#') && (
-                                        <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
-                                            Soon
-                                        </span>
-                                    )}
-                                </span>
-                            </Link>
-                        ))}
+                        {activeParentItem.children.map((child) => {
+                            // 🚀 UPDATED LOGIC: Check both parent and child comingSoon status
+                            const isChildComingSoon = 
+                                activeParentItem.comingSoon || child.comingSoon || child.href === '#';
+
+                            return (
+                                <Link
+                                    key={child.href}
+                                    href={isChildComingSoon ? '#' : child.href}
+                                    onClick={(e) => {
+                                        if (isChildComingSoon) {
+                                            e.preventDefault();
+                                            setShowComingSoon(true);
+                                        } else {
+                                            setHoveredMenuKey(null); // Close flyout on navigation
+                                        }
+                                    }}
+                                    className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
+                                        child.href === pathname ? 'font-semibold bg-gray-50' : ''
+                                    }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        {child.name}
+                                        {isChildComingSoon && (
+                                            <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                                Soon
+                                            </span>
+                                        )}
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             )}
