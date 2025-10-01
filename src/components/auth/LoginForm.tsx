@@ -57,7 +57,7 @@ const Login: React.FC = () => {
       setCheckingProfile(false);
 
       if (profile) {
-        router.push("/");
+        router.push("/dashboard");
       } else {
         router.push("/complete-farm-profile");
       }

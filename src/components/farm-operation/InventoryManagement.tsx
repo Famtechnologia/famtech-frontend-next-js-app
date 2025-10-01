@@ -130,7 +130,7 @@ const InventoryManagement: React.FC = () => {
     
     useEffect(() => {
         fetchInventoryItems();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+       
     }, []); 
     
     const handleTabChange = (category: string) => {

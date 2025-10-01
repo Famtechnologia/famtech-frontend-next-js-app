@@ -9,7 +9,7 @@ import useSWR from 'swr';
 
 // --- Custom Task Hook ---
 // (The taskFetcher and useTaskSummary hook logic remains the same)
-const taskFetcher = async ([url, userId]: [string, string]) => {
+const taskFetcher = async ([ userId]: [string, string]) => {
     if (!userId) throw new Error("User ID is required.");
     
     const tasks = await getTasks(userId); 
@@ -138,7 +138,7 @@ const DashboardTasks = () => {
             <div className="text-base text-gray-500 py-4 flex flex-col items-center justify-center h-full text-center">
                 <ListChecks className="w-8 h-8 text-gray-400 mb-2"/>
                 <p className='font-medium text-gray-700'>Your productivity frontier awaits! 🌱</p>
-                <p>No tasks found. Let's cultivate a plan.</p>
+                <p>No tasks found. Let&apos;s cultivate a plan.</p>
             </div>
         );
         
