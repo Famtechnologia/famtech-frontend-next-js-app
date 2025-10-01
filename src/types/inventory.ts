@@ -1,14 +1,11 @@
-
-
-
 export interface ToolData {
     toolType?: string;
     brand?: string;
     model?: string;
     condition?: string;
-    lastServiced?: string;
-    warrantyExpiry?: string;
-    price?: string; 
+    lastServiced?: Date;
+    warrantyExpiry?: Date;
+    price?: number; 
 }
 
 export interface EquipmentPartData {
@@ -17,7 +14,7 @@ export interface EquipmentPartData {
     partNumber?: string;
     manufacturer?: string;
     warrantyExpiry?: string;
-    price?: string;
+    price?: number;
     condition?: string;
 }
 
@@ -28,7 +25,7 @@ export interface UnifiedInventoryItem {
     category: 'seeds' | 'feed' | 'fertilizer' | 'tools' | 'equipment parts';
     name: string;
     quantity: number;
-    reorderLevel?: number;
+    reorderLevel: number;
     usageRate?: string;
     expireDate?: string; 
     

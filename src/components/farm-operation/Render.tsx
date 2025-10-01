@@ -89,8 +89,8 @@ const ToolSpecificFields = ({ toolData, handleChange }: {
             <InputField label="Condition" name="toolData.condition" value={toolData.condition} onChange={handleChange} placeholder="e.g., Good, Fair, Needs Repair"/>
             
             {/* Date Fields */}
-            <InputField label="Last Serviced Date" name="toolData.lastServiced" type="date" value={toolData.lastServiced} onChange={handleChange} />
-            <InputField label="Warranty Expiry Date" name="toolData.warrantyExpiry" type="date" value={toolData.warrantyExpiry} onChange={handleChange} />
+            <InputField label="Last Serviced Date" name="toolData.lastServiced" type="date" value={toolData.lastServiced ? new Date(toolData.lastServiced).toISOString().split('T')[0] : ''} onChange={handleChange} />
+            <InputField label="Warranty Expiry Date" name="toolData.warrantyExpiry" type="date" value={toolData.warrantyExpiry ? new Date(toolData.warrantyExpiry).toISOString().split('T')[0] : ''} onChange={handleChange} />
             
             {/* Price Field (text for currency input) */}
             <InputField 
