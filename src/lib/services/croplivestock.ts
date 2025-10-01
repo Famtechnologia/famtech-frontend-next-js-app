@@ -17,8 +17,8 @@ export interface CropRecord {
     cropName: string;
     variety: string;
     location: string;
-    plantingDate: string;
-    expectedHarvestDate: string;
+    plantingDate: Date;
+    expectedHarvestDate: Date;
     currentGrowthStage: string;
     healthStatus: 'good' | 'excellent' | 'fair' | 'poor';
     area: { value: number; unit: string };
@@ -38,7 +38,7 @@ export interface LivestockRecord {
     specie: string;
     numberOfAnimal: number;
     ageGroup: string;
-    acquisitionDate: string;
+    acquisitionDate: Date;
     breed: string;
     healthStatus: 'good' | 'excellent' | 'fair' | 'poor';
     feedSchedule?: string;
@@ -102,12 +102,12 @@ export const getCropRecords = async (id: string): Promise<CropRecord[]> => {
 };
 
 export const createCropRecord = async (data: FormData): Promise<CropRecord> => {
-    const response = await apiClient.post(CROP_BASE_URL, data, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
-    return response.data;
+    // Log FormData entries for debugging
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
+    const response = await apiClient.post(CROP_BASE_URL, data);
+        return response.data;
 };
 
 export const getCropRecordById = async (id: string): Promise<CropRecord> => {
@@ -160,13 +160,8 @@ export const getLivestockRecords = async (id: string): Promise<LivestockRecord[]
 export const createLivestockRecord = async (
     data: FormData
 ): Promise<LivestockRecord> => {
-    const response = await apiClient.post(LIVESTOCK_BASE_URL, data, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
-    return response.data;
-};
+    const response = await apiClient.post(LIVESTOCK_BASE_URL, data);
+        return response.data;};
 
 export const getLivestockRecordById = async (
     id: string
