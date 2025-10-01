@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 import {
      updateCropRecord, CropRecord,
-    createCropRecord, UpdateCropPayload, addCropImages, deleteCropImages} from '../../lib/services/croplivestock';
+    createCropRecord,  deleteCropImages} from '../../lib/services/croplivestock';
 
 
 

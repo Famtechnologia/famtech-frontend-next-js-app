@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuthStore, User } from "@/lib/store/authStore";
+
 
 import { Camera, X} from 'lucide-react';
 import Image from 'next/image';
@@ -213,7 +213,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
                     <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
                         <Camera className="h-8 w-8 mb-2" />
                         {/* 🚀 FIX: Text updated for multiple files */}
-                        <p className="text-center">Select one or more images for this record.</p>
+                        <p className="text-center">Select image for this record.</p>
                         <input 
                             type="file" 
                             id="image" 
@@ -223,7 +223,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
                             multiple // 🚀 FIX: Added multiple attribute
                         />
                         <label htmlFor="image" className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer">
-                            {imageFiles.length > 0 ? `${imageFiles.length} image(s) selected` : 'Select Image(s)'}
+                            {imageFiles.length > 0 ? `${imageFiles.length} image selected` : 'Select Image'}
                         </label>
                     </div>
                 </div>
