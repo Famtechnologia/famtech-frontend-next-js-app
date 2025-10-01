@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Camera, TriangleAlert, X} from 'lucide-react';
 import Image from 'next/image';
-import { useAuthStore, User } from "@/lib/store/authStore";
 
 
 import {
@@ -52,7 +51,6 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         seedQuantityUnit: "kg",
         note: "",
     });
-    const userData = useAuthStore.getState().user as User;
 
     // State to store the selected file objects
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -109,9 +107,8 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         setError(null);
 
         const data = new FormData();
-        
+
         // --- Append Form Data ---
-        // Ensuring number fields are correctly appended as strings
         data.append("cropName", formData.cropName.toLowerCase());
         data.append("variety", formData.variety.toLowerCase());
         data.append("location", formData.location.toLowerCase());
@@ -120,20 +117,17 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         data.append("currentGrowthStage", formData.currentGrowthStage.toLowerCase());
         data.append("healthStatus", formData.healthStatus.toLowerCase());
         
-        // Area and Quantity fields
-        data.append("area.value", formData.areaValue.toString());
-        data.append("area.unit", formData.areaUnit);
-        data.append("seedQuantity.value", formData.seedQuantityValue.toString());
-        data.append("seedQuantity.unit", formData.seedQuantityUnit);
-        data.append("userId", userData.id);
+        // Area and Quantity fields using bracket notation for nested objects
+        data.append("area[value]", formData.areaValue.toString());
+        data.append("area[unit]", formData.areaUnit);
+        data.append("seedQuantity[value]", formData.seedQuantityValue.toString());
+        data.append("seedQuantity[unit]", formData.seedQuantityUnit);
         
         data.append("note", formData.note);
 
-        // --- Append Image Files (The critical part) ---
-        // Use the field name 'image' (singular) as indicated by your payload.
-        // FormData handles multiple files appended with the same key.
+        // --- Append Image Files ---
         imageFiles.forEach(file => {
-            data.append('image', file, file.name); // Added file.name as third optional argument
+            data.append('cropImages', file, file.name);
         });
 
         try {
@@ -142,7 +136,6 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             onRecordAdded();
         } catch (err) {
             console.error("Failed to add crop record:", err);
-            // Enhanced error message for user feedback
             setError("Failed to add crop record. Check network and ensure all required fields are valid."); 
         } finally {
             setLoading(false);
@@ -441,7 +434,7 @@ const formatDate = (dateString: string | Date | undefined): string => {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`;
 };
 
 // --- Component ---
@@ -564,47 +557,39 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
         setLoading(true);
         setError(null);
 
-        // 1. Prepare JSON payload for non-file fields (UpdateCropPayload)
-        const payload: UpdateCropPayload = {
-            cropName: formData.cropName.toLowerCase(),
-            variety: formData.variety.toLowerCase(),
-            location: formData.location.toLowerCase(),
-            plantingDate: formData.plantingDate,
-            expectedHarvestDate: formData.expectedHarvestDate,
-            currentGrowthStage: formData.currentGrowthStage.toLowerCase(),
-            healthStatus: formData.healthStatus.toLowerCase() as UpdateCropPayload['healthStatus'],
-            area: {
-                value: Number(formData.areaValue),
-                unit: formData.areaUnit,
-            },
-            seedQuantity: {
-                value: Number(formData.seedQuantityValue),
-                unit: formData.seedQuantityUnit,
-            },
-            note: formData.note,
-        };
+        const data = new FormData();
+
+        // Append all form data fields from state
+        data.append("cropName", formData.cropName.toLowerCase());
+        data.append("variety", formData.variety.toLowerCase());
+        data.append("location", formData.location.toLowerCase());
+        data.append("plantingDate", formData.plantingDate);
+        data.append("expectedHarvestDate", formData.expectedHarvestDate);
+        data.append("currentGrowthStage", formData.currentGrowthStage.toLowerCase());
+        data.append("healthStatus", formData.healthStatus.toLowerCase());
+        data.append("area[value]", formData.areaValue.toString());
+        data.append("area[unit]", formData.areaUnit);
+        data.append("seedQuantity[value]", formData.seedQuantityValue.toString());
+        data.append("seedQuantity[unit]", formData.seedQuantityUnit);
+        data.append("note", formData.note);
+
+        // Append any new image files to the same FormData object
+        // if (newImageFiles.length > 0) {
+        //     newImageFiles.forEach(file => {
+        //         data.append('cropImages', file, file.name);
+        //     });
+        // }
 
         try {
-            // 2. Perform the main data update first (Always a JSON PUT)
-            await updateCropRecord(record.id, payload);
-            
-            // 3. If new images are present, upload them separately (POST to /images endpoint)
-            if (newImageFiles.length > 0) {
-                const imageFormData = new FormData();
-                // Assumes the backend endpoint accepts files under the key 'image'
-                newImageFiles.forEach(file => {
-                    imageFormData.append('image', file, file.name);
-                });
-                await addCropImages(record.id, imageFormData);
-            }
+            // Perform the update with a single API call using the consolidated FormData
+            await updateCropRecord(record.id, data);
 
-            // 4. Close and refresh parent component data
+            // Close and refresh parent component data
             onClose();
             onRecordUpdated();
-            
         } catch (err) {
-            console.error('Update failed:', err);
-            setError('Failed to update crop record. Please check the form fields and connection.');
+            console.error("Update failed:", err);
+            setError("Failed to update crop record. Please check the form fields and connection.");
         } finally {
             setLoading(false);
         }
