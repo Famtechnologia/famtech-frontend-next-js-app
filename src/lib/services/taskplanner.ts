@@ -3,6 +3,7 @@ import apiClient, { API_URL } from "../api/farmoperation";
 const BASE_URL = `${API_URL}/api/task-planner`;
 
 export interface Task {
+  id:string;
   title: string;
   status?: string;
   priority?: string;
