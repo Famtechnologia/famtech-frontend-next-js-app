@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             return [
                 {
                     name: 'Dashboard',
-                    href: `/`,
+                    href: `/dashboard`,
                     icon: LayoutDashboard,
                     key: 'dashboard',
                     expandable: false,

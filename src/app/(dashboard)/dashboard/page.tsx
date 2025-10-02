@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
   Droplets,
