@@ -127,7 +127,7 @@ const TaskOverviewCard: React.FC = () => {
           <p className="text-2xl font-bold text-blue-800">
             {stats.inProgress}
           </p>
-          <p className="text-xs text-blue-600">In Progress</p>
+          <p className="text-xs text-blue-600">Ongoing</p>
         </div>
         <div className="text-center p-3 bg-red-50 rounded-lg">
           <p className="text-2xl font-bold text-red-800">

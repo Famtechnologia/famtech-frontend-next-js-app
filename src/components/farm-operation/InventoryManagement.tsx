@@ -670,7 +670,7 @@ const InventoryManagement = () => {
                 setShowAddItemModal(true);
                 setFormError(null); // Clear form error when opening new modal
             }}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-md transition-colors w-full md:w-auto justify-center"
+            className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-md transition-colors w-fit md:w-auto justify-center"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Item
           </button>
@@ -684,7 +684,7 @@ const InventoryManagement = () => {
             const status = getItemStatus(item);
             const isItemDeleting = isDeleting[item.id];
             return (
-              <Card key={item.id} title={item.name} className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Card key={item.id} title={item.name} className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300 min-w-[250px]">
                 <div className="space-y-2">
                     
                   
