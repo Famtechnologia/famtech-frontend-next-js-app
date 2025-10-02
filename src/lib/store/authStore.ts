@@ -5,8 +5,8 @@ export interface User {
   id: string;
   email: string;
   role: string;
-  region: string;
-  language: string;
+  country: string;
+  state: string;
   isVerified: boolean;
 }
 

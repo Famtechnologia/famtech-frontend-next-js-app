@@ -461,22 +461,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                     setSidebarOpen(false); // Close mobile sidebar on navigation
                                                 }
                                             }}
-                                            className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors ${itemIsActive
+                                            className={`block w-full rounded-lg text-sm font-medium transition-colors ${itemIsActive
                                                     ? 'bg-green-50 text-green-700'
                                                     : 'text-gray-700 hover:bg-gray-100'
-                                                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                                                }`}
                                             title={sidebarCollapsed ? item.name : undefined}
                                         >
-                                            <Icon
-                                                size={18}
-                                                className={sidebarCollapsed ? '' : 'mr-3'}
-                                            />
-                                            {!sidebarCollapsed && (
-                                                <>
-                                                    <span>{item.name}</span>
-                                                    {badge}
-                                                </>
-                                            )}
+                                            <div className={`flex items-center px-3 py-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+                                                <Icon
+                                                    size={18}
+                                                    className={sidebarCollapsed ? '' : 'mr-3'}
+                                                />
+                                                {!sidebarCollapsed && (
+                                                    <>
+                                                        <span>{item.name}</span>
+                                                        {badge}
+                                                    </>
+                                                )}
+                                            </div>
                                         </Link>
                                     )}
                                 </div>
