@@ -1,10 +1,24 @@
 // app/(WeatherForecast.tsx
 "use client";
+import { useEffect } from 'react';
 import Card from '@/components/ui/Card'
 import {  Sun, CloudRain, Wind, Eye,  } from 'lucide-react';
-
+import { getWeather } from '@/lib/services/weatherAPI';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function WeatherForecast() {
+
+  const {user} = useAuth()
+  console.log(user)
+
+  useEffect(() => {
+    const getAsyncWeather = async () => {
+      const res = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
+      console.log(res);
+    };
+    getAsyncWeather();
+  }, [])
+  
   return (
      <Card title="Weather Forecast" className="h-[350px] md:h-[320px] " headerClassName='bg-[#EFF6FF] border-b border-blue-200' bodyClassName='p-6' >
        <div className="space-y-4">
