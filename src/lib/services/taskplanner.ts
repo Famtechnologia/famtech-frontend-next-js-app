@@ -3,6 +3,7 @@ import apiClient, { API_URL } from "../api/farmoperation";
 const BASE_URL = `${API_URL}/api/task-planner`;
 
 export interface Task {
+  id: string;
   title: string;
   status?: string;
   priority?: string;
@@ -23,7 +24,7 @@ type TaskCreationData = Omit<Task, 'createdTime'>;
 
 // Fetches all tasks from the API using apiClient.
 // This automatically attaches the authentication token.
-export const getTasks = async (): Promise<Task[]> => {
+export const getTasks = async (userId: string): Promise<Task[]> => {
   const response = await apiClient.get(BASE_URL);
   // axios returns the data in the 'data' property
   return response.data;
