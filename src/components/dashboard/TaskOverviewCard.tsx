@@ -104,7 +104,7 @@ const TaskOverviewCard: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-900">
           Task Overview
         </h3>
-        <Link href="/farm-operation?tab=planner" passHref legacyBehavior>
+        <Link href="/farm-operation?tab=planner" >
           <a className="text-green-600 text-sm font-medium flex items-center hover:text-green-700">
             View All <Eye className="w-4 h-4 ml-1" />
           </a>
