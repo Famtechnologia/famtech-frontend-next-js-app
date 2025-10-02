@@ -434,7 +434,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                                     }}
                                                                     className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${child.href === pathname ? 'font-semibold' : ''
                                                                         }`}
-                                                                >
+                                                                    legacyBehavior>
                                                                     <span className="flex items-center gap-2">
                                                                         {child.name}
                                                                         {isChildComingSoon && (
@@ -466,7 +466,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                     : 'text-gray-700 hover:bg-gray-100'
                                                 }`}
                                             title={sidebarCollapsed ? item.name : undefined}
-                                        >
+                                            legacyBehavior>
                                             <div className={`flex items-center px-3 py-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
                                                 <Icon
                                                     size={18}
@@ -515,7 +515,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                 </nav>
             </div>
-
             {/* Collapsed Sidebar Flyout Preview (Higher Z-index: 60) */}
             {sidebarCollapsed && activeParentItem && activeParentItem.children && (
                 <div
@@ -550,7 +549,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                     }}
                                     className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${child.href === pathname ? 'font-semibold bg-gray-50' : ''
                                         }`}
-                                >
+                                    legacyBehavior>
                                     <span className="flex items-center gap-2">
                                         {child.name}
                                         {isChildComingSoon && (
@@ -565,7 +564,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                 </div>
             )}
-
             {/* Main content */}
             <div className="flex-1 flex flex-col overflow-y-auto">
                 {/* Top bar */}
@@ -616,7 +614,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <div className="p-6">{children}</div>
                 </main>
             </div>
-
             {/* Sidebar overlay */}
             {sidebarOpen && (
                 <div
@@ -624,7 +621,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
-
             {/* Coming soon modal */}
             <Modal
                 show={showComingSoon}

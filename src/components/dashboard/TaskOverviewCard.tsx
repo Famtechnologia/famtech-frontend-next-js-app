@@ -99,20 +99,20 @@ const TaskOverviewCard: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
           Task Overview
         </h3>
-        <Link href="/farm-operation?tab=planner" >
-          <a className="text-green-600 text-sm font-medium flex items-center hover:text-green-700">
-            View All <Eye className="w-4 h-4 ml-1" />
-          </a>
-        </Link>
-      </div>
+        <Link
+          href="/farm-operation?tab=planner"
+          className="text-green-600 text-sm font-medium flex items-center hover:text-green-700">
+          View All <Eye className="w-4 h-4 ml-1" />
 
-      {/* Task Stats (Unchanged) */}
-      <div className="grid grid-cols-3 gap-1 md:gap-4 mb-6">
+        </Link>
+      </div>
+      {/* Task Stats (Unchanged) */}
+      <div className="grid grid-cols-3 gap-1 md:gap-4 mb-6">
         <div className="text-center p-3 bg-green-50 rounded-lg">
           <p className="text-2xl font-bold text-green-800">
             {stats.completed}
@@ -132,9 +132,8 @@ const TaskOverviewCard: React.FC = () => {
           <p className="text-xs text-red-600">Overdue</p>
         </div>
       </div>
-
-      {/* Task List - Date Formatting Applied Here */}
-      <div className="space-y-3 flex-grow overflow-y-auto">
+      {/* Task List - Date Formatting Applied Here */}
+      <div className="space-y-3 flex-grow overflow-y-auto">
         {stats.items.length === 0 ? (
             <div className='text-center py-8 text-gray-500'>
                 <CheckCircle className='w-8 h-8 mx-auto text-gray-300 mb-2'/>
@@ -167,8 +166,8 @@ const TaskOverviewCard: React.FC = () => {
             ))
         )}
       </div>
-    </div>
-  );
+    </div>
+  );
 };
 
 export default TaskOverviewCard;

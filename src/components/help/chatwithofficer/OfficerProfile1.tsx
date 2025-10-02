@@ -56,7 +56,6 @@ const OfficerProfile: React.FC<OfficerProfileProps> = ({ officer, onStartChat })
           </svg>
         </button>
       </div>
-      
       {/* Bio and Responsibilities Sections */}
       {officer.bio && (
         <div className="p-4 border-t border-b border-gray-200 mb-6">
@@ -64,7 +63,6 @@ const OfficerProfile: React.FC<OfficerProfileProps> = ({ officer, onStartChat })
           <p className="text-sm text-gray-600 mt-2">{officer.bio}</p>
         </div>
       )}
-      
       {officer.responsibilities && (
         <div className="space-y-4">
           <h4 className="font-semibold text-gray-800">Key Responsibilities:</h4>
@@ -78,7 +76,6 @@ const OfficerProfile: React.FC<OfficerProfileProps> = ({ officer, onStartChat })
           ))}
         </div>
       )}
-      
       {/* Contact Section */}
       {officer.contact && (
         <div className="mt-6 border-t border-gray-200 pt-6">
@@ -96,7 +93,6 @@ const OfficerProfile: React.FC<OfficerProfileProps> = ({ officer, onStartChat })
           </div>
         </div>
       )}
-      
       <div className="mt-6 border-t border-gray-200 pt-6">
         <p className="text-sm text-gray-500">Response Rate: 100%</p>
         <p className="text-sm text-gray-500">Responds Within: 24hrs</p>
