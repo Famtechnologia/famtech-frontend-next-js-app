@@ -110,7 +110,7 @@ const Settings: React.FC = () => {
   }, [token]);
 
   if (isLoading) {
-    return <div className="md:p-8 text-center text-xl text-gray-700">Loading profile...</div>;
+    return <div className="md:p-8 text-center text-xl text-gray-700">Loading...</div>;
   }
 
   // Handle errors or missing profile data
