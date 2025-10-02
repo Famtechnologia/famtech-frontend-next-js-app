@@ -109,7 +109,7 @@ export default function FarmerAdminDashboard() {
 
   return (
     <ProtectedRoute requiredRole="farmer">
-      <DashboardLayout title="Dashboard">
+      {/* <DashboardLayout title="Dashboard"> */}
         <div className="space-y-6 ">
           {/* Welcome Header */}
           <WelcomeHeader />
@@ -227,7 +227,7 @@ export default function FarmerAdminDashboard() {
             <SmartAdvisory />
           </div>
         </div>
-      </DashboardLayout>
+      {/* </DashboardLayout> */}
     </ProtectedRoute>
   );
 }
