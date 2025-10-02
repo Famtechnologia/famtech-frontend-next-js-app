@@ -180,7 +180,7 @@ export default function UnauthorizedPage() {
           <div className="space-y-4">
             {!isLoggedIn ? (
               // Not logged in - show login button
-              <>
+              (<>
                 <button
                   onClick={handleLogin}
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl transition-all duration-200 hover:shadow-lg transform hover:scale-105"
@@ -188,7 +188,6 @@ export default function UnauthorizedPage() {
                   <LogIn className="w-5 h-5 mr-2" />
                   Sign In to Continue
                 </button>
-                
                 <div className="flex gap-4">
                   <button
                     onClick={handleGoBack}
@@ -206,10 +205,10 @@ export default function UnauthorizedPage() {
                     Home
                   </button>
                 </div>
-              </>
+              </>)
             ) : (
               // Logged in but insufficient permissions
-              <>
+              (<>
                 <button
                   onClick={handleContactAdmin}
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl transition-all duration-200 hover:shadow-lg transform hover:scale-105"
@@ -217,7 +216,6 @@ export default function UnauthorizedPage() {
                   <User className="w-5 h-5 mr-2" />
                   Request Access Upgrade
                 </button>
-                
                 <div className="flex gap-4">
                   <button
                     onClick={handleGoBack}
@@ -235,7 +233,7 @@ export default function UnauthorizedPage() {
                     Dashboard
                   </button>
                 </div>
-              </>
+              </>)
             )}
           </div>
 

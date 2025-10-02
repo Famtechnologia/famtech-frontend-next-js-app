@@ -292,7 +292,7 @@ export default function ModernFarmRegistration() {
 
       const result = await response.json();
       
-      router.push('/')
+      router.push('/dashboard')
       
       console.log('Registration successful:', result);
     } catch (error) {

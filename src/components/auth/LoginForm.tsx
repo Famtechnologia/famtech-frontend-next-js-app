@@ -38,8 +38,8 @@ const Login: React.FC = () => {
         id: responseUser.id,
         email: responseUser.email,
         role: responseUser.role ?? "user",
-        region: responseUser.region ?? "",
-        language: responseUser.language ?? "en",
+        country: responseUser.country ?? "",
+        state: responseUser.state ?? "en",
         isVerified: responseUser.isVerified ?? false,
       };
 

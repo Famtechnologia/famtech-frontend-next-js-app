@@ -137,9 +137,9 @@ export default function Page() {
             {/* Quick Links */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
-                href="/farms" 
+                href="/farms"
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
-              >
+                legacyBehavior>
                 <div className="w-8 h-8 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center mb-2 transition-colors">
                   <MapPin className="w-4 h-4 text-green-600" />
                 </div>
@@ -147,10 +147,10 @@ export default function Page() {
                 <p className="text-sm text-gray-600">Manage your farms</p>
               </Link>
 
-              <Link 
-                href="/crops" 
+              <Link
+                href="/crops"
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
-              >
+                legacyBehavior>
                 <div className="w-8 h-8 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center mb-2 transition-colors">
                   <Leaf className="w-4 h-4 text-green-600" />
                 </div>
@@ -159,9 +159,9 @@ export default function Page() {
               </Link>
 
               <Link
-                href="/analytics" 
+                href="/analytics"
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
-              >
+                legacyBehavior>
                 <div className="w-8 h-8 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center mb-2 transition-colors">
                   <Search className="w-4 h-4 text-green-600" />
                 </div>
@@ -169,10 +169,10 @@ export default function Page() {
                 <p className="text-sm text-gray-600">View reports</p>
               </Link>
 
-              <Link 
-                href="/settings" 
+              <Link
+                href="/settings"
                 className="group p-4 bg-gray-50 hover:bg-green-50 rounded-lg transition-colors duration-200 text-left"
-              >
+                legacyBehavior>
                 <div className="w-8 h-8 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center mb-2 transition-colors">
                   <Home className="w-4 h-4 text-green-600" />
                 </div>

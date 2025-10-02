@@ -383,7 +383,6 @@ const CropLivestockRecords: React.FC = () => {
                     <span className="text-2xl mr-2">🐄</span>Livestock
                 </button>
             </div>
-
             <div className="md:flex justify-between space-y-4 items-center mb-6">
                 <div className="relative w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -406,7 +405,6 @@ const CropLivestockRecords: React.FC = () => {
                     </button>
                 </div>
             </div>
-
             {/* Status Messages */}
             {loading && (
                 <div className="text-center py-8 text-gray-500">Loading records...</div>
@@ -422,7 +420,6 @@ const CropLivestockRecords: React.FC = () => {
                     No {activeRecordTab.toLowerCase()} records found.
                 </div>
             )}
-
             {/* Records Grid */}
             {!loading && !error && currentRecords.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -587,7 +584,6 @@ const CropLivestockRecords: React.FC = () => {
                     })}
                 </div>
             )}
-
             {/* Modals */}
             <Modal
                 show={isRecordModalOpen}
@@ -604,7 +600,6 @@ const CropLivestockRecords: React.FC = () => {
                     onClose={() => setIsRecordModalOpen(false)}
                 />
             </Modal>
-
             <Modal
                 show={isAddCropModalOpen}
                 onClose={() => setIsAddCropModalOpen(false)}
@@ -625,7 +620,6 @@ const CropLivestockRecords: React.FC = () => {
                     onRecordAdded={fetchLivestockData}
                 />
             </Modal>
-
             <Modal
                 show={isUpdateModalOpen}
                 onClose={() => setIsUpdateModalOpen(false)}
@@ -639,14 +633,13 @@ const CropLivestockRecords: React.FC = () => {
                     />
                 ) : (
                     // FIX: Pass the record as BaseLivestockRecord, as the UpdateForm expects the data structure from the API
-                    <UpdateLivestockForm
+                    (<UpdateLivestockForm
                         record={selectedRecord as BaseLivestockRecord}
                         onClose={() => setIsUpdateModalOpen(false)}
                         onRecordUpdated={fetchLivestockData}
-                    />
+                    />)
                 )}
             </Modal>
-
             {/* NEW: Delete Confirmation Modal */}
             <Modal
                 show={isConfirmDeleteOpen}
