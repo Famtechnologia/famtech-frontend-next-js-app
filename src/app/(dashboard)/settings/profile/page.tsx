@@ -1,7 +1,147 @@
-import React from 'react';
+'use client';
+import React, { useState, useEffect } from 'react';
 import { User, MapPin, Phone, Wheat, Ruler } from 'lucide-react';
+import axios, { AxiosError } from 'axios'; // Import AxiosError for better type checking
+import { API_URL } from '../../../../../config';
+import { useAuthStore } from "@/lib/store/authStore"; 
 
-const Settings = () => {
+// --- TYPE DEFINITIONS FOR FARM PROFILE ---
+interface Owner {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+}
+
+interface Location {
+    country: string;
+    state: string;
+    city: string;
+    address: string;
+    // FIX 1: Replaced {} with Record<string, unknown> or simply object
+    // Assuming coordinates is an object (e.g., { lat: number, lng: number })
+    // If you don't know the keys, use Record<string, unknown> or type it precisely.
+    coordinates: Record<string, unknown>; 
+}
+
+interface FarmProfileData {
+    id: string;
+    uid: string;
+    farmName: string;
+    farmType: string;
+    farmSize: number;
+    farmSizeUnit: string;
+    establishedYear: number;
+    location: Location;
+    currency: string;
+    timezone: string;
+    primaryCrops: string[];
+    farmingMethods: string[];
+    seasonalPattern: string;
+    language: string;
+    owner: Owner;
+    createdAt: string;
+    updatedAt: string;
+}
+// ----------------------------------------
+
+const GET_PROFILE_ENDPOINT = '/api/get-profile';
+const GET_PROFILE_URL = `${API_URL}${GET_PROFILE_ENDPOINT}`; 
+
+const Settings: React.FC = () => {
+  const token = useAuthStore(state => state.token);
+  
+  // Explicitly typing state for type safety
+  const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); 
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!token) {
+        setError("You are not authenticated. Please log in."); 
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(GET_PROFILE_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+          },
+        });
+        
+        // Correctly access the nested data object
+        const profileData = response.data?.data?.farmProfile as FarmProfileData; 
+
+        if (profileData) {
+            setFarmProfile(profileData); 
+            setError(null);
+        } else {
+            setError("Profile data is available but empty.");
+        }
+
+      } catch (err: unknown) {
+        console.error("Failed to fetch farm profile:", err);
+        
+        // FIX 2: Safely check for AxiosError and access the status property
+        let errorMessage = "Failed to load profile due to an unknown error.";
+        
+        if (axios.isAxiosError(err)) {
+            const axiosError = err as AxiosError;
+            const status = axiosError.response?.status; // Safely access status
+
+            if (status === 401) {
+                errorMessage = "Authentication failed. Please log in again.";
+            } else if (status === 404) {
+                errorMessage = "Farm profile not found. Please create a profile.";
+            } else if (status !== undefined) {
+                errorMessage = `Server error (Status: ${status}). Failed to load profile.`;
+            }
+        }
+        
+        setError(errorMessage);
+
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [token]);
+
+  if (isLoading) {
+    return <div className="md:p-8 text-center text-xl text-gray-700">Loading...</div>;
+  }
+
+  // Handle errors or missing profile data
+  if (error || !farmProfile) {
+    return <div className="md:p-8 text-center text-xl text-red-600">
+        {error || "No profile data to display."}
+    </div>;
+  }
+  
+  // Destructuring is safe here because of the checks above
+  const { 
+    farmType, 
+    farmSize, 
+    farmSizeUnit,
+    owner, 
+    location 
+  } = farmProfile;
+
+  // Construct display strings
+  const farmOwnerName = owner 
+    ? `${owner.firstName} ${owner.lastName}`.trim() 
+    : 'N/A';
+    
+  const phoneNumber = owner?.phoneNumber || 'N/A';
+  
+  const farmLocationDisplay = location 
+    ? `${location.city}, ${location.state}` 
+    : 'N/A';
+    
+  const farmSizeDisplay = `${farmSize} ${farmSizeUnit}`;
+
   return (
     <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
       <div className="space-y-2">
@@ -22,7 +162,7 @@ const Settings = () => {
               </div>
               <div>
                 <p className="text-base md:text-lg font-medium text-gray-800">Farm Owner</p>
-                <p className="text-gray-600 text-sm">Eribola Ayomiposi</p>
+                <p className="text-gray-600 text-sm">{farmOwnerName}</p>
               </div>
             </div>
             <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 bg-gray-100">
@@ -33,12 +173,12 @@ const Settings = () => {
           {/* Farm Location */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full  text-blue-600">
+              <div className="p-2 rounded-full  text-blue-600">
                 <MapPin className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-base md:text-lg font-medium text-gray-800">Farm Location</p>
-                <p className="text-gray-600 text-sm">Ibadan, Lagos</p>
+                <p className="text-gray-600 text-sm">{farmLocationDisplay}</p>
               </div>
             </div>
             <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
@@ -54,7 +194,7 @@ const Settings = () => {
               </div>
               <div>
                 <p className="text-base md:text-lg font-medium text-gray-800">Phone Number</p>
-                <p className="text-gray-600 text-sm">+234 812 673 1234</p>
+                <p className="text-gray-600 text-sm">{phoneNumber}</p>
               </div>
             </div>
             <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
@@ -77,7 +217,7 @@ const Settings = () => {
               </div>
               <div>
                 <p className="text-base md:text-lg font-medium text-gray-700">Farm Type</p>
-                <p className="text-gray-600 text-sm">Mixed Farming</p>
+                <p className="text-gray-600 text-sm">{farmType}</p>
               </div>
             </div>
             <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
@@ -88,12 +228,12 @@ const Settings = () => {
           {/* Farm Size */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
             <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full  text-blue-600">
+              <div className="p-2 rounded-full  text-blue-600">
                 <Ruler className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-base md:text-lg font-medium text-gray-600">Farm Size</p>
-                <p className="text-gray-600 text-sm">2 Acres</p>
+                <p className="text-gray-600 text-sm">{farmSizeDisplay}</p>
               </div>
             </div>
             <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">

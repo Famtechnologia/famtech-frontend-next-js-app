@@ -292,7 +292,7 @@ export default function ModernFarmRegistration() {
 
       const result = await response.json();
       
-      router.push('/')
+      router.push('/dashboard')
       
       console.log('Registration successful:', result);
     } catch (error) {
@@ -494,7 +494,7 @@ export default function ModernFarmRegistration() {
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">
           Established Year 
-          <span className="text-gray-400 text-xs ml-1">(Optional)</span>
+          <span className="text-gray-400 text-xs ml-1"></span>
         </label>
         <input
           type="number"
@@ -503,7 +503,7 @@ export default function ModernFarmRegistration() {
           className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
             errors.establishedYear ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
           }`}
-          placeholder="Enter establishment year (optional)"
+          placeholder="Enter establishment year"
           value={formData.establishedYear}
           onChange={(e) => updateFormData('establishedYear', e.target.value)}
         />

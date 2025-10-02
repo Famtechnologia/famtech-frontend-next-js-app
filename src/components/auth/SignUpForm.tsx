@@ -8,207 +8,239 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Image from "next/image";
 import { useAuthStore, User } from "@/lib/store/authStore";
 import { register as signupRequest } from "@/lib/api/auth";
+import { countries } from "@/lib/services/countries.js"
 
 interface SignupFormInputs {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  region: string;
-  language: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  country: string;
+  state: string;
 }
 
+// Define the types for Country and State based on your countries.js data
+interface State {
+  name: string;
+}
 
-const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+interface Country {
+  name: string;
+  states: State[];
+  // Include other country properties here if they exist
+}
+
+const strongPasswordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
 export default function SignupPage() {
-  // const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    watch, // Used to watch the password field for confirmPassword validation
-    formState: { errors, isSubmitting },
-  } = useForm<SignupFormInputs>();
+  const {
+    register,
+    handleSubmit,
+    watch, // Used to watch the password field for confirmPassword validation
+    
+    formState: { errors, isSubmitting },
+  } = useForm<SignupFormInputs>();
 
-  const password = watch("password", ""); // Watch the password field
+  const password = watch("password", ""); // Watch the password field
+  const selectedCountryName = watch("country");
 
-  const onSubmit = async (data: SignupFormInputs) => {
-    // This check is a safeguard, but react-hook-form's 'validate' handles this client-side too.
-    if (data.password !== data.confirmPassword) {
-      // This toast is unlikely to fire if client-side validation passes, but is kept for robustness.
-      toast.error("Passwords do not match");
-      return;
-    }
+  // Use the Country interface for type safety
+  const selectedCountry = (countries as Country[]).find(
+    (country) => country.name.toLowerCase() === selectedCountryName
+  );
 
-    try {
-      const res = await signupRequest({
-        email: data.email,
-        password: data.password,
-        region: data.region,
-        language: data.language,
-      });
 
-      console.log("Signup response:", res);
+  const onSubmit = async (data: SignupFormInputs) => {
+    // This check is a safeguard, but react-hook-form's 'validate' handles this client-side too.
+    if (data.password !== data.confirmPassword) {
+      // This toast is unlikely to fire if client-side validation passes, but is kept for robustness.
+      toast.error("Passwords do not match");
+      return;
+    }
 
-      const { data: resData, message } = res;
-      const { user: responseUser } = resData;
+    try {
+      const res = await signupRequest({
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        country: data.country,
+        state: data.state,
+      });
 
-      if (!responseUser) {
-        throw new Error("No user returned from server");
-      }
+      console.log("Signup response:", res);
 
-      const user: User = {
-        id: responseUser.id,
-        email: responseUser.email,
-        role: responseUser.role ?? "user",
-        region: responseUser.region ?? "",
-        language: responseUser.language ?? "en",
-        isVerified: responseUser.isVerified ?? false,
-      };
+      const { data: resData, message } = res;
+      const { user: responseUser } = resData;
 
-      useAuthStore.getState().setUser(user);
+      if (!responseUser) {
+        throw new Error("No user returned from server");
+      }
 
-      toast.success(message || "Signup successful! Please check your email for verification.");
-      // router.push("/verify-email");
-    } catch (err: unknown) {
-      console.error("Signup failed:", err);
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Signup failed. Please check your details and try again.";
-      toast.error(errorMessage);
-    }
-  };
+      const user: User = {
+        id: responseUser.id,
+        email: responseUser.email,
+        role: responseUser.role ?? "user",
+        country: responseUser.country ?? "",
+        state: responseUser.state ?? "en",
+        isVerified: responseUser.isVerified ?? false,
+      };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-        <div className="h-24 w-24 flex justify-center mx-auto mt-6">
-          <Image
-            src="/images/auth/Logo 1.jpg"
-            width={96}
-            height={96}
-            alt="logo"
-            className="rounded-full"
-          />
-        </div>
-        <h2 className="text-2xl font-bold mb-4 text-center">
-          Create an Account 
-        </h2>
+      useAuthStore.getState().setUser(user);
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* email */}
-          <input
-            type="email"
-            placeholder="Email"
-            {...register("email", { required: "Email is required" })}
-            className="w-full p-3 border-gray-600 border rounded-xl"
-          />
-          {errors.email && (
-            <p className="text-red-600 text-sm">{errors.email.message}</p>
-          )}
+      toast.success(
+        message ||
+          "Signup successful! Please check your email for verification."
+      );
+      // router.push("/verify-email");
+    } catch (err: unknown) {
+      console.error("Signup failed:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Signup failed. Please check your details and try again.";
+      toast.error(errorMessage);
+    }
+  };
 
-          {/* password */}
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8, // CHANGED: Min length 8
-                  message: "Password must be at least 8 characters.",
-                },
-                pattern: {
-                  value: strongPasswordRegex, // CHANGED: New regex
-                  message:
-                    "Password must include an uppercase letter, a lowercase letter, a number, and a special character (!@#$%^&*).",
-                },
-              })}
-              className="w-full p-3 border-gray-600 border rounded-xl pr-10"
-            />
-            <span
-              onClick={() => setShowPassword((p) => !p)}
-              className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
-          </div>
-          {errors.password && (
-            <p className="text-red-600 text-sm">{errors.password.message}</p>
-          )}
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+    
+        <div className="h-24 w-24 flex justify-center mx-auto mt-6">
+          <Image
+            src="/images/auth/Logo 1.jpg"
+            width={96}
+            height={96}
+            alt="logo"
+            className="rounded-full"
+          />
+        
+        </div>
+    
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Create an Account
+        </h2>
+    
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* email */}
+          <input
+            type="email"
+            placeholder="Email"
+            {...register("email", { required: "Email is required" })}
+            className="w-full p-3 border-gray-600 border rounded-xl"
+          />
+          {errors.email && (
+            <p className="text-red-600 text-sm">{errors.email.message}</p>
+          )}
+          {/* password */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 8, // CHANGED: Min length 8
+                  message: "Password must be at least 8 characters.",
+                },
+                pattern: {
+                  value: strongPasswordRegex, // CHANGED: New regex
+                  message:
+                    "Password must include an uppercase letter, a lowercase letter, a number, and a special character (!@#$%^&*).",
+                },
+              })}
+              className="w-full p-3 border-gray-600 border rounded-xl pr-10"
+            />
 
-          {/* confirm password */}
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm Password"
-              {...register("confirmPassword", {
-                required: "Please confirm your password",
-                // Validate that this field matches the 'password' field
-                validate: (value) =>
-                  value === password || "Passwords do not match.",
-              })}
-              className="w-full p-3 border-gray-600 border rounded-xl pr-10"
-            />
-            <span
-              onClick={() => setShowConfirmPassword((p) => !p)}
-              className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
-            >
-              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
-          </div>
-          {errors.confirmPassword && (
-            <p className="text-red-600 text-sm">
-              {errors.confirmPassword.message}
-            </p>
-          )}
+            <span
+              onClick={() => setShowPassword((p) => !p)}
+              className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
+            >
+               {showPassword ? <FaEyeSlash /> : <FaEye />}         
+               {" "}
+            </span>
+          </div>
+          {errors.password && (
+            <p className="text-red-600 text-sm">{errors.password.message}</p>
+          )}
+          {/* confirm password */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm Password"
+              {...register("confirmPassword", {
+                required: "Please confirm your password",
+                validate: (value) =>
+                  value === password || "Passwords do not match.",
+              })}
+              className="w-full p-3 border-gray-600 border rounded-xl pr-10"
+            />
 
-          {/* region */}
-          <input
-            type="text"
-            placeholder="Region"
-            {...register("region", { required: "Region is required" })}
-            className="w-full p-3 border-gray-600 border rounded-xl"
-          />
-          {errors.region && (
-            <p className="text-red-600 text-sm">{errors.region.message}</p>
-          )}
-
-          {/* language */}
-          <select
-            {...register("language", { required: "Language is required" })}
-            className="w-full p-3 border-gray-600 border rounded-xl"
-          >
-            <option value="">Select Language</option>
-            <option value="en">English</option>
-            <option value="yo">Yoruba</option>
-            <option value="ha">Hausa</option>
-            <option value="ig">Igbo</option>
-            <option value="pcm">Pidgin</option>
-          </select>
-          {errors.language && (
-            <p className="text-red-600 text-sm">{errors.language.message}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400"
-          >
-            {isSubmitting ? "Signing up..." : "Sign Up"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Already have an account?{" "}
-          <Link href="/login" className="text-green-600 hover:underline font-medium">
-            Sign in
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
+            <span
+              onClick={() => setShowConfirmPassword((p) => !p)}
+              className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
+            >
+               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />} 
+            </span>
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-red-600 text-sm">
+               {errors.confirmPassword.message}
+            </p>
+          )}
+          {/* country */}
+          <select
+            {...register("country", { required: "Country is required" })}
+            className="w-full p-3 border-gray-600 border rounded-xl"
+          >
+            <option value="" hidden>Select Country</option>
+            {/* FIX: Use 'Country' interface instead of 'any' */}
+            {(countries as Country[])?.map((country: Country) => (
+              <option key={country.name} value={country.name?.toLowerCase()}>{country.name}</option>
+            ))}
+          </select>
+          {errors.country && (
+            <p className="text-red-600 text-sm">{errors.country.message}</p>
+          )}
+          {/* state */}
+          <select
+            {...register("state", { required: "State is required" })}
+            className="w-full p-3 border-gray-600 border rounded-xl"
+          >
+            <option value="" hidden>Select State</option>
+            {selectedCountry &&
+             /* FIX: Use 'State' interface instead of 'any' */
+              selectedCountry.states.map((state: State) => (
+                <option key={state.name} value={state.name.toLowerCase()}>
+                  {state.name}
+                </option>
+              ))}
+          </select>
+          {errors.state && (
+            <p className="text-red-600 text-sm">{errors.state.message}</p>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400"
+          >
+           {isSubmitting ? "Signing up..." : "Sign Up"}
+          </button>
+        </form>
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Already have an account?
+          <Link
+            href="/login"
+            className="text-green-600 hover:underline font-medium"
+          >
+           Sign in
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }

@@ -851,7 +851,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
     <div className="space-y-6">
       {type === 'Crops' ? (
         // Crop Details
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        (<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
             {record?.image && (
               <Image 
@@ -883,10 +883,10 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
             <label className="block text-sm font-medium text-gray-700 mb-1">Maturity</label>
             <input type="text" defaultValue={record?.maturity || ''} readOnly className="w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800" />
           </div>
-        </div>
+        </div>)
       ) : (
         // Livestock Details
-        <div className="space-y-4">
+        (<div className="space-y-4">
           <div className="sm:col-span-2">
             {record?.image && (
               <Image 
@@ -918,9 +918,8 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type, onClose }) 
               <input type="text" defaultValue={record?.lastCheckup || ''} readOnly className="w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800" />
             </div>
           </div>
-        </div>
+        </div>)
       )}
-
       {/* Modal Footer */}
       <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
         <button className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100" onClick={onClose}>

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 import { getTasks, createTask, updateTask, deleteTask , Task as ApiTask } from '../../lib/services/taskplanner';
+import { useAuthStore, User } from "@/lib/store/authStore";
 
 interface Task {
   id: string;
@@ -259,7 +260,8 @@ const fetchTasks = React.useCallback(async () => {
   setLoading(true);
   setError(null);
   try {
-    const data = await getTasks() as ApiTaskWithId[];
+    const userData = useAuthStore.getState().user as User;
+    const data = await getTasks(userData.id) as ApiTaskWithId[];
 
     const mappedTasks: Task[] = data.map((task) => {
       const dateObject = task.timeline?.dueDate ? new Date(task.timeline.dueDate) : null;
@@ -303,7 +305,7 @@ useEffect(() => {
 
   const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    const userData = useAuthStore.getState().user as User;
     // Convert taskType: "General task" -> "general_task" for the API
     const taskTypeForApi = formTaskType.toLowerCase();
 
@@ -318,6 +320,7 @@ useEffect(() => {
       note: formNotes,
       taskType: taskTypeForApi, 
       assignee: formAssignee,
+      userId: userData.id,
       entity_id: 'sample_entity_id',
     };
 

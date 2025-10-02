@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+
 import { Camera, X} from 'lucide-react';
 import Image from 'next/image';
 
@@ -34,7 +35,6 @@ interface AddLivestockFormProps {
 
 export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onRecordAdded }) => {
     
-    // State is strictly typed as LivestockFormData
     const [formData, setFormData] = useState<LivestockFormData>({
         specie: '',
         breed: '',
@@ -46,35 +46,36 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
         note: '',
     });
     
-    // File state
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+    // 🚀 FIX: State now holds an array of files for multiple images
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Effect for handling image preview URL creation and cleanup
+    // 🚀 FIX: Effect now handles multiple preview URLs
     useEffect(() => {
-        if (!imageFile) {
-            setImagePreviewUrl(null);
+        if (imageFiles.length === 0) {
+            setImagePreviewUrls([]);
             return;
         }
-        const objectUrl = URL.createObjectURL(imageFile);
-        setImagePreviewUrl(objectUrl);
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [imageFile]);
+        const objectUrls = imageFiles.map(file => URL.createObjectURL(file));
+        setImagePreviewUrls(objectUrls);
 
-    // Strictly Typed Change Handler
+        // Cleanup function to revoke all object URLs
+        return () => {
+            objectUrls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [imageFiles]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
         const { id, value, type } = e.target;
         
         setFormData(prev => {
             if (type === 'number') {
-                // Use parseFloat for potentially non-integer values, falling back to 0
                 const numValue = parseFloat(value) || 0; 
                 return { ...prev, [id]: numValue };
             } 
             
-            // Explicitly cast the healthStatus value to ensure type safety
             if (id === 'healthStatus') {
                 const healthValue = value.toLowerCase() as LivestockFormData['healthStatus'];
                 return { ...prev, [id]: healthValue };
@@ -84,16 +85,13 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
         });
     };
 
-    // Strictly Typed File Change Handler
+    // 🚀 FIX: File handler now accepts multiple files
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        if (e.target.files && e.target.files.length > 0) {
-            // NOTE: Using Array.from(files) to ensure compatibility if you switch to multiple later,
-            // but here we just take the first file.
-            setImageFile(e.target.files[0]);
+        if (e.target.files) {
+            setImageFiles(Array.from(e.target.files));
         }
     };
 
-    // Strictly Typed Submit Handler
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
@@ -108,20 +106,20 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
         const data: FormData = new FormData();
         data.append('specie', formData.specie);
         data.append('breed', formData.breed);
-        data.append('numberOfAnimal', formData.numberOfAnimal.toString());
+        data.append('numberOfAnimal', formData.numberOfAnimal.toFixed());
         data.append('ageGroup', formData.ageGroup);
         data.append('acquisitionDate', formData.acquisitionDate);
         data.append('healthStatus', formData.healthStatus);
         data.append('feedSchedule', formData.feedSchedule);
         data.append('note', formData.note);
-        
-        // Append the single image file
-        if (imageFile) {
-            data.append('image', imageFile, imageFile.name);
-        }
+
+        // 🚀 FIX: Correctly loop over the array of files and append them
+        imageFiles.forEach((file) => {
+          data.append("livestockImages", file, file.name);
+        });
 
         try {
-            await createLivestockRecord(data); // Call your API service function
+            await createLivestockRecord(data);
             onClose();
             onRecordAdded();
         } catch (err: unknown) {
@@ -136,41 +134,39 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Image Preview Block */}
-            {imagePreviewUrl && (
-                <div className="flex justify-center mb-4">
-                    <Image
-                        src={imagePreviewUrl}
-                        alt="New image preview"
-                        width={200}
-                        height={200}
-                        className="rounded-lg object-cover"
-                    />
+            {/* 🚀 FIX: Image preview now maps over multiple URLs */}
+            {imagePreviewUrls.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-4 mb-4">
+                    {imagePreviewUrls.map((url, index) => (
+                        <Image
+                            key={index}
+                            src={url}
+                            alt={`New image preview ${index + 1}`}
+                            width={120} // Smaller size for multiple previews
+                            height={120}
+                            className="rounded-lg object-cover"
+                        />
+                    ))}
                 </div>
             )}
             
-            {/* 🛑 CORE FIX: Ensured all major form fields are within the Grid container */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
-                {/* Species (Full width) */}
                 <div className="sm:col-span-2">
                     <label htmlFor="specie" className="block text-sm font-medium text-gray-700 mb-1">Livestock Species<span className="text-red-500">*</span></label>
                     <input type="text" id="specie" placeholder="E.g., Cattle, Chicken, Goat" value={formData.specie} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-md text-gray-800" />
                 </div>
                 
-                {/* Breed (Half width) */}
                 <div>
                     <label htmlFor="breed" className="block text-sm font-medium text-gray-700 mb-1">Breed</label>
                     <input type="text" id="breed" placeholder="E.g., Holstein, Leghorn" value={formData.breed} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md text-gray-800" />
                 </div>
                 
-                {/* Number of Animals (Half width) */}
                 <div>
                     <label htmlFor="numberOfAnimal" className="block text-sm font-medium text-gray-700 mb-1">Number of Animals<span className="text-red-500">*</span></label>
                     <input type="number" id="numberOfAnimal" placeholder="E.g., 10" value={formData.numberOfAnimal} onChange={handleChange} required min="1" className="w-full p-2 border border-gray-300 rounded-md text-gray-800" />
                 </div>
                 
-                {/* Age Group (Half width) */}
                 <div>
                     <label htmlFor="ageGroup" className="block text-sm font-medium text-gray-700 mb-1">Age Group</label>
                     <select id="ageGroup" value={formData.ageGroup} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md text-gray-800">
@@ -180,13 +176,11 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
                     </select>
                 </div>
                 
-                {/* Acquisition Date (Half width) */}
                 <div>
                     <label htmlFor="acquisitionDate" className="block text-sm font-medium text-gray-700 mb-1">Acquisition Date<span className="text-red-500">*</span></label>
                     <input type="date" id="acquisitionDate" value={formData.acquisitionDate} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-md text-gray-800" />
                 </div>
                 
-                {/* Health Status (Half width) */}
                 <div>
                     <label htmlFor="healthStatus" className="block text-sm font-medium text-gray-700 mb-1">Health Status</label>
                     <select id="healthStatus" value={formData.healthStatus} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md text-gray-800">
@@ -197,13 +191,11 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
                     </select>
                 </div>
 
-                {/* Feed Schedule (Half width) */}
                 <div>
                     <label htmlFor="feedSchedule" className="block text-sm font-medium text-gray-700 mb-1">Feed Schedule<span className="text-red-500">*</span></label>
                     <input type="text" id="feedSchedule" placeholder="E.g twice a day, grass" value={formData.feedSchedule} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-md text-gray-800" />
                 </div>
                 
-                {/* Notes (Full width) */}
                 <div className="sm:col-span-2">
                     <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                     <textarea
@@ -216,31 +208,31 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({ onClose, onR
                     ></textarea>
                 </div>
 
-                {/* Image Upload Area (Full width) */}
                 <div className="sm:col-span-2">
                     <div className="text-sm font-medium text-gray-700 mb-2">Livestock Image</div>
                     <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
                         <Camera className="h-8 w-8 mb-2" />
-                        <p className="text-center">Select one image for this record.</p>
+                        {/* 🚀 FIX: Text updated for multiple files */}
+                        <p className="text-center">Select image for this record.</p>
                         <input 
                             type="file" 
                             id="image" 
                             accept="image/*"
                             onChange={handleFileChange} 
                             className="hidden" 
+                            multiple // 🚀 FIX: Added multiple attribute
                         />
                         <label htmlFor="image" className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer">
-                            {imageFile ? `Change Image: ${imageFile.name}` : 'Select Image'}
+                            {imageFiles.length > 0 ? `${imageFiles.length} image selected` : 'Select Image'}
                         </label>
                     </div>
                 </div>
 
-            </div> {/* End of Grid Container */}
+            </div> 
 
             {error && <div className="text-center text-red-500 mt-4">{error}</div>}
             {loading && <div className="text-center text-green-600">Adding record...</div>}
             
-            {/* Action Buttons (Full width) */}
             <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
                 <button type="button" className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100" onClick={onClose} disabled={loading}>
                     Cancel
@@ -285,7 +277,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({ record
         numberOfAnimal: record.numberOfAnimal || 1,
         ageGroup: record.ageGroup || 'Adult',
         feedSchedule: record.feedSchedule || '',
-        acquisitionDate: formatDate(record.acquisitionDate) || '',
+        acquisitionDate: formatDate(record.acquisitionDate.toString()) || '',
         healthStatus: (record.healthStatus?.toLowerCase() || 'good') as UpdateLivestockPayload['healthStatus'],
         note: record.note || '',
     });
@@ -309,7 +301,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({ record
             numberOfAnimal: record.numberOfAnimal || 1,
             ageGroup: record.ageGroup || 'Adult',
             feedSchedule: record.feedSchedule || '',
-            acquisitionDate: formatDate(record.acquisitionDate) || '',
+            acquisitionDate: formatDate(record.acquisitionDate.toString()) || '',
             healthStatus: (record.healthStatus?.toLowerCase() || 'good') as UpdateLivestockPayload['healthStatus'],
             note: record.note || '',
         });

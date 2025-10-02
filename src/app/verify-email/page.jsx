@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Mail,
@@ -16,6 +17,7 @@ import {
 import { verifyEmail } from "@/lib/api/auth";
 
 export default function VerifyEmailPage() {
+  const router = useRouter()
   const [mounted, setMounted] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState("verifying"); // 'verifying', 'success', 'expired', 'invalid', 'error'
   const [isResending, setIsResending] = useState(false);
@@ -140,13 +142,13 @@ export default function VerifyEmailPage() {
   };
 
   const goToLogin = () => {
-    window.location.href = "/login";
+    router.push("/login");
   };
 
   const goToDashboard = () => {
     // Clear any pending verification flags
     localStorage.removeItem("pendingEmailVerification");
-    window.location.href = "/login";
+    router.push("/login");
   };
 
   const openEmailApp = () => {

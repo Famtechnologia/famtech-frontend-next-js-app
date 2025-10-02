@@ -35,6 +35,8 @@ import Modal from '@/components/ui/Modal'; // adjust to your modal path
 interface NavChild {
     name: string;
     href: string;
+    // 💡 ADDED: Flag to mark individual sub-items as coming soon
+    comingSoon?: boolean;
 }
 
 interface NavItem {
@@ -67,7 +69,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [expandedMenus, setExpandedMenus] = useState<string[]>(['dashboard']);
     const [showComingSoon, setShowComingSoon] = useState(false);
-    
+
     // NEW STATE for collapsed sidebar flyout preview
     const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
     const flyoutRef = useRef<HTMLDivElement>(null);
@@ -86,7 +88,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
-                flyoutRef.current && 
+                flyoutRef.current &&
                 !flyoutRef.current.contains(event.target as Node) &&
                 sidebarCollapsed
             ) {
@@ -111,7 +113,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             setHoveredMenuKey(menuName === hoveredMenuKey ? null : menuName);
             return;
         }
-        
+
         // If expanded, toggle the dropdown
         setExpandedMenus((prev) =>
             prev.includes(menuName)
@@ -136,7 +138,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             return [
                 {
                     name: 'Dashboard',
-                    href: `/`,
+                    href: `/dashboard`,
                     icon: LayoutDashboard,
                     key: 'dashboard',
                     expandable: false,
@@ -146,15 +148,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     icon: Tractor,
                     key: 'farm-operations',
                     expandable: true,
-                    // ⭐ ADDED: Mark Farm Operations as coming soon
-                    comingSoon: true, 
+                    // Note: If you want to mark the entire section as coming soon, you'd add comingSoon: true here.
                     children: [
                         // Use query parameters to designate the active tab view
-                        { name: 'Task Planner', href: `/farm-operation?tab=planner` }, // Simplified for the root page
+                        { name: 'Task Planner', href: `/farm-operation?tab=planner` },
                         { name: 'Crop and Livestock Records', href: `/farm-operation?tab=records` },
                         { name: 'Calendar View', href: `/farm-operation?tab=calendar` },
                         { name: 'Inventory Management', href: `/farm-operation?tab=inventory` },
-                        // ... any others ...
                     ],
                 },
                 {
@@ -163,7 +163,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'ai-insights',
                     expandable: false,
                     href: `/dashboard/farmer/${subRole}/ai-insights`,
-                    premium: true,
+                    comingSoon: true,
                 },
                 {
                     name: 'Mapping & Geo Tools',
@@ -171,7 +171,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'mapping',
                     expandable: false,
                     href: `/dashboard/farmer/${subRole}/mapping`,
-                    premium: true,
+                    comingSoon: true,
                 },
                 {
                     name: 'Financials - SmartNet',
@@ -199,7 +199,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                     ],
                 },
-                // UPDATED ITEM: Equipment Sync
                 {
                     name: 'Equipment Sync',
                     icon: Settings,
@@ -231,6 +230,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         {
                             name: 'Notifications',
                             href: `/dashboard/farmer/${subRole}/settings/notifications`,
+                            // 🚀 TARGET: SETTINGS SUB-ITEM COMING SOON
+                            comingSoon: true,
                         },
                     ],
                 },
@@ -240,9 +241,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     key: 'help',
                     expandable: true,
                     children: [
-                        { name: 'Documentation', href: `/dashboard/farmer/${subRole}/help/docs` },
+                        {
+                            name: 'Documentation',
+                            href: `/dashboard/farmer/${subRole}/help/docs`,
+                            // 🚀 TARGET: HELP SUB-ITEM COMING SOON
+                            comingSoon: true,
+                        },
                         { name: 'Contact Support', href: `/help/contact-support` },
-                        { name: 'Training', href: `/dashboard/farmer/${subRole}/help/training` },
+                        {
+                            name: 'Training',
+                            href: `/dashboard/farmer/${subRole}/help/training`,
+                            // 🚀 TARGET: HELP SUB-ITEM COMING SOON
+                            comingSoon: true,
+                        },
                         { name: 'FAQ', href: `/help/faq` },
                     ],
                 },
@@ -279,19 +290,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex h-screen bg-gray-50">
             {/* Sidebar (Main Element - Z-index: 50 is fine) */}
             <div
-                className={`${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                } fixed inset-y-0 left-0 z-50 ${ // z-50 is the max index for the main sidebar
+                className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    } fixed inset-y-0 left-0 z-50 ${ // z-50 is the max index for the main sidebar
                     sidebarCollapsed ? 'w-16' : 'w-64'
-                } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 overflow-y-scroll scrollbar-hide`}
+                    } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 overflow-y-scroll scrollbar-hide`}
                 onMouseLeave={sidebarCollapsed ? () => setHoveredMenuKey(null) : undefined}
             >
                 {/* Logo */}
                 <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
                     <div
-                        className={`flex items-center ${
-                            sidebarCollapsed ? 'justify-center w-full' : 'space-x-2'
-                        }`}
+                        className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full' : 'space-x-2'
+                            }`}
                     >
                         <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-sm">F</span>
@@ -316,9 +325,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                 title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             >
                                 <div
-                                    className={`flex items-center ${
-                                        sidebarCollapsed ? 'justify-center' : ''
-                                    }`}
+                                    className={`flex items-center ${sidebarCollapsed ? 'justify-center' : ''
+                                        }`}
                                 >
                                     {sidebarCollapsed ? (
                                         <PanelLeftOpen size={18} />
@@ -336,6 +344,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             const itemIsActive =
                                 isActive(item.href) || isParentActive(item.children);
 
+                            // Determine if the parent itself is "Coming Soon" or "Premium"
                             const badge = item.comingSoon ? (
                                 <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
                                     Soon
@@ -349,15 +358,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             return (
                                 <div key={item.key}>
                                     {item.expandable ? (
-                                        <div 
+                                        <div
                                             // Handle mouse events for flyout when collapsed
                                             onMouseEnter={sidebarCollapsed ? () => setHoveredMenuKey(item.key) : undefined}
                                             onClick={
                                                 sidebarCollapsed
-                                                ? item.comingSoon // ⭐ UPDATED: Check comingSoon on collapsed parent click
-                                                    ? () => setShowComingSoon(true)
-                                                    : () => toggleMenu(item.key) 
-                                                : undefined
+                                                    ? item.comingSoon // If the parent is coming soon, show modal on click
+                                                        ? () => setShowComingSoon(true)
+                                                        : () => toggleMenu(item.key)
+                                                    : undefined
                                             }
                                         >
                                             <button
@@ -370,17 +379,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                             ? () => setShowComingSoon(true)
                                                             : undefined // Clicks on collapsed icon now managed by outer div
                                                 }
-                                                className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
-                                                    itemIsActive
+                                                className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors ${itemIsActive
                                                         ? 'bg-green-50 text-green-700'
                                                         : 'text-gray-700 hover:bg-gray-100'
-                                                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                                                    } ${sidebarCollapsed ? 'justify-center' : ''}`}
                                                 title={sidebarCollapsed ? item.name : undefined}
                                             >
                                                 <div
-                                                    className={`flex items-center ${
-                                                        sidebarCollapsed ? 'justify-center' : ''
-                                                    }`}
+                                                    className={`flex items-center ${sidebarCollapsed ? 'justify-center' : ''
+                                                        }`}
                                                 >
                                                     <Icon
                                                         size={18}
@@ -408,32 +415,37 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                 isExpanded &&
                                                 item.children && (
                                                     <div className="ml-6 mt-1 space-y-1">
-                                                        {item.children.map((child) => (
-                                                            <Link
-                                                                key={child.href}
-                                                                href={item.comingSoon || child.href === '#' ? '#' : child.href}
-                                                                onClick={(e) => {
-                                                                    if (item.comingSoon || child.href === '#') {
-                                                                        e.preventDefault();
-                                                                        setShowComingSoon(true);
-                                                                    } else {
-                                                                        setSidebarOpen(false); // Close mobile sidebar on navigation
-                                                                    }
-                                                                }}
-                                                                className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
-                                                                    child.href === pathname ? 'font-semibold' : ''
-                                                                }`}
-                                                            >
-                                                                <span className="flex items-center gap-2">
-                                                                    {child.name}
-                                                                    {(item.comingSoon || child.href === '#') && (
-                                                                        <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
-                                                                            Soon
-                                                                        </span>
-                                                                    )}
-                                                                </span>
-                                                            </Link>
-                                                        ))}
+                                                        {item.children.map((child) => {
+                                                            // 🚀 UPDATED LOGIC: Check both parent and child comingSoon status
+                                                            const isChildComingSoon =
+                                                                item.comingSoon || child.comingSoon || child.href === '#';
+
+                                                            return (
+                                                                <Link
+                                                                    key={child.href}
+                                                                    href={isChildComingSoon ? '#' : child.href}
+                                                                    onClick={(e) => {
+                                                                        if (isChildComingSoon) {
+                                                                            e.preventDefault();
+                                                                            setShowComingSoon(true);
+                                                                        } else {
+                                                                            setSidebarOpen(false); // Close mobile sidebar on navigation
+                                                                        }
+                                                                    }}
+                                                                    className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${child.href === pathname ? 'font-semibold' : ''
+                                                                        }`}
+                                                                >
+                                                                    <span className="flex items-center gap-2">
+                                                                        {child.name}
+                                                                        {isChildComingSoon && (
+                                                                            <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                                                                Soon
+                                                                            </span>
+                                                                        )}
+                                                                    </span>
+                                                                </Link>
+                                                            );
+                                                        })}
                                                     </div>
                                                 )}
                                         </div>
@@ -449,23 +461,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                                     setSidebarOpen(false); // Close mobile sidebar on navigation
                                                 }
                                             }}
-                                            className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
-                                                itemIsActive
+                                            className={`block w-full rounded-lg text-sm font-medium transition-colors ${itemIsActive
                                                     ? 'bg-green-50 text-green-700'
                                                     : 'text-gray-700 hover:bg-gray-100'
-                                            } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                                                }`}
                                             title={sidebarCollapsed ? item.name : undefined}
                                         >
-                                            <Icon
-                                                size={18}
-                                                className={sidebarCollapsed ? '' : 'mr-3'}
-                                            />
-                                            {!sidebarCollapsed && (
-                                                <>
-                                                    <span>{item.name}</span>
-                                                    {badge}
-                                                </>
-                                            )}
+                                            <div className={`flex items-center px-3 py-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+                                                <Icon
+                                                    size={18}
+                                                    className={sidebarCollapsed ? '' : 'mr-3'}
+                                                />
+                                                {!sidebarCollapsed && (
+                                                    <>
+                                                        <span>{item.name}</span>
+                                                        {badge}
+                                                    </>
+                                                )}
+                                            </div>
                                         </Link>
                                     )}
                                 </div>
@@ -476,9 +489,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     {/* Bottom Profile/Logout */}
                     <div className="border-t border-gray-200 p-4">
                         <div
-                            className={`flex items-center ${
-                                sidebarCollapsed ? 'justify-center' : 'space-x-3'
-                            } mb-3`}
+                            className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'
+                                } mb-3`}
                         >
                             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                 <User size={16} className="text-white" />
@@ -493,9 +505,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         </div>
                         <button
                             onClick={handleLogout}
-                            className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
-                                sidebarCollapsed ? 'justify-center' : ''
-                            }`}
+                            className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${sidebarCollapsed ? 'justify-center' : ''
+                                }`}
                             title={sidebarCollapsed ? 'Sign out' : undefined}
                         >
                             <LogOut size={16} className={sidebarCollapsed ? '' : 'mr-2'} />
@@ -506,15 +517,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             {/* Collapsed Sidebar Flyout Preview (Higher Z-index: 60) */}
-            {sidebarCollapsed && activeParentItem && (
+            {sidebarCollapsed && activeParentItem && activeParentItem.children && (
                 <div
                     ref={flyoutRef}
                     className="fixed left-16 top-0 h-full overflow-y-auto bg-white shadow-xl z-60 border-l border-gray-200 transition-opacity duration-150 ease-in-out"
-                    style={{ 
-                        // Use a fixed width for the flyout preview
-                        width: '200px', 
-                        // Match the vertical position of the clicked item (approximate, more complex calc needed for exact position)
-                        // For simplicity, we just fix it to the top.
+                    style={{
+                        width: '200px',
                         paddingTop: '64px', // Space for the top header
                         paddingBottom: '64px', // Space for the bottom area
                     }}
@@ -523,33 +531,37 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <h3 className="text-sm font-semibold text-gray-900 mb-2 border-b pb-2">
                             {activeParentItem.name}
                         </h3>
-                        {activeParentItem.children?.map((child) => (
-                            <Link
-                                key={child.href}
-                                href={activeParentItem.comingSoon || child.href === '#' ? '#' : child.href}
-                                onClick={(e) => {
-                                    if (activeParentItem.comingSoon || child.href === '#') {
-                                        e.preventDefault();
-                                        setShowComingSoon(true);
-                                    } else {
-                                        setHoveredMenuKey(null); // Close flyout on navigation
-                                        // Optional: Close mobile sidebar if applicable, but usually flyout is only for desktop collapsed
-                                    }
-                                }}
-                                className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
-                                    child.href === pathname ? 'font-semibold bg-gray-50' : ''
-                                }`}
-                            >
-                                <span className="flex items-center gap-2">
-                                    {child.name}
-                                    {(activeParentItem.comingSoon || child.href === '#') && (
-                                        <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
-                                            Soon
-                                        </span>
-                                    )}
-                                </span>
-                            </Link>
-                        ))}
+                        {activeParentItem.children.map((child) => {
+                            // 🚀 UPDATED LOGIC: Check both parent and child comingSoon status
+                            const isChildComingSoon =
+                                activeParentItem.comingSoon || child.comingSoon || child.href === '#';
+
+                            return (
+                                <Link
+                                    key={child.href}
+                                    href={isChildComingSoon ? '#' : child.href}
+                                    onClick={(e) => {
+                                        if (isChildComingSoon) {
+                                            e.preventDefault();
+                                            setShowComingSoon(true);
+                                        } else {
+                                            setHoveredMenuKey(null); // Close flyout on navigation
+                                        }
+                                    }}
+                                    className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${child.href === pathname ? 'font-semibold bg-gray-50' : ''
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        {child.name}
+                                        {isChildComingSoon && (
+                                            <span className="px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                                Soon
+                                            </span>
+                                        )}
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             )}
