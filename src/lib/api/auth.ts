@@ -13,8 +13,8 @@ export interface LoginResponse {
       email: string;
       role?: string;
       subRole?: string;
-      region?: string;
-      language?: string;
+      country?: string;
+      state?: string;
       isVerified?: boolean;
     };
     tokens: {
@@ -31,8 +31,8 @@ export interface RegisterResponse {
       id: string;
       email: string;
       role?: string;
-      region?: string;
-      language?: string;
+      country?: string;
+      state?: string;
       isVerified?: boolean;
     };
     tokens?: {
@@ -72,8 +72,9 @@ export const login = async (
 export interface RegisterPayload {
   email: string;
   password: string;
-  region: string;
-  language: string;
+  confirmPassword: string;
+  country: string;
+  state: string;
 }
 
 export const register = async (
