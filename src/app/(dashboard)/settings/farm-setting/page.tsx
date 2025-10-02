@@ -17,15 +17,12 @@ const settingsSections = [
         label: 'Farm Profile',
         description: 'Edit information about the farm',
         action: 'Edit',
-        href: '/settings/farm-profile',   // 👈 add link here
       },
       {
         icon: <PencilRuler className="h-6 w-6 text-blue-600" />,
         label: 'Land Mapping',
-        description:
-          'Re-map farming area to get accurate data on farm produce and livestock',
+        description: 'Re-map farming area to get accurate data on farm produce and livestock',
         action: 'Re-map',
-        href: '/settings/land-mapping',   // 👈 add link here
       },
     ],
   },
@@ -37,21 +34,18 @@ const settingsSections = [
         label: 'Edit Profile',
         description: 'Change personal information',
         action: 'Edit',
-        href: '/settings/edit-profile',
       },
       {
         icon: <Bell className="h-6 w-6 text-blue-600" />,
         label: 'Alarm Notification',
         description: 'Set customized alarm notification',
         action: 'Edit',
-        href: '/settings/notifications',
       },
       {
         icon: <Shield className="h-6 w-6 text-blue-600" />,
         label: 'Security',
         description: 'Set two-factor verification to keep your account secure',
         action: 'Edit',
-        href: '/settings/security',
       },
     ],
   },
@@ -63,12 +57,10 @@ const settingsSections = [
         label: 'Enterprise Plan - $150 (Current plan)',
         description: 'Customizable and scalable solutions for enterprises',
         action: 'Change Plan',
-        href: '/settings/billing', // 👈
       },
     ],
   },
 ];
-
 
 const Settings: React.FC = () => {
   return (
@@ -77,6 +69,7 @@ const Settings: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-500">Personalize your account</p>
       </div>
+
       {settingsSections.map((section, sectionIndex) => (
         <div key={sectionIndex} className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
@@ -97,14 +90,9 @@ const Settings: React.FC = () => {
                     <p className="text-gray-600 text-sm md:text-base">{item.description}</p>
                   </div>
                 </div>
-                <Link
-                  // use the href from the item
-                  href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 focus:outline-none bg-gray-100"
-                  legacyBehavior>
+                <Link href='/settings/billing' className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 focus:outline-none bg-gray-100">
                   {item.action}
                 </Link>
-
               </div>
             ))}
           </div>
