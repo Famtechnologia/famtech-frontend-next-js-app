@@ -8,19 +8,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { WeatherApiResponse } from '@/types/weather';
 
 // Helper function to categorize UV Index
-const getUVData = (uvIndex: number) => {
-  if (uvIndex <= 2) {
-    return { level: "Low", color: "text-green-500" };
-  } else if (uvIndex <= 5) {
-    return { level: "Moderate", color: "text-yellow-500" };
-  } else if (uvIndex <= 7) {
-    return { level: "High", color: "text-orange-500" };
-  } else if (uvIndex <= 10) {
-    return { level: "Very High", color: "text-red-500" };
-  } else {
-    return { level: "Extreme", color: "text-purple-500" };
-  }
-};
+
 
 // Helper function to estimate UV Index based on weather conditions
 const estimateUVIndex = (weather: WeatherApiResponse | undefined) => {
@@ -89,13 +77,15 @@ export default function WeatherForecast() {
   console.log(user)
 
   useEffect(() => {
-    const getAsyncWeather = async () => {
-      const res = await getWeather(user?.state || "nigeria", user?.country || 'lagos');
-      console.log("this is the weather data ", res.data);
-      setWeatherInfo(res?.data);
-    };
-    getAsyncWeather();
-  }, [])
+    const getAsyncWeather = async () => {
+     // These values are used inside the effect, so they must be dependencies.
+     const res = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
+      console.log("this is the weather data ", res.data);
+      setWeatherInfo(res?.data);
+    };
+    getAsyncWeather();
+  // FIX: Include user?.country and user?.state in the dependency array.
+  }, [user?.country, user?.state]) 
   
   return (
     <Card
@@ -149,9 +139,9 @@ export default function WeatherForecast() {
           </div>
         </div>
 
-        <button className="text-blue-600 text-sm font-medium hover:text-blue-700 flex items-center">
+       {/* <button className="text-blue-600 text-sm font-medium hover:text-blue-700 flex items-center">
           View 5-day forecast →
-        </button>
+        </button>*/}
       </div>
     </Card>
   );
