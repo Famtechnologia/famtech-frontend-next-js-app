@@ -10,10 +10,10 @@ import useSWR from 'swr';
 // --- Custom Task Hook ---
 
 // 🎯 FIX: Destructure the userId correctly from the SWR key array ([key, userId])
-const taskFetcher = async ([ userId ]: [string, string]) => {
+const taskFetcher = async ([ , userId ]: [string, string]) => {
+    // Note: The first element of the SWR key array ('tasks') is unused here, so we name it _key
     if (!userId) throw new Error("User ID is required.");
     
-    // API call: pass the extracted userId (string) to getTasks
     const tasks = await getTasks(userId); 
     
     // Sort logic: Incomplete (not 'completed') tasks first, then by date
@@ -44,7 +44,7 @@ export const useTaskSummary = () => {
     const userId = useAuthStore((state) => state.user?.id);
     
     // ⚠️ CRITICAL: useSWR will only fetch if the key is NOT null/undefined.
-    // We wait for isClient AND userId to be available.
+    // This handles the initial hydration/auth loading state.
     const swrKey = isClient && userId ? ['tasks', userId] : null;
 
     const { data, error, isLoading, mutate } = useSWR(
@@ -59,7 +59,8 @@ export const useTaskSummary = () => {
         mutate,
     };
 };
-// --- Main Component (No changes needed here) ---
+
+// --- Main Component ---
 
 const DashboardTasks = () => {
     const { tasks, isLoading, error, mutate } = useTaskSummary();
@@ -68,8 +69,7 @@ const DashboardTasks = () => {
         const newStatus = task.status === 'completed' ? 'pending' : 'completed';
 
         try {
-            // Your API call to update the task status
-            // Use an optimistic update if possible, but for simplicity, we stick to re-fetch
+            // Optimistic UI update can be added here (e.g., mutate(..., false))
             await updateTask(task.id as string, { 
                 ...task,
                 status: newStatus,
@@ -80,10 +80,11 @@ const DashboardTasks = () => {
 
         } catch (e) {
             console.error("Failed to update task status:", e);
-            mutate(); 
+            mutate(); // Revert to server state on error
         }
     };
 
+    // 1. Initial Loading State (Should show immediately if fetching starts)
     if (isLoading) {
         return (
             <Card title="Task Planner" headerClassName='bg-green-50' bodyClassName='p-6 flex items-center justify-center h-[350px]'>
@@ -92,6 +93,7 @@ const DashboardTasks = () => {
         );
     }
 
+    // 2. Error State (If API call fails)
     if (error) {
         return (
             <Card title="Task Planner" headerClassName='bg-red-50' bodyClassName='p-6 flex items-center justify-center h-[350px]'>
@@ -139,32 +141,28 @@ const DashboardTasks = () => {
         );
 
         buttonContent = (
-            <Link href="/farm-operation?tab=planner" className="text-green-600 text-base font-medium hover:text-green-700 flex items-center mt-2">
+            <Link href="/farm-operation?tab=planner" className="text-green-600 text-base font-medium hover:text-green-700 flex items-center">
                      View all tasks →
-                
              </Link>
         );
 
         
-
     } else {
         // --- Zero-State Content ---
         taskListContent = (
             <div className="text-base text-gray-500 py-4 flex flex-col items-center justify-center h-full text-center">
                 <ListChecks className="w-8 h-8 text-gray-400 mb-2"/>
-                <p className='font-medium text-gray-700'>Your productivity frontier awaits! 🌱</p>
+                <p className='font-medium text-gray-700'>You&apos;re all caught up! 🥂</p>
                 <p>No tasks found. Let&apos;s cultivate a plan.</p>
             </div>
         );
         
-        summaryContent = <div className="text-sm text-gray-600 -mt-2">Ready to plan your day.</div>;
+        summaryContent = <div className="text-sm text-gray-600">Ready to plan your day.</div>;
         
         buttonContent = (
-            // FIX: Ensure Link usage is correct for Next.js, using legacyBehavior for <a> child
-            <Link href="/farm-operation?tab=planner" className="text-white text-base font-medium bg-green-600 hover:bg-green-700 rounded-lg flex items-center justify-center py-2 mt-2 transition duration-150">
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    Create New Task
-            
+            <Link href="/farm-operation?tab=planner" className="text-white text-base font-medium bg-green-600 hover:bg-green-700 rounded-lg flex items-center justify-center py-2 transition duration-150">
+                     <PlusCircle className="w-4 h-4 mr-2" />
+                     Create New Task
             </Link>
         );
     }
@@ -172,18 +170,20 @@ const DashboardTasks = () => {
     return (
         <Card 
             title="Task Planner" 
-            className="h-[360px]" 
+            className="h-[360px] flex flex-col" // Added flex-col to card container
             headerClassName='bg-green-50 border-b border-green-200' 
-            bodyClassName='p-6'
+            bodyClassName='p-6 flex flex-col flex-grow' // Added flex-col and flex-grow to card body
         >
-            <div className="space-y-3 ">
+            {/* Main content wrapper with vertical distribution */}
+            <div className="flex flex-col flex-grow justify-between">
                 
-                {/* Task List/Zero-State Message */}
-                <div className={hasTasks ? 'space-y-4' : 'h-[160px] flex flex-col justify-center'}>
+                {/* TOP SECTION: Task List / Zero State */}
+                <div className={hasTasks ? 'space-y-4' : 'flex-grow flex flex-col justify-center'}>
                     {taskListContent}
                 </div>
                 
-                <div className="pt-3 border-t border-gray-100 mt-4">
+                {/* BOTTOM SECTION: Summary and Button */}
+                <div className="pt-4 border-t border-gray-100 mt-4 space-y-2">
                     {/* Summary (Completed count or "Ready to plan...") */}
                     {summaryContent}
                     
