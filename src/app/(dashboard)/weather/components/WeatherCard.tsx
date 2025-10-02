@@ -90,7 +90,7 @@ export default function WeatherForecast() {
 
   useEffect(() => {
     const getAsyncWeather = async () => {
-      const res = await getWeather(user?.state || "nigeria", user?.country || 'lagos');
+      const res = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
       console.log("this is the weather data ", res.data);
       setWeatherInfo(res?.data);
     };
