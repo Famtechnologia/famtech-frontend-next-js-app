@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useAuthStore, User } from "@/lib/store/authStore";
-// Import your country data and types from your files
+// Assuming this path is correct for your data
 import { countries } from "@/lib/services/countries";
 
-// --- START: Re-defined Types (Assuming these are in your global types or countries.js) ---
+// --- START: Types and Placeholder API Function ---
 interface State {
   name: string;
 }
@@ -17,112 +17,94 @@ interface Country {
   states: State[];
 }
 
-// Define the API call structure for updating the user
-// Replace this with your actual API function from "@/lib/api/auth"
-const updateUser = async (updateData: Partial<UpdateFormInputs>): Promise<{ data: { user: User }, message: string }> => {
-  console.log("Simulating API call to update user with:", updateData);
-  // Simulate a network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // NOTE: You MUST implement the actual backend API call here.
-  // Example: 
-  // const res = await fetch('/api/user/update', { 
-  //   method: 'PUT', 
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(updateData)
-  // });
-  // const data = await res.json();
-  // return data; 
-  
-  // Simulation: Assuming success and returning the updated data
-  const currentUser = useAuthStore.getState().user;
-  if (!currentUser) throw new Error("User not authenticated for update simulation.");
-  
-  const updatedUser: User = {
-      ...currentUser,
-      ...updateData,
-      country: updateData.country || currentUser.country,
-      state: updateData.state || currentUser.state,
-  };
-
-  return { 
-      data: { user: updatedUser }, 
-      message: "Details updated successfully!" 
-  };
-};
-// --- END: Placeholder API Function ---
-
-// Define the structure for the update form inputs
 interface UpdateFormInputs {
   country: string;
   state: string;
 }
 
-// Helper to get country list with correct typing
+const updateUser = async (updateData: Partial<UpdateFormInputs>): Promise<{ data: { user: User }, message: string }> => {
+  console.log("Simulating API call to update user with:", updateData);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const currentUser = useAuthStore.getState().user;
+  if (!currentUser) throw new Error("User not authenticated for update simulation.");
+  
+  const updatedUser: User = {
+    ...currentUser,
+    ...updateData,
+    country: updateData.country || currentUser.country,
+    state: updateData.state || currentUser.state,
+  };
+
+  return { 
+    data: { user: updatedUser }, 
+    message: "Details updated successfully!" 
+  };
+};
+// --- END: Types and Placeholder API Function ---
+
 const countryList = countries as Country[];
 
 export default function UpdateDetailsForm() {
   const { user, setUser } = useAuthStore();
-  const [initialLoading, setInitialLoading] = useState(true);
+  
+  // 🔑 NEW STATE: Tracks if the form has been initialized with user data after mounting/hydration
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
 
-  // Initialize react-hook-form
   const {
     register,
     handleSubmit,
     watch,
     setValue,
     formState: { errors, isSubmitting, isDirty },
-    reset, // Used to reset form state after a successful submission
+    reset,
   } = useForm<UpdateFormInputs>({
-    // Set default values from the user state
+    // Set initial defaults. These will be overwritten by the useEffect below
     defaultValues: {
       country: user?.country?.toLowerCase() || "",
       state: user?.state?.toLowerCase() || "",
     },
-    mode: "onBlur" // Validate on blur for a better UX
+    mode: "onBlur"
   });
 
-  // Watch selected country to populate the state dropdown
   const selectedCountryName = watch("country");
 
-  // Find the selected country object
   const selectedCountry = countryList.find(
     (country) => country.name.toLowerCase() === selectedCountryName
   );
 
-  // Set initial form values and handle hydration from the store
+  // 1. 🔑 CORE FIX: Set initial form values from the store only AFTER user data is available.
   useEffect(() => {
-    if (user) {
-      reset({ // Use reset to set defaults and mark form as "pristine"
+    // This condition ensures the reset runs only when 'user' is loaded and form hasn't been set yet.
+    if (user && !isFormInitialized) { 
+      reset({
         country: user.country?.toLowerCase() || "",
         state: user.state?.toLowerCase() || "",
       });
-      setInitialLoading(false);
-    } else {
-      // Handle case where user is null (e.g., redirect to login)
-      // For this component, we'll just show a message.
-      setInitialLoading(false);
-      toast.error("User data not found. Please log in.");
+      setIsFormInitialized(true); // Mark as initialized to prevent rerunning
     }
-  }, [user, reset]); // Dependency on user and reset
+    // Also, if the user becomes null (logged out), reset the initialization flag
+    if (!user) {
+        setIsFormInitialized(false);
+    }
+  }, [user, reset, isFormInitialized]);
 
-  // Logic to clear the state selection when the country changes
+  // 2. Logic to clear the state selection when the country changes
   useEffect(() => {
-    // Only clear if a country is selected and the component has loaded
-    if (!initialLoading && selectedCountryName) {
+    // Only run this logic after the form has been initialized
+    if (isFormInitialized && selectedCountryName) {
       const currentState = watch("state");
       
-      // Check if the current state still belongs to the new country
       const stateExists = selectedCountry?.states.some(
         (s) => s.name.toLowerCase() === currentState
       );
       
-      // If the state is not valid for the new country, or if it's the initial load with no state, clear it.
       if (!stateExists) {
+        // Clear the state field, mark it as changed, and validate
         setValue("state", "", { shouldValidate: true, shouldDirty: true });
       }
     }
-  }, [selectedCountryName, setValue, watch, initialLoading, selectedCountry]);
+  }, [selectedCountryName, setValue, watch, isFormInitialized, selectedCountry]);
 
   // Handle form submission
   const onSubmit = async (data: UpdateFormInputs) => {
@@ -131,7 +113,7 @@ export default function UpdateDetailsForm() {
       return;
     }
     
-    // Only send fields that have actually changed
+    // Determine which fields have changed to send minimal data
     const dataToUpdate: Partial<UpdateFormInputs> = {};
     if (data.country?.toLowerCase() !== user.country?.toLowerCase()) {
       dataToUpdate.country = data.country;
@@ -147,7 +129,6 @@ export default function UpdateDetailsForm() {
 
     try {
       const res = await updateUser(dataToUpdate);
-
       const { data: resData, message } = res;
       const { user: responseUser } = resData;
 
@@ -155,7 +136,6 @@ export default function UpdateDetailsForm() {
         throw new Error("No user returned from server after update");
       }
 
-      // Update the user state in the store
       const updatedUser: User = {
         ...user,
         country: responseUser.country ?? data.country,
@@ -181,12 +161,13 @@ export default function UpdateDetailsForm() {
     }
   };
   
-  if (initialLoading) {
+  // Display loading until user data is loaded and the form is initialized
+  if (!isFormInitialized && !user) {
     return <div className="text-center p-8">Loading user data...</div>;
   }
   
   if (!user) {
-      return <div className="text-center p-8 text-red-600">User data not available.</div>;
+      return <div className="text-center p-8 text-red-600">User data not available. Please log in.</div>;
   }
 
   return (
@@ -197,7 +178,7 @@ export default function UpdateDetailsForm() {
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         
-        {/* Email - Read-only and masked */}
+        {/* Email - Read-only */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>
           <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 font-mono">
@@ -208,7 +189,7 @@ export default function UpdateDetailsForm() {
           </p>
         </div>
 
-        {/* Password - Read-only and masked */}
+        {/* Password - Read-only */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Password</label>
           <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 tracking-widest font-bold">
@@ -219,7 +200,6 @@ export default function UpdateDetailsForm() {
           </p>
         </div>
 
-        {/* --- Editable Fields --- */}
         <hr className="border-gray-200" />
         
         {/* Country */}
@@ -273,9 +253,17 @@ export default function UpdateDetailsForm() {
         <button
           type="submit"
           disabled={isSubmitting || !isDirty}
-          className="w-full bg-green-600 text-white p-3 rounded-xl font-semibold hover:bg-green-700 transition duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center bg-green-600 text-white p-3 rounded-xl font-semibold hover:bg-green-700 transition duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Updating..." : "Update Details"}
+          {isSubmitting ? (
+            <>
+              {/* Assuming you have a loading icon (like Loader2 from lucide-react) */}
+              {/* If you use a spinner: <Loader2 className="mr-2 h-4 w-4 animate-spin" /> */}
+              Updating...
+            </>
+          ) : (
+            "Update Details"
+          )}
         </button>
         {isDirty && !isSubmitting && (
             <p className="text-center text-sm text-blue-600">
