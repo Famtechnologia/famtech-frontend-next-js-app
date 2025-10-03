@@ -215,7 +215,7 @@ export default function UpdateDetailsForm() {
             ********
           </div>
           <p className="mt-1 text-xs text-gray-500">
-            To change your password, please use the dedicated "Change Password" section.
+            To change your password, please use the dedicated &#34;Change Password&#34; section.
           </p>
         </div>
 

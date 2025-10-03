@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { User, MapPin, Phone, Wheat, Ruler, Lock, Mail } from 'lucide-react'; // Added Lock and Mail icons
+import { User, MapPin, Phone, Wheat, Ruler, Mail } from 'lucide-react'; // Added Lock and Mail icons
 import axios, { AxiosError } from 'axios'; 
 import { API_URL } from '../../../../../config';
 import { useAuthStore } from "@/lib/store/authStore"; 
@@ -153,7 +153,7 @@ const Settings: React.FC = () => {
                     <h2 className="text-xl font-semibold text-gray-800">Account Details</h2>
                     <p className="text-sm text-gray-500">Manage your sign-in details and location.</p>
                 </div>
-                <div className="flex items-center jusify-between px-2 py-4 md:p-6">
+                <div className="flex items-center justify-between px-2 py-4 md:p-6">
                     {/* Email Display */}
                     <div className="flex items-center py-2 border-b border-gray-100 last:border-b-0">
                         <div className="flex items-center space-x-4">
