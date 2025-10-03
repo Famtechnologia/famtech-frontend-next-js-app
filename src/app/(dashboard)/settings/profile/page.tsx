@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { User, MapPin, Phone, Wheat, Ruler } from 'lucide-react';
-import axios, { AxiosError } from 'axios'; // Import AxiosError for better type checking
+import { User, MapPin, Phone, Wheat, Ruler, Lock, Mail } from 'lucide-react'; // Added Lock and Mail icons
+import axios, { AxiosError } from 'axios'; 
 import { API_URL } from '../../../../../config';
 import { useAuthStore } from "@/lib/store/authStore"; 
+import Link from 'next/link'; // Import Link for navigation
 
 // --- TYPE DEFINITIONS FOR FARM PROFILE ---
 interface Owner {
@@ -17,9 +18,6 @@ interface Location {
     state: string;
     city: string;
     address: string;
-    // FIX 1: Replaced {} with Record<string, unknown> or simply object
-    // Assuming coordinates is an object (e.g., { lat: number, lng: number })
-    // If you don't know the keys, use Record<string, unknown> or type it precisely.
     coordinates: Record<string, unknown>; 
 }
 
@@ -48,202 +46,237 @@ const GET_PROFILE_ENDPOINT = '/api/get-profile';
 const GET_PROFILE_URL = `${API_URL}${GET_PROFILE_ENDPOINT}`; 
 
 const Settings: React.FC = () => {
-  const token = useAuthStore(state => state.token);
-  
-  // Explicitly typing state for type safety
-  const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); 
+    const token = useAuthStore(state => state.token);
+    // Get the authenticated user data for displaying email/password status
+    const user = useAuthStore(state => state.user); 
+    
+    const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null); 
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!token) {
-        setError("You are not authenticated. Please log in."); 
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await axios.get(GET_PROFILE_URL, {
-          headers: {
-            'Authorization': `Bearer ${token}`, 
-          },
-        });
-        
-        // Correctly access the nested data object
-        const profileData = response.data?.data?.farmProfile as FarmProfileData; 
-
-        if (profileData) {
-            setFarmProfile(profileData); 
-            setError(null);
-        } else {
-            setError("Profile data is available but empty.");
-        }
-
-      } catch (err: unknown) {
-        console.error("Failed to fetch farm profile:", err);
-        
-        // FIX 2: Safely check for AxiosError and access the status property
-        let errorMessage = "Failed to load profile due to an unknown error.";
-        
-        if (axios.isAxiosError(err)) {
-            const axiosError = err as AxiosError;
-            const status = axiosError.response?.status; // Safely access status
-
-            if (status === 401) {
-                errorMessage = "Authentication failed. Please log in again.";
-            } else if (status === 404) {
-                errorMessage = "Farm profile not found. Please create a profile.";
-            } else if (status !== undefined) {
-                errorMessage = `Server error (Status: ${status}). Failed to load profile.`;
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (!token) {
+                setError("You are not authenticated. Please log in."); 
+                setIsLoading(false);
+                return;
             }
-        }
+
+            try {
+                const response = await axios.get(GET_PROFILE_URL, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`, 
+                    },
+                });
+                
+                const profileData = response.data?.data?.farmProfile as FarmProfileData; 
+
+                if (profileData) {
+                    setFarmProfile(profileData); 
+                    setError(null);
+                } else {
+                    setError("Profile data is available but empty.");
+                }
+
+            } catch (err: unknown) {
+                console.error("Failed to fetch farm profile:", err);
+                
+                let errorMessage = "Failed to load profile due to an unknown error.";
+                
+                if (axios.isAxiosError(err)) {
+                    const axiosError = err as AxiosError;
+                    const status = axiosError.response?.status; 
+
+                    if (status === 401) {
+                        errorMessage = "Authentication failed. Please log in again.";
+                    } else if (status === 404) {
+                        errorMessage = "Farm profile not found. Please create a profile.";
+                    } else if (status !== undefined) {
+                        errorMessage = `Server error (Status: ${status}). Failed to load profile.`;
+                    }
+                }
+                
+                setError(errorMessage);
+
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [token]);
+
+    if (isLoading) {
+        return <div className="md:p-8 text-center text-xl text-gray-700">Loading...</div>;
+    }
+
+    if (error || !farmProfile) {
+        return <div className="md:p-8 text-center text-xl text-red-600">
+            {error || "No profile data to display."}
+        </div>;
+    }
+    
+    const { 
+        farmType, 
+        farmSize, 
+        farmSizeUnit,
+        owner, 
+        location 
+    } = farmProfile;
+
+    // Use user store data for account details
+    const userEmail = user?.email || 'N/A';
+    
+    // Construct display strings
+    const farmOwnerName = owner 
+        ? `${owner.firstName} ${owner.lastName}`.trim() 
+        : 'N/A';
         
-        setError(errorMessage);
-
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [token]);
-
-  if (isLoading) {
-    return <div className="md:p-8 text-center text-xl text-gray-700">Loading...</div>;
-  }
-
-  // Handle errors or missing profile data
-  if (error || !farmProfile) {
-    return <div className="md:p-8 text-center text-xl text-red-600">
-        {error || "No profile data to display."}
-    </div>;
-  }
-  
-  // Destructuring is safe here because of the checks above
-  const { 
-    farmType, 
-    farmSize, 
-    farmSizeUnit,
-    owner, 
-    location 
-  } = farmProfile;
-
-  // Construct display strings
-  const farmOwnerName = owner 
-    ? `${owner.firstName} ${owner.lastName}`.trim() 
-    : 'N/A';
+    const phoneNumber = owner?.phoneNumber || 'N/A';
     
-  const phoneNumber = owner?.phoneNumber || 'N/A';
-  
-  const farmLocationDisplay = location 
-    ? `${location.city}, ${location.state}` 
-    : 'N/A';
-    
-  const farmSizeDisplay = `${farmSize} ${farmSizeUnit}`;
+    const farmLocationDisplay = location 
+        ? `${location.city}, ${location.state}` 
+        : 'N/A';
+        
+    const farmSizeDisplay = `${farmSize} ${farmSizeUnit}`;
 
-  return (
-    <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500">Personalize your account</p>
-      </div>
+    return (
+        <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
+            <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+                <p className="text-gray-500">Personalize your account</p>
+            </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Owner Profile</h2>
+            {/* --- NEW SECTION: Account Details (for email, password, country/state) --- */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="p-6 border-b border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-800">Account Details</h2>
+                    <p className="text-sm text-gray-500">Manage your sign-in details and location.</p>
+                </div>
+                <div className="flex items-center jusify-between px-2 py-4 md:p-6">
+                    {/* Email Display */}
+                    <div className="flex items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-2 rounded-full text-green-600">
+                                <Mail className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-base md:text-lg font-medium text-gray-800">Email Address</p>
+                                <p className="text-gray-600 text-sm">{userEmail}</p>
+                            </div>
+                        </div>
+                        {/* No Edit button here as per your requirement that email can't be changed in the form */}
+                    </div>
+
+                   {/* Link to Update Sign-in Details */}
+                    <div className="flex items-center pt-4">
+                        <Link href="/settings/updateUser" passHref>
+                            <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150">
+                                Edit 
+                            </button>
+                        </Link>
+                    </div>
+
+                    
+                </div>
+            </div>
+            {/* --- END NEW SECTION --- */}
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="p-6 border-b border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-800">Owner Profile</h2>
+                </div>
+                <div className="px-2 py-4 md:p-6 space-y-4">
+                    {/* Farm Owner */}
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-2 rounded-full text-green-600">
+                                <User className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-base md:text-lg font-medium text-gray-800">Farm Owner</p>
+                                <p className="text-gray-600 text-sm">{farmOwnerName}</p>
+                            </div>
+                        </div>
+                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 bg-gray-100">
+                            Edit
+                        </button>
+                    </div>
+
+                    {/* Farm Location */}
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-2 rounded-full  text-blue-600">
+                                <MapPin className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-base md:text-lg font-medium text-gray-800">Farm Location</p>
+                                <p className="text-gray-600 text-sm">{farmLocationDisplay}</p>
+                            </div>
+                        </div>
+                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
+                            Change
+                        </button>
+                    </div>
+
+                    {/* Phone Number */}
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-2 rounded-full text-blue-600">
+                                <Phone className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-base md:text-lg font-medium text-gray-800">Phone Number</p>
+                                <p className="text-gray-600 text-sm">{phoneNumber}</p>
+                            </div>
+                        </div>
+                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
+                            Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="p-6 border-b border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-800">Farm Information</h2>
+                </div>
+                <div className="px-2 py-4 md:p-6 space-y-4">
+                    {/* Farm Type */}
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-2 rounded-full text-blue-600">
+                                <Wheat className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-base md:text-lg font-medium text-gray-700">Farm Type</p>
+                                <p className="text-gray-600 text-sm">{farmType}</p>
+                            </div>
+                        </div>
+                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
+                            Edit
+                        </button>
+                    </div>
+
+                    {/* Farm Size */}
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-2 rounded-full  text-blue-600">
+                                <Ruler className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-base md:text-lg font-medium text-gray-600">Farm Size</p>
+                                <p className="text-gray-600 text-sm">{farmSizeDisplay}</p>
+                            </div>
+                        </div>
+                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
+                            Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div className="px-2 py-4 md:p-6 space-y-4">
-          {/* Farm Owner */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full text-green-600">
-                <User className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-base md:text-lg font-medium text-gray-800">Farm Owner</p>
-                <p className="text-gray-600 text-sm">{farmOwnerName}</p>
-              </div>
-            </div>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 bg-gray-100">
-              Edit
-            </button>
-          </div>
-
-          {/* Farm Location */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full  text-blue-600">
-                <MapPin className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-base md:text-lg font-medium text-gray-800">Farm Location</p>
-                <p className="text-gray-600 text-sm">{farmLocationDisplay}</p>
-              </div>
-            </div>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
-              Change
-            </button>
-          </div>
-
-          {/* Phone Number */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full text-blue-600">
-                <Phone className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-base md:text-lg font-medium text-gray-800">Phone Number</p>
-                <p className="text-gray-600 text-sm">{phoneNumber}</p>
-              </div>
-            </div>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
-              Edit
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Farm Information</h2>
-        </div>
-        <div className="px-2 py-4 md:p-6 space-y-4">
-          {/* Farm Type */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full text-blue-600">
-                <Wheat className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-base md:text-lg font-medium text-gray-700">Farm Type</p>
-                <p className="text-gray-600 text-sm">{farmType}</p>
-              </div>
-            </div>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
-              Edit
-            </button>
-          </div>
-
-          {/* Farm Size */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 rounded-full  text-blue-600">
-                <Ruler className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-base md:text-lg font-medium text-gray-600">Farm Size</p>
-                <p className="text-gray-600 text-sm">{farmSizeDisplay}</p>
-              </div>
-            </div>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
-              Edit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Settings;
