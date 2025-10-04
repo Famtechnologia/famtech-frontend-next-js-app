@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
