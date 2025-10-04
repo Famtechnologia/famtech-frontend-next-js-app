@@ -181,7 +181,8 @@ export default function UpdateDetailsForm() {
         {/* Email - Read-only */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>
-          <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 font-mono">
+          <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 
+          truncate max-w-3xl md:max-w-full">
             {user.email}
           </div>
           <p className="mt-1 text-xs text-gray-500">

@@ -156,20 +156,20 @@ const Settings: React.FC = () => {
                 <div className="flex items-center justify-between px-2 py-4 md:p-6">
                     {/* Email Display */}
                     <div className="flex items-center py-2 border-b border-gray-100 last:border-b-0">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 md:space-x-4">
                             <div className="p-2 rounded-full text-green-600">
                                 <Mail className="h-6 w-6" />
                             </div>
-                            <div>
+                            <div className=''>
                                 <p className="text-base md:text-lg font-medium text-gray-800">Email Address</p>
-                                <p className="text-gray-600 text-sm">{userEmail}</p>
+                                <p className="text-gray-600 text-sm truncate max-w-36 md:max-w-full ">{userEmail}</p>
                             </div>
                         </div>
                         {/* No Edit button here as per your requirement that email can't be changed in the form */}
                     </div>
 
                    {/* Link to Update Sign-in Details */}
-                    <div className="flex items-center pt-4">
+                    <div className="flex items-center">
                         <Link href="/settings/updateUser" passHref>
                             <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150">
                                 Edit 
