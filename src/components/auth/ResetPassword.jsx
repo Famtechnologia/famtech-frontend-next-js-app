@@ -1,6 +1,10 @@
 "use client";
+
 import { useState } from "react";
 import { resetPassword } from "@/lib/api/auth";
+import Image from "next/image";
+import Link from "next/link";
+import { FaCheckCircle, FaExclamationCircle, FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function ResetPasswordForm({ token }) {
   const [newPassword, setNewPassword] = useState("");
@@ -25,7 +29,7 @@ export default function ResetPasswordForm({ token }) {
       hasUpperCase,
       hasLowerCase,
       hasNumbers,
-      hasSpecialChar
+      hasSpecialChar,
     };
   };
 
@@ -35,47 +39,67 @@ export default function ResetPasswordForm({ token }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-    
+
     if (!passwordValidation.isValid) {
       setMessage("Please ensure your password meets all requirements.");
+      setIsSuccess(false);
       return;
     }
 
     if (!passwordsMatch) {
       setMessage("Passwords do not match.");
+      setIsSuccess(false);
       return;
     }
 
     setIsLoading(true);
 
     try {
+      // Assuming resetPassword function needs the new password and the token
       const data = await resetPassword(newPassword, token);
       setIsSuccess(true);
       setMessage(data.message || "Password reset successfully! You can now log in with your new password.");
     } catch (err) {
       console.error(err);
       setIsSuccess(false);
-      setMessage(err.message || "Something went wrong. Please try again.");
+      // Accessing err.message remains the same
+      setMessage(err.message || "Something went wrong. Please try again or request a new reset link.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isFormValid = passwordValidation.isValid && passwordsMatch && newPassword && confirmPassword;
+  // Check if all inputs are non-empty and valid
+  const isFormValid = newPassword && confirmPassword && passwordValidation.isValid && passwordsMatch;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Set New Password
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Choose a strong password for your account
-          </p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg relative">
+        {/* Loading Spinner/Overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg z-10">
+            <p className="text-green-600 font-semibold">Resetting password...</p>
+          </div>
+        )}
+
+        {/* Logo */}
+        <div className="h-24 w-24 flex justify-center mx-auto mt-6">
+          <Image
+            src="/images/auth/Logo 1.jpg"
+            width={96}
+            height={96}
+            alt="logo"
+            className="rounded-full"
+          />
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {/* Title and Description */}
+        <h2 className="text-2xl font-bold mb-2 text-center">Set New Password</h2>
+        <p className="mt-2 text-center text-gray-500 mb-6">
+          Choose a strong password for your account.
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             {/* New Password Input */}
             <div>
@@ -89,7 +113,7 @@ export default function ResetPasswordForm({ token }) {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  className="w-full p-3 border-gray-600 border rounded-xl"
                   placeholder="Enter new password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -97,19 +121,10 @@ export default function ResetPasswordForm({ token }) {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
+                  {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
@@ -126,10 +141,10 @@ export default function ResetPasswordForm({ token }) {
                   type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
-                  className={`appearance-none relative block w-full px-3 py-2 pr-10 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${
-                    confirmPassword && !passwordsMatch 
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
-                      : "border-gray-300"
+                  className={`w-full p-3 border rounded-xl ${
+                    confirmPassword && !passwordsMatch
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-600"
                   }`}
                   placeholder="Confirm new password"
                   value={confirmPassword}
@@ -138,19 +153,10 @@ export default function ResetPasswordForm({ token }) {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  {showConfirmPassword ? (
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
+                  {showConfirmPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                 </button>
               </div>
               {confirmPassword && !passwordsMatch && (
@@ -161,131 +167,80 @@ export default function ResetPasswordForm({ token }) {
 
           {/* Password Requirements */}
           {newPassword && (
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <p className="text-sm font-bold text-gray-700 mb-2">Password must include:</p>
               <ul className="text-sm space-y-1">
+                {/* Min Length */}
                 <li className={`flex items-center ${passwordValidation.minLength ? 'text-green-600' : 'text-red-600'}`}>
-                  <span className="mr-2">{passwordValidation.minLength ? '✓' : '✗'}</span>
+                  <span className="mr-2 font-bold">{passwordValidation.minLength ? '✓' : '✗'}</span>
                   At least 8 characters
                 </li>
+                {/* Uppercase */}
                 <li className={`flex items-center ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-red-600'}`}>
-                  <span className="mr-2">{passwordValidation.hasUpperCase ? '✓' : '✗'}</span>
-                  One uppercase letter
+                  <span className="mr-2 font-bold">{passwordValidation.hasUpperCase ? '✓' : '✗'}</span>
+                  One uppercase letter (A-Z)
                 </li>
+                {/* Lowercase */}
                 <li className={`flex items-center ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-red-600'}`}>
-                  <span className="mr-2">{passwordValidation.hasLowerCase ? '✓' : '✗'}</span>
-                  One lowercase letter
+                  <span className="mr-2 font-bold">{passwordValidation.hasLowerCase ? '✓' : '✗'}</span>
+                  One lowercase letter (a-z)
                 </li>
+                {/* Number */}
                 <li className={`flex items-center ${passwordValidation.hasNumbers ? 'text-green-600' : 'text-red-600'}`}>
-                  <span className="mr-2">{passwordValidation.hasNumbers ? '✓' : '✗'}</span>
-                  One number
+                  <span className="mr-2 font-bold">{passwordValidation.hasNumbers ? '✓' : '✗'}</span>
+                  One number (0-9)
                 </li>
+                {/* Special Character */}
                 <li className={`flex items-center ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-red-600'}`}>
-                  <span className="mr-2">{passwordValidation.hasSpecialChar ? '✓' : '✗'}</span>
-                  One special character
+                  <span className="mr-2 font-bold">{passwordValidation.hasSpecialChar ? '✓' : '✗'}</span>
+                  One special character (e.g., !@#$%)
                 </li>
               </ul>
             </div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={!isFormValid || isLoading || isSuccess}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white transition-colors duration-200 ${
-                !isFormValid || isLoading || isSuccess
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              }`}
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Resetting...
-                </>
-              ) : isSuccess ? (
-                "Password Reset!"
-              ) : (
-                "Reset Password"
-              )}
-            </button>
-          </div>
-
-          {message && (
-            <div
-              className={`mt-4 p-4 rounded-md ${
-                isSuccess
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
-              }`}
-            >
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  {isSuccess ? (
-                    <svg
-                      className="h-5 w-5 text-green-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="h-5 w-5 text-red-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium">{message}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {isSuccess && (
-            <div className="text-center">
-              <a
-                href="/login"
-                className="text-sm text-indigo-600 hover:text-indigo-500 underline"
-              >
-                Go to Login
-              </a>
-            </div>
-          )}
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={!isFormValid || isLoading || isSuccess}
+            className="w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Resetting..." : isSuccess ? "Password Reset!" : "Reset Password"}
+          </button>
         </form>
+
+        {/* Message Alert */}
+        {message && (
+          <div
+            className={`mt-6 p-4 rounded-xl border ${
+              isSuccess
+                ? "bg-green-50 text-green-700 border-green-300"
+                : "bg-red-50 text-red-700 border-red-300"
+            }`}
+          >
+            <div className="flex items-center">
+              <div className="flex-shrink-0 mr-3">
+                {isSuccess ? (
+                  <FaCheckCircle className="h-5 w-5 text-green-500" />
+                ) : (
+                  <FaExclamationCircle className="h-5 w-5 text-red-500" />
+                )}
+              </div>
+              <p className="text-sm font-medium">{message}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Back to Login Link */}
+        <p className="text-center text-sm text-gray-500 mt-6">
+          <Link
+            href="/login"
+            className="text-green-600 hover:underline flex items-center justify-center"
+          >
+            <FaArrowLeft className="h-3 w-3 mr-2" />
+            Go back to Login
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -94,7 +94,7 @@ const InventoryManagement = () => {
 
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<{ [key: string]: boolean }>({});
-
+  const [isLoading, setIsLoading] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<UnifiedInventoryItem[]>(
     []
   );
@@ -343,58 +343,63 @@ const InventoryManagement = () => {
     return cleanedData as Omit<T, "id" | "_id" | "timestamp">;
   };
 
-  const handleCreateItem = async (e: React.FormEvent) => {
+ const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null); // Clear previous form error
+    setIsLoading(true); // 👈 1. START LOADING
 
     if (!requiredUserId) {
-      setError("User ID is missing. Please log in again.");
-      return;
+        setError("User ID is missing. Please log in again.");
+        setIsLoading(false); // ⚠️ Stop loading on early exit
+        return;
     }
 
     // ⭐ CORE FIX: Validation to prevent sending an empty name ⭐
     if (formData?.name.trim() === "") {
-      setFormError(
-        "The 'Item Name' field cannot be empty. Please provide a name for the item."
-      );
-      return;
+        setFormError(
+            "The 'Item Name' field cannot be empty. Please provide a name for the item."
+        );
+        setIsLoading(false); // ⚠️ Stop loading on early exit
+        return;
     }
 
     try {
-      const payload = processPayload(formData) as NewInventoryItemData;
+        const payload = processPayload(formData) as NewInventoryItemData;
 
-      const newItem = await createInventoryItem(payload);
+        const newItem = await createInventoryItem(payload);
 
-      console.log("Server response (create):", newItem);
+        console.log("Server response (create):", newItem);
 
-      setInventoryItems((prev) => [...prev, newItem]);
-      setShowAddItemModal(false);
-      setFormData(getInitialFormData(activeInventoryTab));
-      setError(null); // Clear main error if successful
+        setInventoryItems((prev) => [...prev, newItem]);
+        setShowAddItemModal(false);
+        setFormData(getInitialFormData(activeInventoryTab));
+        setError(null); // Clear main error if successful
 
     } catch (err: unknown) { // ✅ FIX: Use 'unknown'
-      console.error("Full error object:", err);
+        console.error("Full error object:", err);
 
-      // ✅ FIX: Type guard to safely check if 'err' has the expected structure
-      const axiosError = err as { response?: { data?: { error?: string } } } | null | undefined;
+        // ✅ FIX: Type guard to safely check if 'err' has the expected structure
+        const axiosError = err as { response?: { data?: { error?: string } } } | null | undefined;
 
-      let errorMessage = "Failed to create inventory item. An unknown error occurred. Check the console for more details.";
+        let errorMessage = "Failed to create inventory item. An unknown error occurred. Check the console for more details.";
 
-      if (axiosError?.response) {
-        console.error("Error response:", axiosError.response);
-        if (axiosError.response.data && axiosError.response.data.error) {
-          errorMessage = `Failed to create inventory item: ${axiosError.response.data.error}`;
-        } else {
-          errorMessage = "Failed to create inventory item. The server rejected the request. Check the console for more details.";
+        if (axiosError?.response) {
+            console.error("Error response:", axiosError.response);
+            if (axiosError.response.data && axiosError.response.data.error) {
+                errorMessage = `Failed to create inventory item: ${axiosError.response.data.error}`;
+            } else {
+                errorMessage = "Failed to create inventory item. The server rejected the request. Check the console for more details.";
+            }
+        } else if (err instanceof Error) {
+            // Handle standard JavaScript Errors (e.g., network issues before the request is sent)
+            errorMessage = `Failed to create inventory item. Error: ${err.message}. Check the console for more details.`;
         }
-      } else if (err instanceof Error) {
-        // Handle standard JavaScript Errors (e.g., network issues before the request is sent)
-        errorMessage = `Failed to create inventory item. Error: ${err.message}. Check the console for more details.`;
-      }
 
-      setFormError(errorMessage); // Set form-specific error
+        setFormError(errorMessage); // Set form-specific error
+    } finally {
+        setIsLoading(false); // 👈 2. STOP LOADING (Always run)
     }
-  };
+};
 
   const handleUpdateItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -611,7 +616,7 @@ const InventoryManagement = () => {
   }
 
   return (
-    <div className="p-2 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-2 lg:pt-8 lg:pb-8 max-w-7xl mx-auto">
       
       {/* Global Error Banner */}
       {error && inventoryItems.length > 0 && (
@@ -659,10 +664,10 @@ const InventoryManagement = () => {
           <button className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
             <ListFilter className="h-4 w-4 mr-2" /> Filter
           </button>
-          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden sm:flex">
+          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
             <LayoutGrid className="h-4 w-4 mr-2" /> Grid
           </button>
-          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden sm:flex">
+          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
             <Download className="h-4 w-4 mr-2" /> Export
           </button>
           <button
@@ -678,13 +683,13 @@ const InventoryManagement = () => {
       </div>
 
       {/* --- INVENTORY ITEMS GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
         {getItemsToDisplay.length > 0 ? (
           getItemsToDisplay.map((item: UnifiedInventoryItem) => {
             const status = getItemStatus(item);
             const isItemDeleting = isDeleting[item.id];
             return (
-              <Card key={item.id} title={item.name} className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300 min-w-[250px]">
+              <Card key={item.id} title={item.name} className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300 min-w-[250px]  ">
                 <div className="space-y-2">
                     
                   
@@ -749,7 +754,7 @@ const InventoryManagement = () => {
                         )}
                         {/* Status Badge */}
                     <div
-                        className={`mb-4 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center justify-start ${getStatusColor(status)}`}
+                        className={`mb-2 mt-4 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center justify-start ${getStatusColor(status)}`}
                     >
                         {getStatusIcon(status)}
                         <span className="capitalize">{status}</span>
@@ -793,31 +798,52 @@ const InventoryManagement = () => {
 
       {/* --- ADD ITEM MODAL --- */}
       <Modal
-        show={showAddItemModal}
-        onClose={() => {
-            setShowAddItemModal(false);
-            setFormError(null); // Clear form error on close
-        }}
-        title={`Add New ${activeInventoryTab} Item`}
-      >
-        <form onSubmit={handleCreateItem} className="space-y-6">
-          {renderFormFields(formData as BaseFormData, handleAddInputChange)}
-          <div className="pt-4 border-t border-gray-200">
+    show={showAddItemModal}
+    onClose={() => {
+        setShowAddItemModal(false);
+        setFormError(null); // Clear form error on close
+    }}
+    title={`Add New ${activeInventoryTab} Item`}
+>
+    <form onSubmit={handleCreateItem} className="space-y-6">
+        {/* ... (other form fields) ... */}
+        {renderFormFields(formData as BaseFormData, handleAddInputChange)}
+        
+        <div className="pt-4 border-t border-gray-200">
             {formError && ( // Display form-specific error
-              <p className="mb-3 text-sm text-red-600 flex items-start">
-                <TriangleAlert className="h-4 w-4 mt-0.5 mr-1 flex-shrink-0" />
-                <span>{formError}</span>
-              </p>
+                <p className="mb-3 text-sm text-red-600 flex items-start">
+                    {/* Assuming TriangleAlert is imported */}
+                    <TriangleAlert className="h-4 w-4 mt-0.5 mr-1 flex-shrink-0" />
+                    <span>{formError}</span>
+                </p>
             )}
             <button
-              type="submit"
-              className="w-full flex justify-center rounded-lg border border-transparent bg-green-600 py-3 px-4 text-sm font-semibold text-white shadow-md hover:bg-green-700 transition-colors"
+                type="submit"
+                // 1. Disable the button when loading
+                disabled={isLoading}
+                className={`
+                    w-full flex justify-center rounded-lg border border-transparent py-3 px-4 text-sm font-semibold shadow-md transition-colors text-white
+                    ${isLoading
+                        // 2. Adjust color and cursor when loading
+                        ? 'bg-green-400 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700'
+                    }
+                `}
             >
-              <Plus className="h-4 w-4 mr-2" /> Save {activeInventoryTab}
+                {isLoading ? (
+                    // 3. Show a spinner when loading (Assuming Loader2 is an imported icon)
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                    // 4. Show the standard icon when not loading
+                    <Plus className="h-4 w-4 mr-2" />
+                )}
+                
+                {/* 5. Change the button text based on the loading state */}
+                {isLoading ? `Saving ${activeInventoryTab}...` : `Save ${activeInventoryTab}`}
             </button>
-          </div>
-        </form>
-      </Modal>
+        </div>
+    </form>
+</Modal>
 
       {/* --- UPDATE ITEM MODAL --- */}
       <Modal
