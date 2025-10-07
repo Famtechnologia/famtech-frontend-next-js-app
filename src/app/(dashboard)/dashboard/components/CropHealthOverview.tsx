@@ -25,7 +25,7 @@ const CropHealthCard = () => {
       title={
         <div className="flex items-center justify-between">
           <span>Crop Health Snapshot</span>
-          <span className="text-xs font-medium bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md">
+          <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-1 rounded-md">
             Coming Soon
           </span>
         </div>
