@@ -482,7 +482,7 @@ export default function ModernFarmRegistration() {
 
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">
-          Established Year
+          Established Year(optional)
           <span className="text-gray-400 text-xs ml-1"></span>
         </label>
         <input
@@ -597,7 +597,7 @@ export default function ModernFarmRegistration() {
         </div>
 
         <div className="mb-8">
-          <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Street Address</label>
+          <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Street Address(optional)</label>
           <input
             type="text"
             className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md placeholder-gray-400 ${errors.address ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
@@ -691,7 +691,7 @@ export default function ModernFarmRegistration() {
         <p className="text-gray-500 text-base md:text-lg">Customize your farm management settings to get personalized recommendations</p>
       </div>
       <div className="p-0  md:p-4 space-y-8">
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
+       {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <svg className="w-5 h-5 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -731,7 +731,7 @@ export default function ModernFarmRegistration() {
               {errors.primaryCrops}
             </p>
           )}
-        </div>
+        </div>*/}
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">

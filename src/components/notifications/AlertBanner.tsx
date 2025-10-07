@@ -1,45 +1,59 @@
-'use client'
-import { Cloud, AlertTriangle } from 'lucide-react';
-import Card from '@/components/ui/Card'
+'use client';
 
+import React from 'react';
+import { Bell } from 'lucide-react';
+import Card from '@/components/ui/Card';
 
 const Alerts = () => {
+  // 🔒 Placeholder: real alert data will be added once backend connects
+  /*
   const alerts = [
     {
-      type: "pest",
-      title: "Pest Alert",
-      message: "Fall armyworm detected in nearby farms. Check your maize crop.",
-      time: "2 hours ago",
+      type: 'pest',
+      title: 'Pest Alert',
+      message: 'Fall armyworm detected in nearby farms. Check your maize crop.',
+      time: '2 hours ago',
       icon: AlertTriangle,
-      color: "text-red-500"
+      color: 'text-red-500'
     },
     {
-      type: "weather",
-      title: "Weather Warning", 
-      message: "Heavy rainfall expected tomorrow. Secure your crops.",
-      time: "1 day ago",
+      type: 'weather',
+      title: 'Weather Warning',
+      message: 'Heavy rainfall expected tomorrow. Secure your crops.',
+      time: '1 day ago',
       icon: Cloud,
-      color: "text-blue-500"
+      color: 'text-blue-500'
     }
   ];
+  */
 
   return (
-    <Card title="Alerts" className="h-fit " headerClassName='bg-yellow-50 border-b border-yellow-200' bodyClassName='p-6'>
-      <div className="space-y-4">
-        {alerts.map((alert, index) => (
-          <div key={index} className="flex items-start space-x-3 p-3">
-            <alert.icon className={`w-5 h-5 ${alert.color} flex-shrink-0 mt-0.5`} />
-            <div className="flex-1">
-              <div className="font-medium text-sm text-gray-800">{alert.title}</div>
-              <div className="text-sm text-gray-600 mt-1">{alert.message}</div>
-              <div className="text-xs text-gray-500 mt-2">{alert.time}</div>
-            </div>
-          </div>
-        ))}
-        
-        <button className="text-yellow-600 text-sm font-medium hover:text-yellow-700 flex items-center">
-          View all alerts →
-        </button>
+    <Card
+      title={
+        <div className="flex items-center justify-between">
+          <span>Alerts</span>
+          <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
+            Coming Soon
+          </span>
+        </div>
+      }
+      className="h-fit"
+      headerClassName="bg-yellow-50 border-b border-yellow-200"
+      bodyClassName="p-6"
+    >
+      {/* Empty state */}
+      <div className="flex flex-col justify-between min-h-[180px]">
+        <div className="flex flex-col items-center justify-center text-center text-gray-600 mt-4">
+          <Bell className="w-8 h-8 text-yellow-500 mb-3" />
+          <p className="text-sm mb-4 max-w-xs">
+            No alerts yet. Enable notifications to get real-time updates about your farm.
+          </p>
+        </div>
+
+        {/* Bottom-left action button 
+        <button className="flex items-center text-sm text-gray-600 hover:text-gray-800 font-medium mt-auto">
+          Get Started <ArrowRight className="w-4 h-4 ml-1" />
+        </button>*/}
       </div>
     </Card>
   );
