@@ -158,6 +158,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     ],
                 },
                 {
+                    name: 'Smart Advisory',
+                    icon: Brain,
+                    key: 'smart-advisory',
+                    expandable: false,
+                    href: `/dashboard/farmer/${subRole}/ai-insights`,
+                    comingSoon: true,
+                },
+                {
                     name: 'AI Insights',
                     icon: Brain,
                     key: 'ai-insights',

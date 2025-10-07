@@ -7,7 +7,7 @@ import { getCalendarData, CalendarData, Task, createTask } from '@/lib/services/
 import { updateTask } from '@/lib/services/taskplanner'; 
 import Modal from '../ui/Modal';
 // The auth store import is kept for context, though not used in the display logic
-import { useAuthStore, User } from "@/lib/store/authStore"; 
+import { useAuthStore} from "@/lib/store/authStore"; 
 
 
 // ----------------------------------------------------------------------
@@ -121,7 +121,7 @@ const DayTasksModal: React.FC<{
             </div>
 
             <div className='pt-4 border-t mt-4'>
-                <p className='text-sm text-gray-400'>Note: Only tasks for the day are shown. Full details may be in the Task Planner.</p>
+                <p className='text-sm text-gray-400'>Note: Only tasks for the day are shown. Full details in the Task Planner.</p>
             </div>
         </Modal>
     );
