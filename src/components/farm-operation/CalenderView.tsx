@@ -335,11 +335,13 @@ const CalendarView: React.FC = () => {
         "July", "August", "September", "October", "November", "December"
     ];
 
+    const { user } = useAuthStore(); // Get user from auth store
+
     const fetchCalendar = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await getCalendarData(currentYear, currentMonth);
+            const data = await getCalendarData(currentYear, currentMonth, user?.id || "");
             setCalendarData(data);
         } catch (err) {
             console.error("Failed to fetch calendar data:", err);
@@ -347,7 +349,7 @@ const CalendarView: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [currentYear, currentMonth]);
+    }, [currentYear, currentMonth, user]);
 
     useEffect(() => {
         fetchCalendar();
