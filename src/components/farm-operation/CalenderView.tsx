@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Filter } from 'lucide-react';
 // Assuming these types and services are correctly exported from your lib files
-import { getCalendarData, CalendarData, Task, createTask } from '@/lib/services/calender';
-import { updateTask } from '@/lib/services/taskplanner'; 
+import { getCalendarData, CalendarData, Task, updateTask } from '@/lib/services/calender';
+// createTask service is removed as it is no longer used
 import Modal from '../ui/Modal';
 // The auth store import is kept for context, though not used in the display logic
-import { useAuthStore, User } from "@/lib/store/authStore"; 
+import { useAuthStore } from "@/lib/store/authStore";
 
 
 // ----------------------------------------------------------------------
@@ -36,7 +36,7 @@ const DayCell: React.FC<{ day: number; tasks: Task[]; onClick: () => void }> = (
         <div className="absolute inset-x-0 bottom-0 p-1 flex space-x-1 justify-center md:justify-start overflow-x-auto no-scrollbar">
             {tasks.map((task) => (
                 <div
-                    key={task._id}
+                    key={task.id}
                     className={`h-2 w-2 rounded-full ${
                         task.status === 'completed' ? 'bg-green-500' : 'bg-orange-500'
                     }`}
@@ -74,7 +74,7 @@ const DayTasksModal: React.FC<{
             // Assuming updateTask takes the task ID and the fields to update
             // We include all required Task properties (omitting `_id` and the deep `timeline` structure might be needed depending on your API structure)
             // For simplicity and compatibility with TaskPlanner API, we pass the necessary fields.
-            await updateTask(task._id, { ...task, status: newStatus }); 
+            await updateTask(task.id, { ...task, status: newStatus }); 
             
             // Refresh the calendar view
             onTaskUpdate();
@@ -94,7 +94,7 @@ const DayTasksModal: React.FC<{
             <div className="space-y-4 max-h-96 overflow-y-auto">
                 {selectedDay.tasks.length > 0 ? (
                     selectedDay.tasks.map((task) => (
-                        <div key={task._id} className="p-3 border rounded-md shadow-sm flex justify-between items-center transition-shadow hover:shadow-md">
+                        <div key={task.id} className="p-3 border rounded-md shadow-sm flex justify-between items-center transition-shadow hover:shadow-md">
                             <div className="flex-1 min-w-0">
                                 <h4 className={`font-semibold truncate ${task.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                                     {task.title}
@@ -121,7 +121,7 @@ const DayTasksModal: React.FC<{
             </div>
 
             <div className='pt-4 border-t mt-4'>
-                <p className='text-sm text-gray-400'>Note: Only tasks for the day are shown. Full details may be in the Task Planner.</p>
+                <p className='text-sm text-gray-400'>Note: Only tasks for the day are shown. Full details in the Task Planner.</p>
             </div>
         </Modal>
     );
@@ -129,194 +129,27 @@ const DayTasksModal: React.FC<{
 
 
 // ----------------------------------------------------------------------
-// 4. NewEventForm COMPONENT
+// 4. Inactive Add Event Button (Replaced AddEventDialog)
 // ----------------------------------------------------------------------
 
-const NewEventForm: React.FC<{ onSave: (taskData: Omit<Task, '_id'>) => void }> = ({ onSave }) => {
-    // TypeScript utility type `Omit` is used here to create a partial type excluding `_id`
-    const [formData, setFormData] = useState<Omit<Task, '_id'>>({
-        title: '',
-        status: 'pending',
-        priority: 'medium',
-        timeline: {
-            dueDate: '',
-            dueTime: ''
-        },
-        note: '',
-        taskType: 'General Tasks',
-        assignee: '',
-        entity_id: 'default_entity_id',
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        if (name === 'dueDate' || name === 'dueTime') {
-            setFormData(prev => ({
-                ...prev,
-                timeline: {
-                    ...prev.timeline,
-                    [name as 'dueDate' | 'dueTime']: value,
-                },
-            }));
-        } else {
-            setFormData(prev => ({ ...prev, [name as keyof Omit<Task, '_id'>]: value }));
-        }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
+const InactiveAddEventButton: React.FC = () => {
+    // This button does nothing when clicked, as requested.
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700">Event Title</label>
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-300 focus:ring-2 sm:text-sm"
-                    placeholder="e.g., Harvest Corn"
-                />
-            </div>
-            <div className="flex space-x-4">
-                <div className="flex-1">
-                    <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">Date</label>
-                    <input
-                        type="date"
-                        id="dueDate"
-                        name="dueDate"
-                        value={formData.timeline.dueDate}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                    />
-                </div>
-                <div className="flex-1">
-                    <label htmlFor="dueTime" className="block text-sm font-medium text-gray-700">Time</label>
-                    <input
-                        type="time"
-                        id="dueTime"
-                        name="dueTime"
-                        value={formData.timeline.dueTime}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                    />
-                </div>
-            </div>
-            <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Priority</label>
-                <select
-                    id="priority"
-                    name="priority"
-                    value={formData.priority}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
-            </div>
-            <div>
-                <label htmlFor="taskType" className="block text-sm font-medium text-gray-700">Task Type</label>
-                <select
-                    id="taskType"
-                    name="taskType"
-                    value={formData.taskType}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                >
-                    <option value="Crop Tasks">Crop Tasks</option>
-                    <option value="Livestock Tasks">Livestock Tasks</option>
-                    <option value="Equipment">Equipment</option>
-                    <option value="General Tasks">General Tasks</option>
-                </select>
-            </div>
-            <div>
-                <label htmlFor="assignee" className="block text-sm font-medium text-gray-700">Assignee</label>
-                <input
-                    type="text"
-                    id="assignee"
-                    name="assignee"
-                    value={formData.assignee}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                    placeholder="e.g., John Doe"
-                />
-            </div>
-            <div>
-                <label htmlFor="note" className="block text-sm font-medium text-gray-700">Description</label>
-                <textarea
-                    id="note"
-                    name="note"
-                    value={formData.note}
-                    onChange={handleChange}
-                    rows={3}
-                    className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
-                    placeholder="Add a brief description..."
-                ></textarea>
-            </div>
-            {/* Hidden fields are generally managed better outside the form or automatically in state, but keeping them as requested */}
-            <input type="hidden" name="status" value={formData.status} />
-            <input type="hidden" name="entity_id" value={formData.entity_id} />
-            <div className="pt-4 border-t border-gray-200">
-                <button
-                    type="submit"
-                    className="flex justify-center w-full rounded-sm border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700"
-                >
-                    Save Event
-                </button>
-            </div>
-        </form>
-    );
-};
-
-// ----------------------------------------------------------------------
-// 5. AddEventDialog COMPONENT
-// ----------------------------------------------------------------------
-
-const AddEventDialog: React.FC<{ onTaskAdded: () => void }> = ({ onTaskAdded }) => {
-    const [showModal, setShowModal] = useState(false);
-
-    const handleOpenModal = () => setShowModal(true);
-    const handleCloseModal = () => setShowModal(false);
-
-    const handleSave = async (taskData: Omit<Task, '_id'>) => {
-        try {
-            await createTask(taskData);
-            handleCloseModal();
-            onTaskAdded();
-        } catch (error) {
-            console.error("Failed to create task:", error);
-        }
-    };
-
-    return (
-        <div className="relative">
-            <button
-                onClick={handleOpenModal} // Correct handler is now attached
-                className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
-            >
-                <Plus className="h-4 w-4 mr-2" />
-                <span className='hidden md:flex'>Add </span>
-                <span> Event</span>
-            </button>
-
-            <Modal show={showModal} onClose={handleCloseModal} title="Add New Event" >
-                <NewEventForm onSave={handleSave} />
-            </Modal>
-        </div>
+        <button
+            // Use 'cursor-not-allowed' for inactive visual
+            className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 cursor-not-allowed "
+            disabled // The disabled attribute makes it truly inactive
+        >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className='hidden md:flex'>Add </span>
+            <span> Event</span>
+        </button>
     );
 };
 
 
 // ----------------------------------------------------------------------
-// 6. Main CalendarView COMPONENT
+// 5. Main CalendarView COMPONENT
 // ----------------------------------------------------------------------
 
 const CalendarView: React.FC = () => {
@@ -341,7 +174,8 @@ const CalendarView: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await getCalendarData(currentYear, currentMonth, user?.id || "");
+            // Note: If user is null, "" is passed for userId, assuming API handles this or it's implicitly part of the auth flow.
+            const data = await getCalendarData(currentYear, currentMonth, user?.id || ""); 
             setCalendarData(data);
         } catch (err) {
             console.error("Failed to fetch calendar data:", err);
@@ -393,7 +227,8 @@ const CalendarView: React.FC = () => {
         return new Date(year, month, 0).getDate();
     };
 
-    const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
+    // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay(); 
     const blankDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
 
     return (
@@ -428,8 +263,7 @@ const CalendarView: React.FC = () => {
                     </div>
                 </div>
 
-                {/* View Options, Filters, and Legend sections omitted for brevity but remain structurally sound */}
-
+                {/* View Options */}
                 <div>
                     <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">VIEW OPTIONS</h3>
                     <div className="flex space-x-2">
@@ -438,6 +272,7 @@ const CalendarView: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Filter Events */}
                 <div>
                     <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">FILTER EVENTS</h3>
                     <div className="space-y-2">
@@ -450,6 +285,7 @@ const CalendarView: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Legend */}
                 <div>
                     <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">LEGEND</h3>
                     <div className="space-y-3">
@@ -473,7 +309,8 @@ const CalendarView: React.FC = () => {
                                 <Filter className="h-5 w-5" />
                             </button>
                         </div>
-                        <AddEventDialog onTaskAdded={fetchCalendar} />
+                        {/* INACTIVE ADD EVENT BUTTON */}
+                        <InactiveAddEventButton /> 
                     </div>
                 </div>
 
@@ -501,14 +338,14 @@ const CalendarView: React.FC = () => {
 
                             const cells: React.ReactElement[] = [];
                             // previous month trailing days
-                            for (let i = blankDays.length - 1; i >= 0; i--) {
+                            for (let i = firstDayOfMonth - 1; i >= 0; i--) { // Corrected loop based on firstDayOfMonth
                                 const dayNumber = daysInPrevMonth - i;
                                 cells.push(
                                     <div
                                         key={`prev-${dayNumber}`}
                                         className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 bg-gray-50 text-gray-400"
                                     >
-                                        {dayNumber}
+                                        <span className="text-xs">{dayNumber}</span>
                                     </div>
                                 );
                             }
@@ -535,7 +372,7 @@ const CalendarView: React.FC = () => {
                                         key={`next-${d}`}
                                         className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 bg-gray-50 text-gray-400"
                                     >
-                                        {d}
+                                        <span className="text-xs">{d}</span>
                                     </div>
                                 );
                             }

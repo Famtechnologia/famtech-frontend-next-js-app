@@ -42,7 +42,7 @@ import {
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
 import { useAuthStore, User } from "@/lib/store/authStore";
-
+import InventorySkeleton from "@/components/layout/skeleton/Inventory";
 // --- TYPE DEFINITIONS & USER ID RETRIEVAL ---
 
 // Define placeholder type for ToolData while it is commented out
@@ -586,17 +586,9 @@ const InventoryManagement = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="p-6 flex justify-center items-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading inventory...</p>
-        </div>
-      </div>
-    );
-  }
-
+ if (isLoading) {
+  return <InventorySkeleton />;
+}
   // Improved Error Display
   if (error && inventoryItems.length === 0) {
     return (

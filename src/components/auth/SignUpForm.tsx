@@ -8,41 +8,30 @@ import Image from "next/image";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore, User } from "@/lib/store/authStore";
 import { register as signupRequest } from "@/lib/api/auth";
-import { countries } from "@/lib/services/countries.js" // Assuming this file exports an array of country/state objects
+import { countries } from "@/lib/services/countries.js"; // Assuming this file exports an array of country/state objects
 
 // --- Type Definitions ---
-
-/**
- * Defines the structure for the data submitted via the signup form.
- */
 interface SignupFormInputs {
   email: string;
   password: string;
   confirmPassword: string;
   country: string;
   state: string;
+  lga?: string; // 👈 added optional LGA
 }
 
-/**
- * Defines the structure for a Country object, matching the expected format from your 'countries.js'.
- */
 interface Country {
-    name: string;
-    states: Array<{ name: string }>; // Assuming states is an array of objects with a 'name' property
+  name: string;
+  states: Array<{ name: string; subdivision?: string[] }>; // 👈 subdivision added
 }
-
 
 // --- Constants ---
-
 const strongPasswordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
-// Type assertion to ensure the imported countries array conforms to the Country type
 const countryData: Country[] = countries as Country[];
 
-
 // --- Component ---
-
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
@@ -57,20 +46,20 @@ export default function SignupPage() {
   // Watch values for conditional logic and validation
   const password = watch("password", "");
   const selectedCountryName = watch("country");
+  const selectedStateName = watch("state");
 
   // Find the selected country object based on the watched value
   const selectedCountry = countryData.find(
     (country) => country.name.toLowerCase() === selectedCountryName
   );
 
-  /**
-   * Handles form submission after successful client-side validation.
-   * @param data The validated form data.
-   */
-  const onSubmit = async (data: SignupFormInputs) => {
-    // Client-side password match is already handled by react-hook-form validation, 
-    // but the backend request will ensure data integrity.
+  // Find the selected state object
+  const selectedStateObj = selectedCountry?.states.find(
+    (state) => state.name.toLowerCase() === selectedStateName
+  );
+  const lgas = selectedStateObj?.subdivision || [];
 
+  const onSubmit = async (data: SignupFormInputs) => {
     try {
       const res = await signupRequest({
         email: data.email,
@@ -78,6 +67,7 @@ export default function SignupPage() {
         confirmPassword: data.confirmPassword,
         country: data.country,
         state: data.state,
+        lga: data.lga || "", // 👈 optional LGA
       });
 
       console.log("Signup response:", res);
@@ -89,7 +79,6 @@ export default function SignupPage() {
         throw new Error("No user returned from server");
       }
 
-      // Explicitly typing the user object for the store
       const user: User = {
         id: responseUser.id,
         email: responseUser.email,
@@ -97,6 +86,7 @@ export default function SignupPage() {
         country: responseUser.country ?? "",
         state: responseUser.state ?? "",
         isVerified: responseUser.isVerified ?? false,
+        lga: ""
       };
 
       useAuthStore.getState().setUser(user);
@@ -108,7 +98,6 @@ export default function SignupPage() {
       // router.push("/verify-email");
     } catch (err) {
       console.error("Signup failed:", err);
-      // Type guarding 'err' for better error handling
       const errorMessage =
         err instanceof Error
           ? err.message
@@ -120,7 +109,6 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-    
         <div className="h-24 w-24 flex justify-center mx-auto mt-6">
           <Image
             src="/images/auth/Logo 1.jpg"
@@ -130,11 +118,11 @@ export default function SignupPage() {
             className="rounded-full"
           />
         </div>
-    
+
         <h2 className="text-2xl font-bold mb-4 text-center">
           Create an Account
         </h2>
-    
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <input
@@ -170,7 +158,7 @@ export default function SignupPage() {
               onClick={() => setShowPassword((p) => !p)}
               className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
             >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}       
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
           {errors.password && (
@@ -193,7 +181,7 @@ export default function SignupPage() {
               onClick={() => setShowConfirmPassword((p) => !p)}
               className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
             >
-              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />} 
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
           {errors.confirmPassword && (
@@ -207,7 +195,9 @@ export default function SignupPage() {
             {...register("country", { required: "Country is required" })}
             className="w-full p-3 border-gray-600 border rounded-xl"
           >
-            <option value="" hidden>Select Country</option>
+            <option value="" hidden>
+              Select Country
+            </option>
             {countryData.map((country: Country) => (
               <option key={country.name} value={country.name.toLowerCase()}>
                 {country.name}
@@ -222,9 +212,11 @@ export default function SignupPage() {
           <select
             {...register("state", { required: "State is required" })}
             className="w-full p-3 border-gray-600 border rounded-xl"
-            disabled={!selectedCountry} // Disable if no country is selected
+            disabled={!selectedCountry}
           >
-            <option value="" hidden>Select State</option>
+            <option value="" hidden>
+              Select State
+            </option>
             {selectedCountry &&
               selectedCountry.states.map((state) => (
                 <option key={state.name} value={state.name.toLowerCase()}>
@@ -234,6 +226,22 @@ export default function SignupPage() {
           </select>
           {errors.state && (
             <p className="text-red-600 text-sm">{errors.state.message}</p>
+          )}
+
+          {/* LGA - Optional */}
+          {selectedCountryName === "nigeria" && lgas.length > 0 && (
+            <select
+              {...register("lga")}
+              className="w-full p-3 border-gray-600 border rounded-xl"
+              disabled={!selectedStateName}
+            >
+              <option value="">Select LGA (Optional)</option>
+              {lgas.map((lga, index) => (
+                <option key={index} value={lga.toLowerCase()}>
+                  {lga}
+                </option>
+              ))}
+            </select>
           )}
 
           <button

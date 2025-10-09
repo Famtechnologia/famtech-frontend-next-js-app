@@ -58,3 +58,25 @@ export const deleteTask = async (id: string): Promise<{ message: string }> => {
   const response = await apiClient.delete(`${BASE_URL}/${id}`);
   return response.data;
 };
+
+
+// src/lib/services/taskplanner.ts (or similar)
+// ... existing imports
+
+// Define the structure for a notification item
+export interface Notification {
+    id: string;
+    message: string;
+    taskId: string;
+    read: boolean;
+    timestamp: string;
+}
+
+// Function to fetch notifications for a specific user
+export const getNotifications = async (userId: string): Promise<Notification[]> => {
+    // 💡 Assuming API_URL is correctly defined and imported
+    const response = await apiClient.get(`${API_URL}/api/task-planner/notification/${userId}`);
+    return response.data;
+};
+
+// ... other task-related functions
