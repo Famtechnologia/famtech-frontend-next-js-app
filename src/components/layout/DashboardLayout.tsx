@@ -136,127 +136,134 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         if (role === 'farmer') {
             return [
-                {
-                    name: 'Dashboard',
-                    href: `/dashboard`,
-                    icon: LayoutDashboard,
-                    key: 'dashboard',
-                    expandable: false,
-                },
-                {
-                    name: 'Farm Operations',
-                    icon: Tractor,
-                    key: 'farm-operations',
-                    expandable: true,
-                    // Note: If you want to mark the entire section as coming soon, you'd add comingSoon: true here.
-                    children: [
-                        // Use query parameters to designate the active tab view
-                        { name: 'Task Planner', href: `/farm-operation?tab=planner` },
-                        { name: 'Crop and Livestock Records', href: `/farm-operation?tab=records` },
-                        { name: 'Calendar View', href: `/farm-operation?tab=calendar` },
-                        { name: 'Inventory Management', href: `/farm-operation?tab=inventory` },
-                    ],
-                },
-                {
-                    name: 'AI Insights',
-                    icon: Brain,
-                    key: 'ai-insights',
-                    expandable: false,
-                    href: `/dashboard/farmer/${subRole}/ai-insights`,
+              {
+                name: "Dashboard",
+                href: `/dashboard`,
+                icon: LayoutDashboard,
+                key: "dashboard",
+                expandable: false,
+              },
+              {
+                name: "Farm Operations",
+                icon: Tractor,
+                key: "farm-operations",
+                expandable: true,
+                // Note: If you want to mark the entire section as coming soon, you'd add comingSoon: true here.
+                children: [
+                  // Use query parameters to designate the active tab view
+                  { name: "Task Planner", href: `/farm-operation?tab=planner` },
+                  {
+                    name: "Crop and Livestock Records",
+                    href: `/farm-operation?tab=records`,
+                  },
+                  {
+                    name: "Calendar View",
+                    href: `/farm-operation?tab=calendar`,
+                  },
+                  {
+                    name: "Inventory Management",
+                    href: `/farm-operation?tab=inventory`,
+                  },
+                ],
+              },
+              {
+                name: "Smart Advisory",
+                icon: Brain,
+                key: "ai-insights",
+                expandable: false,
+                href: `/smart-advisory?tab=health`,
+              },
+              {
+                name: "Mapping & Geo Tools",
+                icon: Map,
+                key: "mapping",
+                expandable: false,
+                href: `/dashboard/farmer/${subRole}/mapping`,
+                comingSoon: true,
+              },
+              {
+                name: "Financials - SmartNet",
+                icon: CreditCard,
+                key: "financials",
+                expandable: true,
+                comingSoon: true,
+                children: [
+                  { name: "Overview", href: "#" },
+                  { name: "Income", href: "#" },
+                  { name: "Expenses", href: "#" },
+                  { name: "Reports", href: "#" },
+                ],
+              },
+              {
+                name: "Marketplace - Famora",
+                icon: ShoppingCart,
+                key: "marketplace",
+                expandable: true,
+                comingSoon: true,
+                children: [
+                  { name: "Buy", href: "#" },
+                  { name: "Sell", href: "#" },
+                  { name: "My Orders", href: "#" },
+                ],
+              },
+              {
+                name: "Equipment Sync",
+                icon: Settings,
+                key: "equipment-sync",
+                expandable: false,
+                href: `/equipment-sync`,
+                comingSoon: false,
+              },
+              {
+                name: "Reports",
+                icon: FileText,
+                key: "reports",
+                expandable: true,
+                comingSoon: true,
+                children: [
+                  { name: "Production", href: "#" },
+                  { name: "Financial", href: "#" },
+                  { name: "Analytics", href: "#" },
+                ],
+              },
+              {
+                name: "Settings",
+                icon: Settings,
+                key: "settings",
+                expandable: true,
+                children: [
+                  { name: "Profile", href: `/settings/profile` },
+                  { name: "Farm Settings", href: `/settings/farm-setting` },
+                  {
+                    name: "Notifications",
+                    href: `/dashboard/farmer/${subRole}/settings/notifications`,
+                    // 🚀 TARGET: SETTINGS SUB-ITEM COMING SOON
                     comingSoon: true,
-                },
-                {
-                    name: 'Mapping & Geo Tools',
-                    icon: Map,
-                    key: 'mapping',
-                    expandable: false,
-                    href: `/dashboard/farmer/${subRole}/mapping`,
+                  },
+                ],
+              },
+              {
+                name: "Help & Support",
+                icon: HelpCircle,
+                key: "help",
+                expandable: true,
+                children: [
+                  {
+                    name: "Documentation",
+                    href: `/dashboard/farmer/${subRole}/help/docs`,
+                    // 🚀 TARGET: HELP SUB-ITEM COMING SOON
                     comingSoon: true,
-                },
-                {
-                    name: 'Financials - SmartNet',
-                    icon: CreditCard,
-                    key: 'financials',
-                    expandable: true,
+                  },
+                  { name: "Contact Support", href: `/help/contact-support` },
+                  {
+                    name: "Training",
+                    href: `/dashboard/farmer/${subRole}/help/training`,
+                    // 🚀 TARGET: HELP SUB-ITEM COMING SOON
                     comingSoon: true,
-                    children: [
-                        { name: 'Overview', href: '#' },
-                        { name: 'Income', href: '#' },
-                        { name: 'Expenses', href: '#' },
-                        { name: 'Reports', href: '#' },
-                    ],
-                },
-                {
-                    name: 'Marketplace - Famora',
-                    icon: ShoppingCart,
-                    key: 'marketplace',
-                    expandable: true,
-                    comingSoon: true,
-                    children: [
-                        { name: 'Buy', href: '#' },
-                        { name: 'Sell', href: '#' },
-                        { name: 'My Orders', href: '#' },
-
-                    ],
-                },
-                {
-                    name: 'Equipment Sync',
-                    icon: Settings,
-                    key: 'equipment-sync',
-                    expandable: false,
-                    href: `/equipment-sync`,
-                    comingSoon: false,
-                },
-                {
-                    name: 'Reports',
-                    icon: FileText,
-                    key: 'reports',
-                    expandable: true,
-                    comingSoon: true,
-                    children: [
-                        { name: 'Production', href: '#' },
-                        { name: 'Financial', href: '#' },
-                        { name: 'Analytics', href: '#' },
-                    ],
-                },
-                {
-                    name: 'Settings',
-                    icon: Settings,
-                    key: 'settings',
-                    expandable: true,
-                    children: [
-                        { name: 'Profile', href: `/settings/profile` },
-                        { name: 'Farm Settings', href: `/settings/farm-setting` },
-                        {
-                            name: 'Notifications',
-                            href: `/dashboard/farmer/${subRole}/settings/notifications`,
-                            // 🚀 TARGET: SETTINGS SUB-ITEM COMING SOON
-                            comingSoon: true,
-                        },
-                    ],
-                },
-                {
-                    name: 'Help & Support',
-                    icon: HelpCircle,
-                    key: 'help',
-                    expandable: true,
-                    children: [
-                        {
-                            name: 'Documentation',
-                            href: `/dashboard/farmer/${subRole}/help/docs`,
-                            // 🚀 TARGET: HELP SUB-ITEM COMING SOON
-                            comingSoon: true,
-                        },
-                        { name: 'Contact Support', href: `/help/contact-support` },
-                        {
-                            name: 'Training',
-                            href: `/dashboard/farmer/${subRole}/help/training`,
-                            // 🚀 TARGET: HELP SUB-ITEM COMING SOON
-                            comingSoon: true,
-                        },
-                        { name: 'FAQ', href: `/help/faq` },
-                    ],
-                },
+                  },
+                  { name: "FAQ", href: `/help/faq` },
+                ],
+              },
             ];
         }
 
