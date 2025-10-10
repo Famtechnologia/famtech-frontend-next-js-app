@@ -79,7 +79,12 @@ export default function WeatherForecast() {
   useEffect(() => {
     const getAsyncWeather = async () => {
      // These values are used inside the effect, so they must be dependencies.
-     const res = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
+     const res = await getWeather(
+  user?.country || "nigeria",
+  user?.state || "lagos",
+  user?.lga // optional — only included if available
+);
+
       console.log("this is the weather data ", res.data);
       setWeatherInfo(res?.data);
     };

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
@@ -8,7 +7,7 @@ import Image from "next/image";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore, User } from "@/lib/store/authStore";
 import { register as signupRequest } from "@/lib/api/auth";
-import { countries } from "@/lib/services/countries.js"; // Assuming this file exports an array of country/state objects
+import { countries } from "@/lib/services/countries.js";
 
 // --- Type Definitions ---
 interface SignupFormInputs {
@@ -17,12 +16,12 @@ interface SignupFormInputs {
   confirmPassword: string;
   country: string;
   state: string;
-  lga?: string; // 👈 added optional LGA
-}
+  lga?: string; 
+} 
 
 interface Country {
   name: string;
-  states: Array<{ name: string; subdivision?: string[] }>; // 👈 subdivision added
+  states: Array<{ name: string; subdivision?: string[] }>; 
 }
 
 // --- Constants ---
@@ -86,7 +85,7 @@ export default function SignupPage() {
         country: responseUser.country ?? "",
         state: responseUser.state ?? "",
         isVerified: responseUser.isVerified ?? false,
-        lga: ""
+        lga: responseUser.lga ?? "",
       };
 
       useAuthStore.getState().setUser(user);
