@@ -412,12 +412,6 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
     );
 };
 
-
-
-
-
-
-
 // --- Interface Definitions ---
 interface UpdateCropFormProps {
     record: CropRecord;

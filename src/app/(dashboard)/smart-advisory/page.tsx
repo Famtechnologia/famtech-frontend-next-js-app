@@ -7,12 +7,12 @@ import axios, { AxiosError } from "axios";
 import { API_URL } from "../../../../config";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
-import { Calendar, ClipboardList } from "lucide-react";
+import { BrainCircuit, HeartPulse } from "lucide-react";
 import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 
 const tabsConfig = [
-  { label: "Farm Health", icon: ClipboardList, key: "health" },
-  { label: "Smart Insight", icon: Calendar, key: "chat" },
+  { label: "Farm Health", icon: HeartPulse, key: "health" },
+  { label: "Smart Insight", icon: BrainCircuit, key: "chat" },
 ];
 
 const GET_PROFILE_ENDPOINT = "/api/get-profile";

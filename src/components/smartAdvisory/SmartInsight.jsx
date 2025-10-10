@@ -10,7 +10,7 @@ import Modal from "../ui/Modal";
 import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
 
-const formatMessage = (text: string) => {
+const formatMessage = (text) => {
   if (!text) return { __html: "" };
   const formattedText = text
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
@@ -19,20 +19,15 @@ const formatMessage = (text: string) => {
   return { __html: formattedText };
 };
 
-interface ChatMessage {
-  type: "user" | "bot";
-  text: string;
-}
-
 export const SmartInsight = () => {
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCropRecord, setIsCropRecord] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [isLivestockRecord, setIsLivestockRecord] = useState(false);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<Error | null>(null);
+  const [chatHistory, setChatHistory] = useState([]);
+  const chatContainerRef = useRef(null);
+  const [error, setError] = useState(null);
   const [cropRecords, setCropRecords] = useState([]);
   const [livestockRecords, setLivestockRecords] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -51,7 +46,7 @@ export const SmartInsight = () => {
       setCropRecords(data);
       setError(null);
     } catch (err) {
-      setError(err as Error);
+      setError(err);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +64,7 @@ export const SmartInsight = () => {
       setLivestockRecords(data);
       setError(null);
     } catch (err) {
-      setError(err as Error);
+      setError(err);
     } finally {
       setIsLoading(false);
     }
@@ -103,11 +98,11 @@ export const SmartInsight = () => {
     }
   }, [chatHistory, isLoading]);
 
-  const handleChat = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleChat = async (e) => {
     e.preventDefault();
     if (!question.trim()) return;
 
-    const userMessage: ChatMessage = { type: "user", text: question };
+    const userMessage = { type: "user", text: question };
     setChatHistory((prev) => [...prev, userMessage]);
     const currentQuestion = question;
     setQuestion("");
@@ -115,17 +110,17 @@ export const SmartInsight = () => {
 
     try {
       const advice = await getAdvice(currentQuestion, selectedRecord);
-      const botMessage: ChatMessage = { type: "bot", text: advice.advice };
+      const botMessage = { type: "bot", text: advice.advice };
       setChatHistory((prev) => [...prev, botMessage]);
-    } catch (error: any) {
-      const errorMessage: ChatMessage = {
+    } catch (error) {
+      const errorMessage = {
         type: "bot",
         text: `Error: ${error.message}`,
       };
       setChatHistory((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      setIsPreview(!isPreview);
+      setIsPreview(false);
     }
   };
 

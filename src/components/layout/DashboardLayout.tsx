@@ -460,14 +460,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                         <Link
                                             href={item.comingSoon ? '#' : item.href || '#'}
                                             onMouseEnter={sidebarCollapsed && item.expandable ? () => setHoveredMenuKey(item.key) : undefined}
-                                            onClick={(e) => {
-                                                if (item.comingSoon || item.href === '#') {
-                                                    e.preventDefault();
-                                                    setShowComingSoon(true);
-                                                } else {
-                                                    setSidebarOpen(false); // Close mobile sidebar on navigation
-                                                }
-                                            }}
+                                            // onClick={(e) => {
+                                            //     if (item.comingSoon || item.href === '#') {
+                                            //         e.preventDefault();
+                                            //         setShowComingSoon(true);
+                                            //     } else {
+                                            //         setSidebarOpen(false); // Close mobile sidebar on navigation
+                                            //     }
+                                            // }}
                                             className={`block w-full rounded-lg text-sm font-medium transition-colors ${itemIsActive
                                                     ? 'bg-green-50 text-green-700'
                                                     : 'text-gray-700 hover:bg-gray-100'
@@ -537,23 +537,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <h3 className="text-sm font-semibold text-gray-900 mb-2 border-b pb-2">
                             {activeParentItem.name}
                         </h3>
-                        {activeParentItem.children.map((child) => {
+                        {activeParentItem.children.map((child, index) => {
                             // 🚀 UPDATED LOGIC: Check both parent and child comingSoon status
                             const isChildComingSoon =
                                 activeParentItem.comingSoon || child.comingSoon || child.href === '#';
 
                             return (
                                 <Link
-                                    key={child.href}
+                                    key={index}
                                     href={isChildComingSoon ? '#' : child.href}
-                                    onClick={(e) => {
-                                        if (isChildComingSoon) {
-                                            e.preventDefault();
-                                            setShowComingSoon(true);
-                                        } else {
-                                            setHoveredMenuKey(null); // Close flyout on navigation
-                                        }
-                                    }}
+                                    // onClick={(e) => {
+                                    //     if (isChildComingSoon) {
+                                    //         e.preventDefault();
+                                    //         setShowComingSoon(true);
+                                    //     } else {
+                                    //         setHoveredMenuKey(null); // Close flyout on navigation
+                                    //     }
+                                    // }}
                                     className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${child.href === pathname ? 'font-semibold bg-gray-50' : ''
                                         }`}
                                     legacyBehavior>
