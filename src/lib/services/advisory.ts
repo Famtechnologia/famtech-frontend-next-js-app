@@ -4,7 +4,7 @@ import axios from "axios";
 // Base URLs for the new endpoints
 const ADVISORY_URL = `${API_URL}/api/advisory`;
 
-export const getAdvice = async (question: string, context: []) => {
+export const getAdvice = async (question: string, context: object) => {
   try {
     const response = await apiClient.post(`${ADVISORY_URL}`, { question, context});
     return response.data;
@@ -13,9 +13,9 @@ export const getAdvice = async (question: string, context: []) => {
       const message =
         error.response?.data?.message ||
         error.response?.data?.error ||
-        "Failed to fetch weather data"; // Removed API_URL from here
+        "Failed to fetch advice";
       throw new Error(message);
     }
-    throw new Error("An unknown error occurred while fetching weather data");
+    throw new Error("An unknown error occurred while fetching advice");
   }
 };

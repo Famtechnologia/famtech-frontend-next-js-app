@@ -13,7 +13,6 @@ export const useAuth = () => {
 
   const logout = () => {
     clearUser();
-    if (typeof window !== 'undefined') localStorage.removeItem('token');
   };
 
   return {

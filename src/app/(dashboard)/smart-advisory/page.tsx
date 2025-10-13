@@ -7,10 +7,12 @@ import axios, { AxiosError } from "axios";
 import { API_URL } from "../../../../config";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
-import { BrainCircuit, HeartPulse } from "lucide-react";
+import { BrainCircuit, HeartPulse, Telescope } from "lucide-react";
 import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
+import { Explore } from "@/components/smartAdvisory/Explore";
 
 const tabsConfig = [
+  { label: "Explore", icon: Telescope, key: "explore" },
   { label: "Farm Health", icon: HeartPulse, key: "health" },
   { label: "Smart Insight", icon: BrainCircuit, key: "chat" },
 ];
@@ -108,9 +110,11 @@ export default function Page() {
         return <FarmHealthCard location={farmProfile?.location} />;
       case "chat":
         return <SmartInsight />;
-
+      case "explore":
+        return <Explore location={farmProfile?.location} />;
+        
       default:
-        return <FarmHealthCard location={farmProfile?.location} />;
+        return <Explore location={farmProfile?.location} />;
     }
   }, [activeTabKey, farmProfile?.location]);
 

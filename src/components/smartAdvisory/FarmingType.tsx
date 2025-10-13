@@ -1,0 +1,158 @@
+"use client";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { getAdvice } from "@/lib/services/advisory";
+
+export const FarmingType = ({
+  location,
+  setShowFarmingType,
+}: {
+  location: { state: string; country: string };
+  setShowFarmingType: (show: boolean) => void;
+}) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<{ type: string; produce: string; level: string }>();
+
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (data: {
+    type: string;
+    produce: string;
+    level: string;
+  }) => {
+    setLoading(true);
+
+    try {
+      if (!data.produce || !data.type || !data.level) {
+        toast.error("Please select a farm type, produce and level");
+        return;
+      }
+
+      const context = {
+        ...(location && {
+          state: location.state,
+          country: location.country,
+        }),
+        type: data.type,
+        produce: data.produce,
+      };
+
+      const advice = await getAdvice(
+        `Generate a detailed roadmap for ${data.type} farming of ${data.produce} for a user with ${data.level} proficiency. The output should be a JSON object with a "title" and a "body". The "body" should be an array of objects, where each object represents a week and has a "week" number and a "tasks" array. Each object in the "tasks" array should have a "day" and a "instruction". The instruction for each day should be a long, detailed explanation of the task for better understanding. For example, instead of "Water the plants", it should be a more detailed explanation of how to water the plants, why it's important, and what to look for.`,
+        context
+      );
+
+      if (!advice) {
+        toast.error("No advice returned from server");
+      }
+
+      console.log(advice);
+      toast.success("Your advice is ready!");
+      setShowFarmingType(false);
+      // router.push("/verify-email");
+    } catch (err: unknown) {
+      console.error("Advice failed:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Advice Generation Failed";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={`relative bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer p-4 hover:border-green-500 hover:border-2 transition-all duration-300`}
+    >
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">
+          Welcome to Smart Advisory
+        </h2>
+        <p className="text-gray-500">
+          Lets help you to manage our farm - from seed to harvest
+        </p>
+      </div>
+      
+      <div className="mb-4">
+        <label htmlFor="type" className="text-gray-500 mb-2">
+          Choose Farm Type
+        </label>
+        {/* type */}
+        <select
+          id="type"
+          {...register("type", { required: "Crop Type is required" })} // Fix: 'type' is a valid property in SignupFormInputs
+          className="w-full p-3 border-gray-600 border rounded-xl"
+        >
+          <option value="" hidden>
+            Select Crop Type
+          </option>
+          {["Crop farming", "livestock farming", "Mixed (both)"]?.map(
+            (type: string) => (
+              <option key={type} value={type?.toLowerCase()}>
+                {type}
+              </option>
+            )
+          )}
+        </select>
+        {errors.type && (
+          <p className="text-red-600 text-sm">{errors?.type?.message}</p>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="produce" className="text-gray-500 mb-2">
+          Farm Produce
+        </label>
+        {/* produce */}
+        <input
+          id="produce"
+          type="produce"
+          placeholder="Produce"
+          {...register("produce", { required: "Produce is required" })}
+          className="w-full p-3 border-gray-600 border rounded-xl"
+        />
+        {errors.produce && (
+          <p className="text-red-600 text-sm">{errors?.produce?.message}</p>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="level" className="text-gray-500 mb-2">
+          Level
+        </label>
+        {/* level */}
+        <select
+          id="level"
+          {...register("level", { required: "Level is required" })}
+          className="w-full p-3 border-gray-600 border rounded-xl"
+        >
+          <option value="" hidden>
+            Select Level
+          </option>
+          {["Beginner", "Intermediate", "Professional"]?.map(
+            (level: string) => (
+              <option key={level} value={level?.toLowerCase()}>
+                {level}
+              </option>
+            )
+          )}
+        </select>
+        {errors.level && (
+          <p className="text-red-600 text-sm">{errors?.level?.message}</p>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-auto bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400 float-right"
+      >
+        {loading ? "Generating..." : "Generate Advice"}
+      </button>
+    </form>
+  );
+};
