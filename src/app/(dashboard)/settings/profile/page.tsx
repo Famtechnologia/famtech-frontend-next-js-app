@@ -198,9 +198,9 @@ const Settings: React.FC = () => {
                                 <p className="text-gray-600 text-sm">{farmOwnerName}</p>
                             </div>
                         </div>
-                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 bg-gray-100">
+                         <Link href="/settings/edit-farm-profile" className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
                             Edit
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Farm Location */}
@@ -214,9 +214,9 @@ const Settings: React.FC = () => {
                                 <p className="text-gray-600 text-sm">{farmLocationDisplay}</p>
                             </div>
                         </div>
-                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
+                         <Link href="/settings/edit-farm-profile" className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
                             Change
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Phone Number */}
@@ -230,9 +230,9 @@ const Settings: React.FC = () => {
                                 <p className="text-gray-600 text-sm">{phoneNumber}</p>
                             </div>
                         </div>
-                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
+                        <Link href="/settings/edit-farm-profile" className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
                             Edit
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -253,9 +253,9 @@ const Settings: React.FC = () => {
                                 <p className="text-gray-600 text-sm">{farmType}</p>
                             </div>
                         </div>
-                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
+                         <Link href="/settings/edit-farm-profile" className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
                             Edit
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Farm Size */}
@@ -269,9 +269,9 @@ const Settings: React.FC = () => {
                                 <p className="text-gray-600 text-sm">{farmSizeDisplay}</p>
                             </div>
                         </div>
-                        <button className="px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-200 bg-gray-100">
+                         <Link href="/settings/edit-farm-profile" className="px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-200 bg-gray-100">
                             Edit
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

@@ -1,10 +1,10 @@
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Building2, MapPin, Settings, CheckCircle, ChevronLeft, ChevronRight  } from 'lucide-react';
-import {API_URL} from '../../../../config'
-import {useAuthStore} from "@/lib/store/authStore"
-
+import { User, Building2, MapPin, Settings, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_URL } from '../../../../config'
+import { useAuthStore } from "@/lib/store/authStore"
+import { countries } from "@/lib/services/countries";
 export default function ModernFarmRegistration() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -17,21 +17,21 @@ export default function ModernFarmRegistration() {
     firstName: '',
     lastName: '',
     phoneNumber: '',
-    
+
     // Farm Information
     farmName: '',
     farmType: 'crop',
     farmSize: '',
     farmSizeUnit: 'hectares',
     establishedYear: '', // Changed to empty string to make it truly optional
-    
+
     // Location Information
     country: '', // Changed from hardcoded 'Nigeria' to empty string
     state: '',
     city: '',
     address: '',
     coordinates: { latitude: '', longitude: '' },
-    
+
     // Farm Settings
     currency: 'NGN',
     timezone: 'Africa/Lagos',
@@ -51,25 +51,22 @@ export default function ModernFarmRegistration() {
   ];
 
   const cropOptions = [
-    'Maize/Corn', 'Rice', 'Yam', 'Cassava', 'Cocoa', 'Oil Palm', 'Plantain', 'Tomatoes', 
+    'Maize/Corn', 'Rice', 'Yam', 'Cassava', 'Cocoa', 'Oil Palm', 'Plantain', 'Tomatoes',
     'Pepper', 'Onions', 'Beans', 'Groundnuts', 'Millet', 'Sorghum', 'Sweet Potato', 'Other'
   ];
-// will be used later on
+  // will be used later on
   // const farmingMethodOptions = [
   //   'Organic', 'Conventional', 'Integrated Pest Management', 'Precision Agriculture', 
   //   'Greenhouse', 'Hydroponics', 'Sustainable', 'Traditional'
   // ];
 
-   const farmingMethodOptions = ["organic", "irrigation", "mechanized", "manual"] ;
+  const farmingMethodOptions = ["organic", "irrigation", "mechanized", "manual"];
 
 
-  const nigerianStates = [
-    'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
-    'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe', 'Imo',
-    'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa',
-    'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba',
-    'Yobe', 'Zamfara'
-  ];
+  const countryData = countries;
+
+
+
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -78,10 +75,20 @@ export default function ModernFarmRegistration() {
     }
   };
 
-  const validateStep = (step) => {
-    const newErrors = {};
-    
-    switch (step) {
+  // This file assumes a function definition for validateStep 
+// that accepts formData, currentStep, and the setErrors function.
+
+/**
+ * Validates the current form data based on the step.
+ * Returns true if valid (no errors), false if invalid (errors exist).
+ * @param {object} formData - The current state of the form data.
+ * @param {number} currentStep - The step number to validate.
+ * @param {function} setErrors - Function to update the error state in the parent component.
+ */
+const validateStep = (formData, currentStep, setErrors) => {
+    let newErrors = {};
+
+    switch (currentStep) {
       case 1:
         // Personal Information validation - exact match to backend
         if (!formData.firstName || formData.firstName.toString().trim() === '') {
@@ -94,7 +101,7 @@ export default function ModernFarmRegistration() {
           newErrors.phoneNumber = 'Phone number is required';
         }
         break;
-        
+
       case 2:
         // Farm Details validation - exact match to backend
         if (!formData.farmName || formData.farmName.toString().trim() === '') {
@@ -111,7 +118,7 @@ export default function ModernFarmRegistration() {
         if (!formData.farmSizeUnit || formData.farmSizeUnit.toString().trim() === '') {
           newErrors.farmSizeUnit = 'Farm size unit is required';
         }
-        
+
         // Enhanced validation for establishedYear - matches backend exactly
         if (formData.establishedYear && formData.establishedYear.toString().trim() !== '') {
           const year = parseInt(formData.establishedYear);
@@ -123,6 +130,7 @@ export default function ModernFarmRegistration() {
         
       case 3:
         // Location validation - exact match to backend
+        // Country, State, and City are required. Address is optional.
         if (!formData.country || formData.country.toString().trim() === '') {
           newErrors.country = 'Country is required';
         }
@@ -132,10 +140,8 @@ export default function ModernFarmRegistration() {
         if (!formData.city || formData.city.toString().trim() === '') {
           newErrors.city = 'City is required';
         }
-        if (!formData.address || formData.address.toString().trim() === '') {
-          newErrors.address = 'Address is required';
-        }
-        
+        // Address validation block has been removed, making it optional.
+
         // Enhanced coordinates validation - matches backend exactly
         if (formData.coordinates) {
           const lat = formData.coordinates.latitude || formData.coordinates.lat;
@@ -159,7 +165,7 @@ export default function ModernFarmRegistration() {
           }
         }
         break;
-        
+
       case 4:
         // Preferences validation - exact match to backend
         if (!formData.currency || formData.currency.toString().trim() === '') {
@@ -173,14 +179,14 @@ export default function ModernFarmRegistration() {
         } else if (!/^[a-z]{2}$/.test(formData.language.toLowerCase())) {
           newErrors.language = 'Language must be a valid ISO 639-1 code (e.g., en, yo, fr, es)';
         }
-        
+
         // Enhanced seasonal pattern validation - matches backend
-        if (!formData.seasonalPattern || 
-            (Array.isArray(formData.seasonalPattern) && formData.seasonalPattern.length === 0) ||
-            (typeof formData.seasonalPattern === 'string' && formData.seasonalPattern.trim() === '')) {
+        if (!formData.seasonalPattern ||
+          (Array.isArray(formData.seasonalPattern) && formData.seasonalPattern.length === 0) ||
+          (typeof formData.seasonalPattern === 'string' && formData.seasonalPattern.trim() === '')) {
           newErrors.seasonalPattern = 'Seasonal pattern is required';
         }
-        
+
         // Enhanced array validations - matches backend exactly
         if (formData.primaryCrops) {
           if (!Array.isArray(formData.primaryCrops)) {
@@ -218,11 +224,20 @@ export default function ModernFarmRegistration() {
           newErrors.farmingMethods = 'At least one farming method is required';
         }
         break;
+        
+      default:
+        break;
+    }
+
+    // Update the state so errors are displayed to the user
+    if (setErrors) {
+        setErrors(newErrors);
     }
     
-    setErrors(newErrors);
+    // CRITICAL: Return true only if there are NO errors
     return Object.keys(newErrors).length === 0;
-  };
+};
+
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
@@ -237,44 +252,45 @@ export default function ModernFarmRegistration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep(currentStep)) return;
-    
+
     setLoading(true);
     setRegistrationError('');
 
     try {
       // Prepare data for backend API - matches backend expectations exactly
-      const registrationData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        phoneNumber: formData.phoneNumber.trim(),
-        farmName: formData.farmName.trim(),
-        farmType: formData.farmType.trim(),
-        farmSize: parseFloat(formData.farmSize),
-        farmSizeUnit: formData.farmSizeUnit.trim(),
-        // Only include establishedYear if it has a value
-        ...(formData.establishedYear && formData.establishedYear.toString().trim() !== '' && {
-          establishedYear: parseInt(formData.establishedYear)
-        }),
-        country: formData.country.trim(),
-        state: formData.state.trim(),
-        city: formData.city.trim(),
-        address: formData.address.trim(),
-        // Only include coordinates if both latitude and longitude are provided
-        ...(formData.coordinates.latitude && formData.coordinates.longitude && {
-          coordinates: {
-            latitude: parseFloat(formData.coordinates.latitude),
-            longitude: parseFloat(formData.coordinates.longitude)
-          }
-        }),
-        currency: formData.currency.trim(),
-        timezone: formData.timezone.trim(),
-        primaryCrops: formData.primaryCrops.map(crop => crop.trim()).filter(crop => crop !== ''),
-        farmingMethods: formData.farmingMethods.map(method => method.trim()).filter(method => method !== ''),
-        seasonalPattern: Array.isArray(formData.seasonalPattern)
-          ? formData.seasonalPattern[0].trim()
-          : formData.seasonalPattern.trim(),
-        language: formData.language.trim().toLowerCase() // Ensure lowercase for ISO format
-      };
+            const registrationData = {
+              firstName: formData.firstName.trim(),
+              lastName: formData.lastName.trim(),
+              phoneNumber: formData.phoneNumber.trim(),
+              farmName: formData.farmName.trim(),
+              farmType: formData.farmType.trim(),
+              farmSize: parseFloat(formData.farmSize),
+              farmSizeUnit: formData.farmSizeUnit.trim(),
+              // Only include establishedYear if it has a value
+              ...(formData.establishedYear && formData.establishedYear.toString().trim() !== '' && {
+                establishedYear: parseInt(formData.establishedYear)
+              }),
+              country: formData.country.trim(),
+              state: formData.state.trim(),
+              city: formData.city.trim(),
+              // Only include address if it has a non-empty value
+              ...(formData.address && formData.address.toString().trim() !== '' && { address: formData.address.trim() }),
+              // Only include coordinates if both latitude and longitude are provided
+              ...(formData.coordinates.latitude && formData.coordinates.longitude && {
+                coordinates: {
+                  latitude: parseFloat(formData.coordinates.latitude),
+                  longitude: parseFloat(formData.coordinates.longitude)
+                }
+              }),
+              currency: formData.currency.trim(),
+              timezone: formData.timezone.trim(),
+              primaryCrops: formData.primaryCrops.map(crop => crop.trim()).filter(crop => crop !== ''),
+              farmingMethods: formData.farmingMethods.map(method => method.trim()).filter(method => method !== ''),
+              seasonalPattern: Array.isArray(formData.seasonalPattern)
+                ? formData.seasonalPattern[0].trim()
+                : formData.seasonalPattern.trim(),
+              language: formData.language.trim().toLowerCase() // Ensure lowercase for ISO format
+            };
 
       const response = await fetch(`${API_URL}/api/create-farm-profile`, {
         method: 'POST',
@@ -291,9 +307,9 @@ export default function ModernFarmRegistration() {
       }
 
       const result = await response.json();
-      
+
       router.push('/dashboard')
-      
+
       console.log('Registration successful:', result);
     } catch (error) {
       console.error('Registration error:', error);
@@ -302,14 +318,14 @@ export default function ModernFarmRegistration() {
       setLoading(false);
     }
   };
-
+{/*might be added later on}
   const toggleCrop = (crop) => {
     const current = formData.primaryCrops;
     const updated = current.includes(crop)
       ? current.filter(c => c !== crop)
       : [...current, crop];
     updateFormData('primaryCrops', updated);
-  };
+  };*/}
 
   const toggleMethod = (method) => {
     const current = formData.farmingMethods;
@@ -320,16 +336,15 @@ export default function ModernFarmRegistration() {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-12">
+    <div className=" flex items-center justify-center mb-12">
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center">
-          <div className={`group relative flex items-center justify-center w-16 h-16 rounded-2xl border-2 transition-all duration-300 ${
-            currentStep >= step.id 
-              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/25' 
-              : currentStep === step.id
+        <div key={step.id} className="flex items-center md:items-center">
+          <div className={`group relative flex items-center justify-center w-8 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 rounded-2xl border-2 transition-all duration-300 ${currentStep >= step.id
+            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+            : currentStep === step.id
               ? 'border-emerald-300 text-emerald-600 bg-emerald-50'
               : 'border-gray-200 text-gray-400 bg-white'
-          }`}>
+            }`}>
             {currentStep > step.id ? (
               <CheckCircle size={24} />
             ) : (
@@ -339,22 +354,20 @@ export default function ModernFarmRegistration() {
               <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-2xl blur opacity-30 animate-pulse"></div>
             )}
           </div>
-          
-          <div className="ml-4 mr-8 hidden md:block">
-            <p className={`font-semibold text-sm ${
-              currentStep >= step.id ? 'text-emerald-600' : 'text-gray-400'
-            }`}>
+
+          <div className="ml-4 mr-0 lg:mr-8 hidden md:block">
+            <p className={`font-semibold text-sm ${currentStep >= step.id ? 'text-emerald-600' : 'text-gray-400'
+              }`}>
               {step.title}
             </p>
             <p className="text-xs text-gray-500">{step.description}</p>
           </div>
-          
+
           {index < steps.length - 1 && (
-            <div className={`w-16 h-1 mx-4 rounded-full transition-all duration-300 ${
-              currentStep > step.id 
-                ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' 
-                : 'bg-gray-200'
-            }`} />
+            <div className={`w-4 md:w-6 lg:w-16  h-1 mx-4 rounded-full transition-all duration-300 ${currentStep > step.id
+              ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+              : 'bg-gray-200'
+              }`} />
           )}
         </div>
       ))}
@@ -372,29 +385,27 @@ export default function ModernFarmRegistration() {
         </h2>
         <p className="text-gray-500 text-lg">Tell us about yourself to get started</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">First Name</label>
           <input
             type="text"
-            className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
-              errors.firstName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-            }`}
+            className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${errors.firstName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
+              }`}
             placeholder="Enter your first name"
             value={formData.firstName}
             onChange={(e) => updateFormData('firstName', e.target.value)}
           />
           {errors.firstName && <p className="text-red-500 text-sm font-medium">{errors.firstName}</p>}
         </div>
-        
+
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">Last Name</label>
           <input
             type="text"
-            className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
-              errors.lastName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-            }`}
+            className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${errors.lastName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
+              }`}
             placeholder="Enter your last name"
             value={formData.lastName}
             onChange={(e) => updateFormData('lastName', e.target.value)}
@@ -402,14 +413,13 @@ export default function ModernFarmRegistration() {
           {errors.lastName && <p className="text-red-500 text-sm font-medium">{errors.lastName}</p>}
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">Phone Number</label>
         <input
           type="tel"
-          className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
-            errors.phoneNumber ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-          }`}
+          className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${errors.phoneNumber ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
+            }`}
           placeholder="+234 XXX XXX XXXX"
           value={formData.phoneNumber}
           onChange={(e) => updateFormData('phoneNumber', e.target.value)}
@@ -430,21 +440,20 @@ export default function ModernFarmRegistration() {
         </h2>
         <p className="text-gray-500 text-lg">Tell us about your farming operation</p>
       </div>
-      
+
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">Farm Name</label>
         <input
           type="text"
-          className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
-            errors.farmName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-          }`}
+          className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${errors.farmName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
+            }`}
           placeholder="Enter your farm name"
           value={formData.farmName}
           onChange={(e) => updateFormData('farmName', e.target.value)}
         />
         {errors.farmName && <p className="text-red-500 text-sm font-medium">{errors.farmName}</p>}
       </div>
-      
+
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">Farm Type</label>
         <select
@@ -459,7 +468,7 @@ export default function ModernFarmRegistration() {
           <option value="poultry">Poultry</option>
         </select>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-2">
           <label className="block text-sm font-semibold text-gray-700">Farm Size</label>
@@ -467,16 +476,15 @@ export default function ModernFarmRegistration() {
             type="number"
             min="0"
             step="0.1"
-            className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
-              errors.farmSize ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-            }`}
+            className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${errors.farmSize ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
+              }`}
             placeholder="Enter farm size"
             value={formData.farmSize}
             onChange={(e) => updateFormData('farmSize', e.target.value)}
           />
           {errors.farmSize && <p className="text-red-500 text-sm font-medium">{errors.farmSize}</p>}
         </div>
-        
+
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">Unit</label>
           <select
@@ -490,20 +498,19 @@ export default function ModernFarmRegistration() {
           </select>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">
-          Established Year 
-          <span className="text-gray-400 text-xs ml-1">(Optional)</span>
+          Established Year(optional)
+          <span className="text-gray-400 text-xs ml-1"></span>
         </label>
         <input
           type="number"
           min="1900"
           max={new Date().getFullYear()}
-          className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${
-            errors.establishedYear ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-          }`}
-          placeholder="Enter establishment year (optional)"
+          className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 ${errors.establishedYear ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
+            }`}
+          placeholder="Enter establishment year"
           value={formData.establishedYear}
           onChange={(e) => updateFormData('establishedYear', e.target.value)}
         />
@@ -523,27 +530,24 @@ export default function ModernFarmRegistration() {
         </h2>
         <p className="text-gray-500 text-lg">Tell us where your farm is located</p>
       </div>
-      
-      <div className="p-8">
+
+      <div className="p-2 md:p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="group">
             <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Country</label>
             <div className="relative">
               <select
-                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${
-                  errors.country ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${errors.country ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
+                  }`}
                 value={formData.country}
                 onChange={(e) => updateFormData('country', e.target.value)}
               >
-                <option value="">Select country</option>
-                <option value="Nigeria">Nigeria</option>
-                <option value="Ghana">Ghana</option>
-                <option value="Kenya">Kenya</option>
-                <option value="South Africa">South Africa</option>
-                <option value="Uganda">Uganda</option>
-                <option value="Tanzania">Tanzania</option>
-                <option value="Other">Other</option>
+                {countryData.map((country) => (
+                  <option key={country.name} value={country.name.toLowerCase()}>
+                    {country.name}
+                  </option>
+                ))}
+
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -563,16 +567,20 @@ export default function ModernFarmRegistration() {
             <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">State</label>
             <div className="relative">
               <select
-                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${
-                  errors.state ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${errors.state ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
+                  }`}
                 value={formData.state}
                 onChange={(e) => updateFormData('state', e.target.value)}
               >
                 <option value="">Choose your state</option>
-                {nigerianStates.map(state => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
+                {countryData
+                  .find(c => c.name.toLowerCase() === formData.country?.toLowerCase())
+                  ?.states.map((state) => (
+                    <option key={state.name} value={state.name.toLowerCase()}>
+                      {state.name}
+                    </option>
+                  ))}
+
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -587,14 +595,13 @@ export default function ModernFarmRegistration() {
               </p>
             )}
           </div>
-          
+
           <div className="group">
             <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">City/Town</label>
             <input
               type="text"
-              className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md placeholder-gray-400 ${
-                errors.city ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
-              }`}
+              className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md placeholder-gray-400 ${errors.city ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
+                }`}
               placeholder="Enter your city or town"
               value={formData.city}
               onChange={(e) => updateFormData('city', e.target.value)}
@@ -607,14 +614,13 @@ export default function ModernFarmRegistration() {
             )}
           </div>
         </div>
-        
+
         <div className="mb-8">
-          <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Street Address</label>
+          <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Street Address(optional)</label>
           <input
             type="text"
-            className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md placeholder-gray-400 ${
-              errors.address ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md placeholder-gray-400 ${errors.address ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 hover:border-gray-300'
+              }`}
             placeholder="Enter your complete street address"
             value={formData.address}
             onChange={(e) => updateFormData('address', e.target.value)}
@@ -626,7 +632,7 @@ export default function ModernFarmRegistration() {
             </p>
           )}
         </div>
-        
+
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 mb-8">
           <div className="flex items-center mb-4">
             <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -635,7 +641,7 @@ export default function ModernFarmRegistration() {
             <h3 className="text-lg font-semibold text-gray-800">GPS Coordinates</h3>
             <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Optional</span>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
@@ -648,7 +654,7 @@ export default function ModernFarmRegistration() {
                 onChange={(e) => updateFormData('coordinates', { ...formData.coordinates, latitude: e.target.value })}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
               <input
@@ -661,7 +667,7 @@ export default function ModernFarmRegistration() {
               />
             </div>
           </div>
-          
+
           {errors.coordinates && (
             <p className="text-red-500 text-sm mt-3 flex items-center">
               <span className="mr-1">⚠️</span>
@@ -669,7 +675,7 @@ export default function ModernFarmRegistration() {
             </p>
           )}
         </div>
-        
+
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100">
           <div className="flex items-start">
             <div className="flex-shrink-0">
@@ -682,7 +688,7 @@ export default function ModernFarmRegistration() {
             <div className="ml-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-2">Why location matters</h4>
               <p className="text-gray-600 leading-relaxed">
-                Providing accurate location data enables personalized weather forecasts, soil analysis, 
+                Providing accurate location data enables personalized weather forecasts, soil analysis,
                 crop recommendations, and connects you with local agricultural resources.
               </p>
             </div>
@@ -693,25 +699,25 @@ export default function ModernFarmRegistration() {
   );
 
   const renderPreferences = () => (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-2 md:mx-auto">
       <div className="text-center mb-10">
         <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Settings className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-3">
-           Farm Preferences
+          Farm Preferences
         </h2>
-        <p className="text-gray-500 text-lg">Customize your farm management settings to get personalized recommendations</p>
+        <p className="text-gray-500 text-base md:text-lg">Customize your farm management settings to get personalized recommendations</p>
       </div>
-      <div className="p-4 space-y-8">
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+      <div className="p-0  md:p-4 space-y-8">
+       {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <svg className="w-5 h-5 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
             Primary Crops
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {cropOptions.map(crop => (
               <label key={crop} className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative">
@@ -721,11 +727,10 @@ export default function ModernFarmRegistration() {
                     checked={formData.primaryCrops.includes(crop)}
                     onChange={() => toggleCrop(crop)}
                   />
-                  <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${
-                    formData.primaryCrops.includes(crop) 
-                      ? 'bg-emerald-500 border-emerald-500 shadow-lg' 
-                      : 'border-gray-300 group-hover:border-emerald-400 bg-white'
-                  }`}>
+                  <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${formData.primaryCrops.includes(crop)
+                    ? 'bg-emerald-500 border-emerald-500 shadow-lg'
+                    : 'border-gray-300 group-hover:border-emerald-400 bg-white'
+                    }`}>
                     {formData.primaryCrops.includes(crop) && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
@@ -745,8 +750,8 @@ export default function ModernFarmRegistration() {
               {errors.primaryCrops}
             </p>
           )}
-        </div>
-  
+        </div>*/}
+
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -754,7 +759,7 @@ export default function ModernFarmRegistration() {
             </svg>
             Farming Methods
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {farmingMethodOptions.map(method => (
               <label key={method} className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative">
@@ -764,11 +769,10 @@ export default function ModernFarmRegistration() {
                     checked={formData.farmingMethods.includes(method)}
                     onChange={() => toggleMethod(method)}
                   />
-                  <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${
-                    formData.farmingMethods.includes(method) 
-                      ? 'bg-blue-500 border-blue-500 shadow-lg' 
-                      : 'border-gray-300 group-hover:border-blue-400 bg-white'
-                  }`}>
+                  <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${formData.farmingMethods.includes(method)
+                    ? 'bg-blue-500 border-blue-500 shadow-lg'
+                    : 'border-gray-300 group-hover:border-blue-400 bg-white'
+                    }`}>
                     {formData.farmingMethods.includes(method) && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
@@ -789,7 +793,7 @@ export default function ModernFarmRegistration() {
             </p>
           )}
         </div>
-  
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="group">
             <label className=" text-sm font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
@@ -816,7 +820,7 @@ export default function ModernFarmRegistration() {
               </div>
             </div>
           </div>
-  
+
           <div className="group">
             <label className=" text-sm font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
               <svg className="w-4 h-4 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -826,9 +830,8 @@ export default function ModernFarmRegistration() {
             </label>
             <div className="relative">
               <select
-                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${
-                  errors.seasonalPattern ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200'
-                }`}
+                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${errors.seasonalPattern ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200'
+                  }`}
                 value={formData.seasonalPattern}
                 onChange={(e) => updateFormData('seasonalPattern', e.target.value)}
               >
@@ -860,9 +863,8 @@ export default function ModernFarmRegistration() {
             </label>
             <div className="relative">
               <select
-                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${
-                  errors.language ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200'
-                }`}
+                className={`w-full px-5 py-4 bg-white border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 appearance-none cursor-pointer shadow-sm hover:shadow-md ${errors.language ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200'
+                  }`}
                 value={formData.language}
                 onChange={(e) => updateFormData('language', e.target.value)}
               >
@@ -904,48 +906,47 @@ export default function ModernFarmRegistration() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-4xl text-center md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-slate-900 via-emerald-800 to-slate-900 bg-clip-text text-transparent mb-6 leading-tight">
-          Welcome to 
+          Welcome to
           <span className=" text-emerald-600"> Famtech</span>
         </h2>
-        
+
         <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed text-center mb-8">
-          Our diverse team of experts combines decades of experience in agriculture, technology, 
+          Our diverse team of experts combines decades of experience in agriculture, technology,
           and business to revolutionize farming through innovation.
         </p>
-        
+
         {renderStepIndicator()}
-        
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+
+        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 lg:p-12">
           {renderCurrentStep()}
-          
+
           {registrationError && (
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-600 text-sm font-medium">{registrationError}</p>
             </div>
           )}
-          
-          <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
+
+          <div className="text-xs md:text-base flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all ${
-                currentStep === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              className={`flex items-center space-x-0 md:space-x-2 px-0 md:px-6 py-3 rounded-xl font-medium transition-all ${currentStep === 1
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-700 hover:bg-gray-100'
+                }`}
             >
               <ChevronLeft size={20} />
               <span>Previous</span>
             </button>
-            
-            <div className="text-sm text-gray-500">
+
+            <div className="text-xs md:text-sm text-gray-500">
               Step {currentStep} of {steps.length}
             </div>
-            
+
             {currentStep < steps.length ? (
               <button
                 onClick={nextStep}
-                className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-all"
+                className="flex items-center space-x-0 md:space-x-2 bg-green-600 text-white px-3 md:px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-all"
               >
                 <span>Next</span>
                 <ChevronRight size={20} />
@@ -954,7 +955,7 @@ export default function ModernFarmRegistration() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex items-center space-x-2 bg-green-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center text-xs md:text-base space-x-0 md:space-x-2 bg-green-600 text-white px-3 md:px-8 py-3 rounded-xl font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -964,7 +965,7 @@ export default function ModernFarmRegistration() {
                 ) : (
                   <>
                     <CheckCircle size={20} />
-                    <span>Create Account</span>
+                    <span>Submit</span>
                   </>
                 )}
               </button>

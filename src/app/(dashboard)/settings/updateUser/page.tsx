@@ -5,7 +5,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useAuthStore, User } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
+import apiClient, { API_URL } from "@/lib/api/apiClient";
 
+const API_BASE_URL = `${API_URL}/api/auth`;
 // --- Types ---
 interface State {
   name: string;
@@ -23,27 +25,12 @@ interface UpdateFormInputs {
   lga?: string;
 }
 
-const updateUser = async (
+// ✅ Real API call to update user details
+export const updateUser = async (
   updateData: Partial<UpdateFormInputs>
 ): Promise<{ data: { user: User }; message: string }> => {
-  console.log("Simulating API call to update user with:", updateData);
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  const currentUser = useAuthStore.getState().user;
-  if (!currentUser) throw new Error("User not authenticated for update simulation.");
-
-  const updatedUser: User = {
-    ...currentUser,
-    ...updateData,
-    country: updateData.country || currentUser.country,
-    state: updateData.state || currentUser.state,
-    lga: updateData.lga || currentUser.lga || "",
-  };
-
-  return {
-    data: { user: updatedUser },
-    message: "Details updated successfully!",
-  };
+  const response = await apiClient.patch(`${API_BASE_URL}/update`, updateData);
+  return response.data;
 };
 
 const countryList = countries as Country[];
@@ -68,7 +55,7 @@ export default function UpdateDetailsForm() {
     mode: "onBlur",
   });
 
-  // 🧭 Watch values
+  // 🧭 Watch form values
   const selectedCountryName = watch("country");
   const selectedStateName = watch("state");
 
@@ -82,7 +69,7 @@ export default function UpdateDetailsForm() {
 
   const lgas = selectedStateObj?.subdivision || [];
 
-  // 🧠 Initialize form when user data is loaded
+  // 🧠 Initialize form when user data loads
   useEffect(() => {
     if (user && !isFormInitialized) {
       reset({
@@ -97,7 +84,7 @@ export default function UpdateDetailsForm() {
     }
   }, [user, reset, isFormInitialized]);
 
-  // 🧹 Clear state (and lga) if country changes to something else
+  // 🧹 Clear state if country changes
   useEffect(() => {
     if (isFormInitialized && selectedCountryName) {
       const currentState = watch("state");
@@ -111,7 +98,7 @@ export default function UpdateDetailsForm() {
     }
   }, [selectedCountryName, setValue, watch, isFormInitialized, selectedCountry]);
 
-  // 🧹 Clear lga if state changes to a new one
+  // 🧹 Clear lga if state changes
   useEffect(() => {
     if (isFormInitialized) {
       const currentLga = watch("lga");
@@ -122,6 +109,7 @@ export default function UpdateDetailsForm() {
     }
   }, [selectedStateName, setValue, watch, lgas, isFormInitialized]);
 
+  // 📨 Submit form
   const onSubmit = async (data: UpdateFormInputs) => {
     if (!user) {
       toast.error("Authentication error. Please log in again.");
@@ -195,8 +183,7 @@ export default function UpdateDetailsForm() {
         {/* Email - Read-only */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>
-         <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 
-          truncate max-w-3xl md:max-w-full">
+          <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 truncate max-w-3xl md:max-w-full">
             {user.email}
           </div>
           <p className="mt-1 text-xs text-gray-500">Email cannot be changed via this form.</p>
@@ -217,7 +204,9 @@ export default function UpdateDetailsForm() {
 
         {/* Country */}
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country</label>
+          <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+            Country
+          </label>
           <select
             id="country"
             {...register("country", { required: "Country is required" })}
@@ -237,7 +226,9 @@ export default function UpdateDetailsForm() {
 
         {/* State */}
         <div>
-          <label htmlFor="state" className="block text-sm font-medium text-gray-700">State</label>
+          <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+            State
+          </label>
           <select
             id="state"
             {...register("state", { required: "State is required" })}
@@ -256,7 +247,7 @@ export default function UpdateDetailsForm() {
           )}
         </div>
 
-        {/* LGA - Optional */}
+        {/* LGA (optional) */}
         {selectedCountryName === "nigeria" && lgas.length > 0 && (
           <div>
             <label htmlFor="lga" className="block text-sm font-medium text-gray-700">
@@ -285,8 +276,6 @@ export default function UpdateDetailsForm() {
         >
           {isSubmitting ? "Updating..." : "Update Details"}
         </button>
-
-        
       </form>
     </div>
   );
