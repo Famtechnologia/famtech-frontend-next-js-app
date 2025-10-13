@@ -40,6 +40,7 @@ const Login: React.FC = () => {
         role: responseUser.role ?? "user",
         country: responseUser.country ?? "",
         state: responseUser.state ?? "en",
+        lga: responseUser.lga ?? "",
         isVerified: responseUser.isVerified ?? false,
       };
 

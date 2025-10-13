@@ -1,10 +1,10 @@
-"use client"
-import { Lightbulb, CheckCircle,  } from 'lucide-react';
-import Card from '@/components/ui/Card'
-
-
+"use client";
+import { Lightbulb, ArrowRight } from 'lucide-react';
+import Card from '@/components/ui/Card';
 
 const SmartAdvisory = () => {
+  // 🔒 Mock data (temporarily disabled until backend integration)
+  /*
   const advisories = [
     {
       type: "weather",
@@ -22,30 +22,38 @@ const SmartAdvisory = () => {
       time: "Yesterday", 
       icon: CheckCircle,
       color: "text-green-500",
-        bgColor: "bg-yellow-50"
+      bgColor: "bg-yellow-50"
     }
   ];
+  */
 
   return (
-    <Card title="Smart Advisory" className="h-fit" headerClassName='bg-blue-50'>
-      <div className="space-y-4">
-        {advisories.map((advisory, index) => (
-          <div key={index} className={`flex items-start space-x-3 p-3 ${advisory.bgColor} rounded-lg border border-gray-100`}>
-            <advisory.icon className={`w-5 h-5 ${advisory.color} flex-shrink-0 mt-0.5`} />
-            <div className="flex-1">
-              <div className="font-medium text-sm text-gray-800">{advisory.title}</div>
-              <div className="text-sm text-gray-600 mt-1">{advisory.message}</div>
-              <div className="text-xs text-gray-500 mt-2">{advisory.time}</div>
-            </div>
-          </div>
-        ))}
+    <Card
+      title={
+        <div className="flex items-center justify-between">
+          <span>Smart Advisory</span>
+          <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
+            Coming Soon
+          </span>
+        </div>
+      }
+      className="h-fit"
+      headerClassName="bg-blue-50 border-b border-blue-200"
+      bodyClassName="p-6"
+    >
+      <div className="flex flex-col justify-between min-h-[180px]">
+        {/* Empty State */}
+        <div className="flex flex-col items-center justify-center text-center text-gray-600 mt-4">
+          <Lightbulb className="w-8 h-8 text-blue-500 mb-3" />
+          <p className="text-sm mb-4 max-w-xs">
+            Get AI-powered farming tips and insights tailored to your crops and location.
+          </p>
+        </div>
+
         
-        <button className="text-blue-600 text-sm font-medium hover:text-blue-700 flex items-center">
-          View all advisories →
-        </button>
       </div>
     </Card>
   );
 };
 
-export default SmartAdvisory
+export default SmartAdvisory;

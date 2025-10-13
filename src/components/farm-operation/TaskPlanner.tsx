@@ -13,9 +13,10 @@ import {
 import Modal from '../ui/Modal';
 import { getTasks, createTask, updateTask, deleteTask , Task as ApiTask } from '../../lib/services/taskplanner';
 import { useAuthStore, User } from "@/lib/store/authStore";
+import TaskSkeleton from "@/components/layout/skeleton/TaskPlanner";
 
 interface Task {
-  id: string;
+  id: string; 
   type: string;
   name: string;
   time: string;
@@ -479,6 +480,9 @@ useEffect(() => {
         return 'All Tasks';
     }
   };
+if (loading) {
+  return <TaskSkeleton />;
+}
 
   return (
     <div className="p-2 lg:p-6 bg-white min-h-screen">
@@ -555,7 +559,8 @@ useEffect(() => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
               />
             </div>
-            {loading && <div className="text-center py-8 text-gray-500">Loading tasks...</div>}
+            {loading && <TaskSkeleton />}
+
             {error && <div className="text-center py-8 text-red-500">Error: Could not fetch tasks. Please try again.</div>}
             {!loading && !error && (
               <div className="space-y-4">

@@ -12,16 +12,17 @@ import {
   Leaf,
   Heart,
   FileText,
-  HardHat,
+  // HardHat, // Tool icon (commented out)
   Grid,
   X,
   TriangleAlert,
   CheckCircle,
   ListFilter,
   LayoutGrid,
-  LayoutList,
   Download,
   Loader2,
+  Trash2,
+  SquarePen,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -29,8 +30,8 @@ import Card from "@/components/ui/Card";
 // Assuming these types are defined in '@/types/inventory'
 import {
   UnifiedInventoryItem,
-  ToolData,
-  EquipmentPartData,
+  // ToolData, // COMMENTED OUT: Tool-related type
+  EquipmentPartData, // KEEPING ACTIVE: Equipment part-related type
 } from "@/types/inventory";
 // Assuming these services are defined in '@/lib/services/inventory'
 import {
@@ -41,12 +42,16 @@ import {
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
 import { useAuthStore, User } from "@/lib/store/authStore";
-
+import InventorySkeleton from "@/components/layout/skeleton/Inventory";
 // --- TYPE DEFINITIONS & USER ID RETRIEVAL ---
+
+// Define placeholder type for ToolData while it is commented out
+type ToolData = Record<string, unknown> | null | undefined;
 
 // Retrieve userId from the store immediately. This value is 'string | undefined'.
 const userData = useAuthStore.getState().user as User | null;
 const requiredUserId = userData?.id;
+
 
 /**
  * 1. NewInventoryItemData: The final shape required by the create API service (userId must be string).
@@ -89,12 +94,13 @@ const InventoryManagement = () => {
 
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<{ [key: string]: boolean }>({});
-
+  const [isLoading, setIsLoading] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<UnifiedInventoryItem[]>(
     []
   );
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // NEW: Dedicated state for form-specific errors (to avoid modal closing on API error)
+  const [formError, setFormError] = useState<string | null>(null); 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   // --- INITIAL STATE DEFINITION ---
@@ -111,16 +117,9 @@ const InventoryManagement = () => {
     p: undefined,
     k: undefined,
 
-    toolData: {
-      toolType: undefined,
-      brand: undefined,
-      model: undefined,
-      condition: undefined,
-      lastServiced: undefined,
-      warrantyExpiry: undefined,
-      price: undefined,
-    } as ToolData,
-    equipmentPartData: {
+    toolData: undefined, // Set to undefined since ToolData is commented out
+
+    equipmentPartData: { // KEEPING ACTIVE: Equipment part-related fields
       model: undefined,
       partNumber: undefined,
       manufacturer: undefined,
@@ -130,7 +129,7 @@ const InventoryManagement = () => {
     } as EquipmentPartData,
 
     model: undefined,
-    // FIX 1: Use the retrieved user ID. This is 'string | undefined', now allowed by the type.
+    // FIX 1: Use the retrieved user ID.
     userId: requiredUserId,
   };
 
@@ -153,43 +152,44 @@ const InventoryManagement = () => {
   const fetchInventoryItems = async () => {
     // FIX 3: Add runtime check for userId before calling getInventoryItems
     if (!requiredUserId) {
-      setLoading(false);
+      setIsLoading(false);
       setError("Cannot fetch inventory: User ID is missing. Please log in.");
       return;
     }
 
-        setLoading(true);
-        try {
-            // FIX 4: Pass the required userId argument to getInventoryItems
-            const items = await getInventoryItems(requiredUserId);
-            setInventoryItems(items);
-            setError(null);
-        } catch (err) {
-            console.error("Failed to fetch inventory:", err);
-            setError('Failed to load inventory items.');
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        fetchInventoryItems();
-       
-    }, []); 
-    
-    const handleTabChange = (category: string) => {
-        setActiveInventoryTab(category);
-        setFormData(getInitialFormData(category));
-    };
-    
-    const filteredItems = useMemo(() => {
-        return inventoryItems.filter(item => 
-            item.category === activeInventoryTab &&
-            item.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [inventoryItems, activeInventoryTab, searchTerm]);
-    
-    const getItemsToDisplay = useMemo(() => filteredItems, [filteredItems]);
+    setIsLoading(true);
+    setError(null); // Clear previous fetch error
+    try {
+      // FIX 4: Pass the required userId argument to getInventoryItems
+      const items = await getInventoryItems(requiredUserId);
+      setInventoryItems(items);
+    } catch (err) {
+      console.error("Failed to fetch inventory:", err);
+      setError('Failed to load inventory items. Please check your connection.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventoryItems();
+  }, []);
+
+  const handleTabChange = (category: string) => {
+    setActiveInventoryTab(category);
+    setFormData(getInitialFormData(category));
+    setError(null); // Clear main error on tab change
+    setFormError(null); // Clear form error on tab change
+  };
+
+  const filteredItems = useMemo(() => {
+    return inventoryItems.filter(item =>
+      item.category === activeInventoryTab &&
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [inventoryItems, activeInventoryTab, searchTerm]);
+
+  const getItemsToDisplay = useMemo(() => filteredItems, [filteredItems]);
 
 
   const cleanAndParseNumber = (value: string | number): number | string => {
@@ -207,6 +207,7 @@ const InventoryManagement = () => {
   ) => {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
+      setFormError(null); // Clear form error on input change
 
       targetFormData((prev) => {
         if (!prev) return null;
@@ -236,10 +237,7 @@ const InventoryManagement = () => {
               ? cleanAndParseNumber(value)
               : value;
 
-            if (parentKey === "toolData") {
-              newFormData[parentKey as keyof T] =
-                parentObject as unknown as ToolData as T[keyof T];
-            } else if (parentKey === "equipmentPartData") {
+            if (parentKey === "equipmentPartData") { // KEEPING ACTIVE
               newFormData[parentKey as keyof T] =
                 parentObject as EquipmentPartData as T[keyof T];
             } else {
@@ -253,8 +251,8 @@ const InventoryManagement = () => {
             ? cleanAndParseNumber(value)
             : value;
         }
-        
-        return newFormData; 
+
+        return newFormData;
       });
     };
   };
@@ -278,7 +276,8 @@ const InventoryManagement = () => {
     ];
     const requiredKeys = ["name", "category", "userId"];
 
-    const cleanedData: any = JSON.parse(JSON.stringify(data), (key, value) => {
+    // FIX: Changed 'any' to 'Record<string, unknown>'
+    const cleanedData: Record<string, unknown> = JSON.parse(JSON.stringify(data), (key, value) => {
       if (key === "price" && typeof value === "string") {
         const cleanPrice = value.replace(/[^\d.]/g, "");
         if (cleanPrice === "" || cleanPrice === ".") {
@@ -316,11 +315,6 @@ const InventoryManagement = () => {
 
     const category = cleanedData.category;
 
-    if (category === 'tools' && cleanedData.toolData) {
-      cleanedData.toolData.name = cleanedData.name;
-      delete cleanedData.name;
-    }
-
     if (
       category !== "seeds" &&
       category !== "fertilizer" &&
@@ -334,100 +328,85 @@ const InventoryManagement = () => {
       delete cleanedData.p;
       delete cleanedData.k;
     }
-    if (category !== "tools") {
-      delete cleanedData.toolData;
-    }
-    if (category !== "equipment parts") {
+    if (category !== "equipment parts") { // KEEPING ACTIVE
       delete cleanedData.equipmentPartData;
     }
     if (category !== "fertilizer" && category !== "feed") {
       delete cleanedData.type;
     }
-    if (category !== "tools" && category !== "equipment parts") {
+    if (category !== "equipment parts") {
       delete cleanedData.model;
     }
 
     return cleanedData as Omit<T, "id" | "_id" | "timestamp">;
   };
 
-  // src/components/farm-operation/InventoryManagement.tsx
-
  const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null); // Clear previous form error
+    setIsLoading(true); // 👈 1. START LOADING
 
     if (!requiredUserId) {
-      setError("User ID is missing. Please log in again.");
-      return;
+        setError("User ID is missing. Please log in again.");
+        setIsLoading(false); // ⚠️ Stop loading on early exit
+        return;
+    }
+
+    // ⭐ CORE FIX: Validation to prevent sending an empty name ⭐
+    if (formData?.name.trim() === "") {
+        setFormError(
+            "The 'Item Name' field cannot be empty. Please provide a name for the item."
+        );
+        setIsLoading(false); // ⚠️ Stop loading on early exit
+        return;
     }
 
     try {
-      // ⭐ CORE FIX: Validation to prevent sending an empty name ⭐
-      if (formData?.name.trim() === "") {
-        setError(
-          "The 'Item Name' field cannot be empty. Please provide a name for the item."
-        );
-        return;
-      }
-      const payload = processPayload(formData) as NewInventoryItemData;
+        const payload = processPayload(formData) as NewInventoryItemData;
 
-      // Assuming `createInventoryItem` makes an API call, you'll likely receive 
-      // an error object that follows a specific structure if it fails. 
-      // This fix assumes your API client (like Axios) provides a `response` object on an error.
-      const newItem = await createInventoryItem(payload);
+        const newItem = await createInventoryItem(payload);
 
-      console.log("Server response (create):", newItem);
+        console.log("Server response (create):", newItem);
 
-      // Workaround: Move name from toolData back to root for UI consistency
-      if (newItem.category === 'tools' && newItem.toolData?.name) {
-        newItem.name = newItem.toolData.name;
-      }
+        setInventoryItems((prev) => [...prev, newItem]);
+        setShowAddItemModal(false);
+        setFormData(getInitialFormData(activeInventoryTab));
+        setError(null); // Clear main error if successful
 
-      setInventoryItems((prev) => [...prev, newItem]);
-      setShowAddItemModal(false);
-      setFormData(getInitialFormData(activeInventoryTab));
-      setError(null);
+    } catch (err: unknown) { // ✅ FIX: Use 'unknown'
+        console.error("Full error object:", err);
 
-    // ✅ FIX: Use 'unknown' instead of 'any'
-    } catch (err: unknown) { 
-      
-      console.error("Full error object:", err);
-      
-      // ✅ FIX: Type guard to safely check if 'err' has the expected structure 
-      // (e.g., from an Axios HTTP error)
-      const axiosError = err as { response?: { data?: { error?: string } } } | null | undefined;
-      
-      if (axiosError?.response) {
-        console.error("Error response:", axiosError.response);
-        if (axiosError.response.data && axiosError.response.data.error) {
-          setError(
-            `Failed to create inventory item: ${axiosError.response.data.error}`
-          );
-        } else {
-          setError(
-            "Failed to create inventory item. The server rejected the request. Check the console for more details."
-          );
+        // ✅ FIX: Type guard to safely check if 'err' has the expected structure
+        const axiosError = err as { response?: { data?: { error?: string } } } | null | undefined;
+
+        let errorMessage = "Failed to create inventory item. An unknown error occurred. Check the console for more details.";
+
+        if (axiosError?.response) {
+            console.error("Error response:", axiosError.response);
+            if (axiosError.response.data && axiosError.response.data.error) {
+                errorMessage = `Failed to create inventory item: ${axiosError.response.data.error}`;
+            } else {
+                errorMessage = "Failed to create inventory item. The server rejected the request. Check the console for more details.";
+            }
+        } else if (err instanceof Error) {
+            // Handle standard JavaScript Errors (e.g., network issues before the request is sent)
+            errorMessage = `Failed to create inventory item. Error: ${err.message}. Check the console for more details.`;
         }
-      } else if (err instanceof Error) {
-        // Handle standard JavaScript Errors (e.g., network issues before the request is sent)
-        setError(
-          `Failed to create inventory item. Error: ${err.message}. Check the console for more details.`
-        );
-      } else {
-        // Handle truly unknown or non-Error objects
-        setError(
-          "Failed to create inventory item. An unknown error occurred. Check the console for more details."
-        );
-      }
+
+        setFormError(errorMessage); // Set form-specific error
+    } finally {
+        setIsLoading(false); // 👈 2. STOP LOADING (Always run)
     }
-  };
+};
 
   const handleUpdateItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null); // Clear previous form error
     if (!updateFormData || isUpdating) return;
 
     // ⭐ CORE FIX: Validation for update form name ⭐
     if (updateFormData.name.trim() === "") {
-      setError(
+      setFormError(
         "The 'Item Name' field cannot be empty. Please provide a name for the item."
       );
       return;
@@ -439,21 +418,27 @@ const InventoryManagement = () => {
 
       const dataToUpdate = processPayload(updateFormData);
 
-            const updatedItem = await updateInventoryItem(itemId, dataToUpdate);
+      const updatedItem = await updateInventoryItem(itemId, dataToUpdate);
 
-            console.log("Server response (update):", updatedItem);
+      console.log("Server response (update):", updatedItem);
 
-            // Workaround: Move name from toolData back to root for UI consistency
-            if (updatedItem.category === 'tools' && updatedItem.toolData?.name) {
-                updatedItem.name = updatedItem.toolData.name;
-            }
-            
-            setInventoryItems(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+      setInventoryItems(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
       setShowUpdateModal(false);
       setUpdateFormData(null);
+      setError(null); // Clear main error if successful
+
     } catch (err) {
       console.error("Failed to update item:", err);
-      setError("Failed to update inventory item. Check console for details.");
+      // Simplified error handling for update, similar to create
+      const axiosError = err as { response?: { data?: { error?: string } } } | null | undefined;
+      let errorMessage = "Failed to update inventory item. Check console for details.";
+
+      if (axiosError?.response?.data?.error) {
+         errorMessage = `Failed to update inventory item: ${axiosError.response.data.error}`;
+      } else if (err instanceof Error) {
+        errorMessage = `Failed to update inventory item: ${err.message}`;
+      }
+      setFormError(errorMessage); // Set form-specific error
     } finally {
       setIsUpdating(false);
     }
@@ -463,12 +448,13 @@ const InventoryManagement = () => {
     if (isDeleting[id]) return;
 
     setIsDeleting((prev) => ({ ...prev, [id]: true }));
+    setError(null); // Clear main error before new operation
     try {
       await deleteInventoryItem(id);
       setInventoryItems((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error("Failed to delete item:", err);
-      setError("Failed to delete inventory item. Check console for details.");
+      setError("Failed to delete inventory item. Check console for details."); // Set main error for this operation
     } finally {
       setIsDeleting((prev) => ({ ...prev, [id]: false }));
     }
@@ -477,7 +463,7 @@ const InventoryManagement = () => {
   const handleUpdateClick = (item: UnifiedInventoryItem) => {
     const copy: UpdateInventoryItemData = JSON.parse(JSON.stringify(item));
 
-    // FIX 2: Use a generic helper function to correctly handle keys
+    // Helper function to correctly handle keys
     const setNumericFieldForForm = <T extends object, K extends keyof T>(
       obj: T,
       key: K
@@ -503,19 +489,13 @@ const InventoryManagement = () => {
     setNumericFieldForForm(copy, "p"); // FIXED
     setNumericFieldForForm(copy, "k"); // FIXED
 
-    if (copy.toolData === null || copy.toolData === undefined) {
-      copy.toolData = {} as ToolData;
-    } else {
-      setNumericFieldForForm(copy.toolData, "price"); // FIXED
-    }
-
     if (
       copy.equipmentPartData === null ||
       copy.equipmentPartData === undefined
     ) {
       copy.equipmentPartData = {} as EquipmentPartData;
     } else {
-      setNumericFieldForForm(copy.equipmentPartData, "price"); // FIXED
+      setNumericFieldForForm(copy.equipmentPartData, "price"); // KEEPING ACTIVE
     }
 
     const stringFields: Array<keyof UnifiedInventoryItem> = [
@@ -531,6 +511,7 @@ const InventoryManagement = () => {
     });
 
     setUpdateFormData(copy);
+    setFormError(null); // Clear form error when opening the modal
     setShowUpdateModal(true);
   };
 
@@ -547,13 +528,13 @@ const InventoryManagement = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Out of Stock":
-        return "bg-red-50 text-red-600";
+        return "bg-red-50 text-red-600 border border-red-200"; // Added border for clarity
       case "Low Stock":
-        return "bg-yellow-50 text-yellow-600";
+        return "bg-yellow-50 text-yellow-700 border border-yellow-200"; // Added border for clarity
       case "In Stock":
-        return "bg-green-50 text-green-600";
+        return "bg-green-50 text-green-700 border border-green-200"; // Added border for clarity
       default:
-        return "bg-gray-50 text-gray-600";
+        return "bg-gray-50 text-gray-600 border border-gray-200";
     }
   };
 
@@ -574,10 +555,12 @@ const InventoryManagement = () => {
     if (!dateString) return "";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${day}-${month}-${year}`;
+    // Using a more standard format or locale for better readability
+    return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
   };
 
   type InventoryTab = {
@@ -594,39 +577,28 @@ const InventoryManagement = () => {
       icon: <FileText className="h-4 w-4 mr-2" />,
       value: "fertilizer",
     },
-    {
-      name: "Tools",
-      icon: <HardHat className="h-4 w-4 mr-2" />,
-      value: "tools",
-    },
-    {
+    { // KEEPING ACTIVE: Equipment Parts Tab
       name: "Equipment Parts",
       icon: <Grid className="h-4 w-4 mr-2" />,
       value: "equipment parts",
     },
   ];
 
-  if (loading) {
+ if (isLoading) {
+  return <InventorySkeleton />;
+}
+  // Improved Error Display
+  if (error && inventoryItems.length === 0) {
     return (
       <div className="p-6 flex justify-center items-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading inventory...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 flex justify-center items-center min-h-96">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+        <div className="text-center p-6 border border-red-300 rounded-lg bg-red-50">
+          <TriangleAlert className="h-8 w-8 text-red-600 mx-auto mb-3" />
+          <p className="text-red-600 mb-4 font-medium">{error}</p>
           <button
             onClick={fetchInventoryItems}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
           >
-            Retry
+            Retry Loading
           </button>
         </div>
       </div>
@@ -634,18 +606,28 @@ const InventoryManagement = () => {
   }
 
   return (
-    <div className="p-2 lg:p-6">
-      <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-6 -mt-2">
+    <div className="p-2 lg:pt-8 lg:pb-8 max-w-7xl mx-auto">
+      
+      {/* Global Error Banner */}
+      {error && inventoryItems.length > 0 && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-md flex items-center">
+              <TriangleAlert className="h-5 w-5 text-red-600 mr-2 flex-shrink-0" />
+              <p className="text-sm text-red-800">{error}</p>
+          </div>
+      )}
+
+      {/* --- TABS SECTION --- */}
+      <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-8 -mt-2">
         {inventoryTabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => handleTabChange(tab.value)}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition-colors duration-200
-                            ${
-                              activeInventoryTab === tab.value
-                                ? "border-b-2 border-green-600 text-green-700"
-                                : "text-gray-600 hover:text-gray-800 hover:border-b-2 hover:border-gray-400"
-                            }`}
+            className={`flex items-center px-4 py-3 text-base font-semibold transition-colors duration-200 whitespace-nowrap
+                        ${
+                          activeInventoryTab === tab.value
+                            ? "border-b-4 border-green-600 text-green-700"
+                            : "text-gray-600 hover:text-gray-800 hover:border-b-4 hover:border-gray-300"
+                        }`}
           >
             {tab.icon}
             {tab.name}
@@ -653,136 +635,141 @@ const InventoryManagement = () => {
         ))}
       </div>
 
-      <div className="md:flex justify-between items-center space-y-4 mb-6">
-        <div className="relative w-64">
+      {/* --- CONTROL BAR --- */}
+      <div className="md:flex justify-between items-center space-y-4 md:space-y-0 mb-8">
+        {/* Search */}
+        <div className="relative max-w-xs w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search inventory..."
+            placeholder={`Search ${activeInventoryTab} inventory...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
         </div>
-        <div className="flex flex-wrap items-center space-y-2 md:space-y-0 space-x-2 lg:space-x-4">
-          <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
+        
+        {/* Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
             <ListFilter className="h-4 w-4 mr-2" /> Filter
           </button>
-          <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
+          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
             <LayoutGrid className="h-4 w-4 mr-2" /> Grid
           </button>
-          <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
-            <LayoutList className="h-4 w-4 mr-2" /> List
-          </button>
-          <button className="flex items-center px-4 py-2 text-sm font-medium text-green-600 rounded-md border border-green-600 hover:bg-green-50">
+          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
             <Download className="h-4 w-4 mr-2" /> Export
           </button>
           <button
-            onClick={() => setShowAddItemModal(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
+            onClick={() => {
+                setShowAddItemModal(true);
+                setFormError(null); // Clear form error when opening new modal
+            }}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-md transition-colors w-fit md:w-auto justify-center"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Item
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* --- INVENTORY ITEMS GRID --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
         {getItemsToDisplay.length > 0 ? (
           getItemsToDisplay.map((item: UnifiedInventoryItem) => {
             const status = getItemStatus(item);
             const isItemDeleting = isDeleting[item.id];
             return (
-              <Card key={item.id} title={item.name}>
+              <Card key={item.id} title={item.name} className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300 min-w-[250px]  ">
                 <div className="space-y-2">
-                  <p className="flex justify-between text-sm">
-                    <span className="text-gray-500">Quantity:</span>
-                    <span className="font-semibold text-gray-800">
-                      {item.quantity}
-                    </span>
-                  </p>
-                  <p className="flex justify-between text-sm">
-                    <span className="text-gray-500">Reorder Level:</span>
-                    <span className="font-semibold text-gray-800">
-                      {item.reorderLevel ?? 0}
-                    </span>
-                  </p>
-
-                  {item.usageRate !== undefined && item.usageRate !== null && (
+                    
+                  
+                    {/* Item Details */}
                     <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Usage Rate:</span>
-                      <span className="font-semibold text-gray-800">
-                        {item.usageRate}
-                      </span>
-                    </p>
-                  )}
-                  {item.expireDate && (
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Expiry Date:</span>
-                      <span className="font-semibold text-gray-800">
-                        {formatDate(item.expireDate)}
-                      </span>
-                    </p>
-                  )}
-
-                  {item.type && (
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Type:</span>
-                      <span className="font-semibold text-gray-800">
-                        {item.type}
-                      </span>
-                    </p>
-                  )}
-
-                  {item.category === "tools" && item.toolData?.model && (
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Model:</span>
-                      <span className="font-semibold text-gray-800">
-                        {item.toolData.model}
-                      </span>
-                    </p>
-                  )}
-                  {item.category === "equipment parts" &&
-                    item.equipmentPartData?.model && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-500">Model:</span>
+                        <span className="text-gray-500">Quantity:</span>
                         <span className="font-semibold text-gray-800">
-                          {item.equipmentPartData.model}
+                        {item.quantity}
                         </span>
-                      </p>
-                    )}
-                  {typeof item.n === "number" &&
-                    typeof item.p === "number" &&
-                    typeof item.k === "number" && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-500">N-P-K:</span>
+                    </p>
+                    <p className="flex justify-between text-sm">
+                        <span className="text-gray-500">Reorder Level:</span>
                         <span className="font-semibold text-gray-800">
-                          {item.n}-{item.p}-{item.k}
+                        {item.reorderLevel ?? 0}
                         </span>
-                      </p>
+                    </p>
+
+                    {item.usageRate && (
+                        <p className="flex justify-between text-sm">
+                        <span className="text-gray-500">Usage Rate:</span>
+                        <span className="font-semibold text-gray-800">
+                            {item.usageRate}
+                        </span>
+                        </p>
                     )}
+                    {item.expireDate && (
+                        <p className="flex justify-between text-sm">
+                        <span className="text-gray-500">Expiry Date:</span>
+                        <span className="font-semibold text-gray-800">
+                            {formatDate(item.expireDate)}
+                        </span>
+                        </p>
+                    )}
+
+                    {item.type && (
+                        <p className="flex justify-between text-sm">
+                        <span className="text-gray-500">Type:</span>
+                        <span className="font-semibold text-gray-800">
+                            {item.type}
+                        </span>
+                        </p>
+                    )}
+
+                    {item.category === "equipment parts" &&
+                        item.equipmentPartData?.model && (
+                            <p className="flex justify-between text-sm">
+                                <span className="text-gray-500">Part Model:</span>
+                                <span className="font-semibold text-gray-800">
+                                {item.equipmentPartData.model}
+                                </span>
+                            </p>
+                        )}
+                    {typeof item.n === "number" &&
+                        typeof item.p === "number" &&
+                        typeof item.k === "number" && (
+                            <p className="flex justify-between text-sm">
+                                <span className="text-gray-500">N-P-K:</span>
+                                <span className="font-semibold text-gray-800">
+                                {item.n}-{item.p}-{item.k}
+                                </span>
+                            </p>
+                        )}
+                        {/* Status Badge */}
+                    <div
+                        className={`mb-2 mt-4 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center justify-start ${getStatusColor(status)}`}
+                    >
+                        {getStatusIcon(status)}
+                        <span className="capitalize">{status}</span>
+                    </div>
                 </div>
-                <div
-                  className={`mt-4 px-3 py-2 gap-1 rounded-full text-sm font-medium flex items-center justify-start ${getStatusColor(status)}`}
-                >
-                  {getStatusIcon(status)}
-                  {status}
-                </div>
-                <div className="mt-4 flex justify-between">
+                
+                {/* Actions */}
+                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
                   <button
                     onClick={() => handleDeleteItem(item.id)}
                     disabled={isItemDeleting}
-                    className="text-sm font-medium text-red-600 hover:underline disabled:text-gray-500 disabled:cursor-not-allowed"
+                    className="flex items-center text-sm font-medium text-red-600 hover:text-red-800 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
                   >
                     {isItemDeleting ? (
                       <Loader2 className="h-4 w-4 animate-spin inline mr-1" />
                     ) : (
-                      "Delete"
+                      <Trash2 className="h-4 w-4 mr-1" />
                     )}
+                    Delete
                   </button>
                   <button
                     onClick={() => handleUpdateClick(item)}
-                    className="text-sm font-medium text-green-600 hover:underline"
+                    className="flex items-center text-sm font-medium text-green-600 hover:text-green-800 transition-colors"
                   >
+                    <SquarePen className="h-4 w-4 mr-1" />
                     Update
                   </button>
                 </div>
@@ -790,45 +777,87 @@ const InventoryManagement = () => {
             );
           })
         ) : (
-          <div className="text-center py-12 col-span-full">
-            <p className="text-gray-500">
+          <div className="text-center py-12 col-span-full border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+            <p className="text-gray-500 text-lg font-medium">
               No {activeInventoryTab} items found.
             </p>
+            <p className="text-gray-400 text-sm mt-1">Try a different search term or click &apos;Add Item &apos; to get started.</p>
           </div>
         )}
       </div>
 
+      {/* --- ADD ITEM MODAL --- */}
       <Modal
-        show={showAddItemModal}
-        onClose={() => setShowAddItemModal(false)}
-        title={`Add New ${activeInventoryTab} Item`}
-      >
-        <form onSubmit={handleCreateItem} className="space-y-4">
-          {renderFormFields(formData as BaseFormData, handleAddInputChange)}
-          <div className="pt-4 border-t border-gray-200">
+    show={showAddItemModal}
+    onClose={() => {
+        setShowAddItemModal(false);
+        setFormError(null); // Clear form error on close
+    }}
+    title={`Add New ${activeInventoryTab} Item`}
+>
+    <form onSubmit={handleCreateItem} className="space-y-6">
+        {/* ... (other form fields) ... */}
+        {renderFormFields(formData as BaseFormData, handleAddInputChange)}
+        
+        <div className="pt-4 border-t border-gray-200">
+            {formError && ( // Display form-specific error
+                <p className="mb-3 text-sm text-red-600 flex items-start">
+                    {/* Assuming TriangleAlert is imported */}
+                    <TriangleAlert className="h-4 w-4 mt-0.5 mr-1 flex-shrink-0" />
+                    <span>{formError}</span>
+                </p>
+            )}
             <button
-              type="submit"
-              className="w-full flex justify-center rounded-md border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700"
+                type="submit"
+                // 1. Disable the button when loading
+                disabled={isLoading}
+                className={`
+                    w-full flex justify-center rounded-lg border border-transparent py-3 px-4 text-sm font-semibold shadow-md transition-colors text-white
+                    ${isLoading
+                        // 2. Adjust color and cursor when loading
+                        ? 'bg-green-400 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700'
+                    }
+                `}
             >
-              Save {activeInventoryTab}
+                {isLoading ? (
+                    // 3. Show a spinner when loading (Assuming Loader2 is an imported icon)
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                    // 4. Show the standard icon when not loading
+                    <Plus className="h-4 w-4 mr-2" />
+                )}
+                
+                {/* 5. Change the button text based on the loading state */}
+                {isLoading ? `Saving ${activeInventoryTab}...` : `Save ${activeInventoryTab}`}
             </button>
-          </div>
-        </form>
-      </Modal>
+        </div>
+    </form>
+</Modal>
 
+      {/* --- UPDATE ITEM MODAL --- */}
       <Modal
         show={showUpdateModal}
-        onClose={() => setShowUpdateModal(false)}
-        title={`Update ${updateFormData?.name || ""}`}
+        onClose={() => {
+            setShowUpdateModal(false);
+            setFormError(null); // Clear form error on close
+        }}
+        title={`Update ${updateFormData?.name || activeInventoryTab} Details`}
       >
         {updateFormData && (
-          <form onSubmit={handleUpdateItem} className="space-y-4">
+          <form onSubmit={handleUpdateItem} className="space-y-6">
             {renderFormFields(updateFormData, handleUpdateInputChange)}
             <div className="pt-4 border-t border-gray-200">
+              {formError && ( // Display form-specific error
+                <p className="mb-3 text-sm text-red-600 flex items-start">
+                  <TriangleAlert className="h-4 w-4 mt-0.5 mr-1 flex-shrink-0" />
+                  <span>{formError}</span>
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="w-full flex justify-center rounded-md border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed"
+                className="w-full flex justify-center rounded-lg border border-transparent bg-green-600 py-3 px-4 text-sm font-semibold text-white shadow-md hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors"
               >
                 {isUpdating ? (
                   <>
@@ -847,4 +876,4 @@ const InventoryManagement = () => {
   );
 };
 
-export default InventoryManagement
+export default InventoryManagement;

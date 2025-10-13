@@ -3,7 +3,7 @@ import apiClient, { API_URL } from "../api/farmoperation";
 const API_BASE_URL = `${API_URL}/api/task-planner`;
 
 export interface Task {
-    _id: string;
+    id: string;
     title: string;
     status: 'pending' | 'ongoing' | 'completed';
     priority: 'low' | 'medium' | 'high';
@@ -28,9 +28,9 @@ export interface CalendarData {
     days: DayTasks[];
 }
 
-export const getTasks = async (): Promise<Task[]> => {
-    const response = await apiClient.get(`${API_BASE_URL}/tasks`);
-    return response.data;
+export const getTasks = async (id: string): Promise<Task[]> => {
+  const response = await apiClient.get(`${API_BASE_URL}/assignee/${id}`);
+  return response.data;
 };
 
 export const createTask = async (taskData: Omit<Task, '_id'>): Promise<Task> => {
@@ -49,7 +49,7 @@ export const deleteTask = async (id: string): Promise<{ message: string }> => {
 };
 
 
-export const getCalendarData = async (year: number, month: number): Promise<CalendarData> => {
+export const getCalendarData = async (year: number, month: number, p0: string): Promise<CalendarData> => {
     const response = await apiClient.get(`${API_BASE_URL}/calendar`, {
         params: { year, month }
     });

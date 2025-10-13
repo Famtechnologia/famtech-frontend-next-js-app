@@ -8,6 +8,7 @@ export interface User {
   role: string;
   country: string;
   state: string;
+  lga?:string;
   isVerified: boolean;
 }
 

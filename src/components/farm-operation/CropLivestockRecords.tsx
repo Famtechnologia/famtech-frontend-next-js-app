@@ -76,7 +76,7 @@ const getGrowthPercentageFromStage = (stage: string | null | undefined): number 
     if (normalizedStage.includes('vegetative') || normalizedStage.includes('early growth')) return 40;
     if (normalizedStage.includes('flowering') || normalizedStage.includes('tasseling')) return 60;
     if (normalizedStage.includes('fruiting') || normalizedStage.includes('maturation') || normalizedStage.includes('ripening')) return 80;
-    if (normalizedStage.includes('harvest') || normalizedStage.includes('completed')) return 100;
+    if (normalizedStage.includes('maturity') || normalizedStage.includes('completed')) return 100;
 
     // Fallback in case a stage name doesn't match a defined keyword
     return 0;

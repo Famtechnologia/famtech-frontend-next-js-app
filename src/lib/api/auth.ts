@@ -15,6 +15,7 @@ export interface LoginResponse {
       subRole?: string;
       country?: string;
       state?: string;
+      lga?: string;
       isVerified?: boolean;
     };
     tokens: {
@@ -33,6 +34,7 @@ export interface RegisterResponse {
       role?: string;
       country?: string;
       state?: string;
+      lga?: string;
       isVerified?: boolean;
     };
     tokens?: {
@@ -75,6 +77,7 @@ export interface RegisterPayload {
   confirmPassword: string;
   country: string;
   state: string;
+  lga?: string; // 👈 optional LGA
 }
 
 export const register = async (
