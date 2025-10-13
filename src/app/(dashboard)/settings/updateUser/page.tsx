@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useAuthStore, User } from "@/lib/store/authStore";
@@ -8,6 +8,7 @@ import { countries } from "@/lib/services/countries";
 import apiClient, { API_URL } from "@/lib/api/apiClient";
 
 const API_BASE_URL = `${API_URL}/api/auth`;
+
 // --- Types ---
 interface State {
   name: string;
@@ -59,15 +60,23 @@ export default function UpdateDetailsForm() {
   const selectedCountryName = watch("country");
   const selectedStateName = watch("state");
 
-  const selectedCountry = countryList.find(
-    (country) => country.name.toLowerCase() === selectedCountryName
+  const selectedCountry = useMemo(
+    () =>
+      countryList.find(
+        (country) => country.name.toLowerCase() === selectedCountryName
+      ),
+    [selectedCountryName]
   );
 
-  const selectedStateObj = selectedCountry?.states.find(
-    (state) => state.name.toLowerCase() === selectedStateName
+  const selectedStateObj = useMemo(
+    () =>
+      selectedCountry?.states.find(
+        (state) => state.name.toLowerCase() === selectedStateName
+      ),
+    [selectedCountry, selectedStateName]
   );
 
-  const lgas = selectedStateObj?.subdivision || [];
+  const lgas = useMemo(() => selectedStateObj?.subdivision || [], [selectedStateObj]);
 
   // 🧠 Initialize form when user data loads
   useEffect(() => {
@@ -96,7 +105,7 @@ export default function UpdateDetailsForm() {
         setValue("lga", "", { shouldValidate: false, shouldDirty: true });
       }
     }
-  }, [selectedCountryName, setValue, watch, isFormInitialized, selectedCountry]);
+  }, [selectedCountryName, selectedCountry, setValue, watch, isFormInitialized]);
 
   // 🧹 Clear lga if state changes
   useEffect(() => {
@@ -170,7 +179,11 @@ export default function UpdateDetailsForm() {
   }
 
   if (!user) {
-    return <div className="text-center p-8 text-red-600">User data not available. Please log in.</div>;
+    return (
+      <div className="text-center p-8 text-red-600">
+        User data not available. Please log in.
+      </div>
+    );
   }
 
   return (
@@ -186,7 +199,9 @@ export default function UpdateDetailsForm() {
           <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 truncate max-w-3xl md:max-w-full">
             {user.email}
           </div>
-          <p className="mt-1 text-xs text-gray-500">Email cannot be changed via this form.</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Email cannot be changed via this form.
+          </p>
         </div>
 
         {/* Password - Read-only */}
@@ -196,7 +211,7 @@ export default function UpdateDetailsForm() {
             ********
           </div>
           <p className="mt-1 text-xs text-gray-500">
-            To change your password, please use the dedicated "Change Password" section.
+            To change your password, please use the dedicated &quot;Change Password&quot; section.
           </p>
         </div>
 
@@ -212,7 +227,9 @@ export default function UpdateDetailsForm() {
             {...register("country", { required: "Country is required" })}
             className="mt-1 w-full p-3 border-gray-300 border rounded-xl focus:ring-green-500 focus:border-green-500"
           >
-            <option value="" hidden>Select Country</option>
+            <option value="" hidden>
+              Select Country
+            </option>
             {countryList.map((country: Country) => (
               <option key={country.name} value={country.name?.toLowerCase()}>
                 {country.name}
@@ -235,7 +252,9 @@ export default function UpdateDetailsForm() {
             className="mt-1 w-full p-3 border-gray-300 border rounded-xl focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
             disabled={!selectedCountry}
           >
-            <option value="" hidden>Select State</option>
+            <option value="" hidden>
+              Select State
+            </option>
             {selectedCountry?.states.map((state: State) => (
               <option key={state.name} value={state.name.toLowerCase()}>
                 {state.name}

@@ -76,21 +76,21 @@ export default function WeatherForecast() {
   const {user} = useAuth()
   console.log(user)
 
-  useEffect(() => {
-    const getAsyncWeather = async () => {
-     // These values are used inside the effect, so they must be dependencies.
-     const res = await getWeather(
-  user?.country || "nigeria",
-  user?.state || "lagos",
-  user?.lga // optional — only included if available
-);
+useEffect(() => {
+  const getAsyncWeather = async () => {
+    // These values are used inside the effect, so they must be dependencies.
+    const res = await getWeather(
+      user?.country || "nigeria",
+      user?.state || "lagos",
+      user?.lga // optional — only included if available
+    );
 
-      console.log("this is the weather data ", res.data);
-      setWeatherInfo(res?.data);
-    };
-    getAsyncWeather();
-  // FIX: Include user?.country and user?.state in the dependency array.
-  }, [user?.country, user?.state]) 
+    console.log("this is the weather data ", res.data);
+    setWeatherInfo(res?.data);
+  };
+  getAsyncWeather();
+
+}, [user?.country, user?.state, user?.lga]);
   
   return (
     <Card
