@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card'
 import {  Sun, CloudRain, Wind, Eye, Cloudy, CloudFog, CloudDrizzle, CloudLightning } from 'lucide-react';
-import { getWeather } from '@/lib/services/weatherAPI';
+import { getWeather, getWeatherByLga } from '@/lib/services/weatherAPI';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { WeatherApiResponse } from '@/types/weather';
 
@@ -74,23 +74,22 @@ export default function WeatherForecast() {
  const [weatherInfo, setWeatherInfo] = useState<WeatherApiResponse | undefined>();
 
   const {user} = useAuth()
-  console.log(user)
 
-useEffect(() => {
-  const getAsyncWeather = async () => {
-    // These values are used inside the effect, so they must be dependencies.
-    const res = await getWeather(
-      user?.country || "nigeria",
-      user?.state || "lagos",
-      user?.lga // optional — only included if available
-    );
+  useEffect(() => {
+    const getAsyncWeather = async () => {
+      const lgaRes = await getWeatherByLga(user?.lga)
 
-    console.log("this is the weather data ", res.data);
-    setWeatherInfo(res?.data);
-  };
-  getAsyncWeather();
+      const stateRes = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
 
-}, [user?.country, user?.state, user?.lga]);
+      if (user?.lga !== "") {
+        setWeatherInfo(lgaRes?.data);
+      } else {
+        setWeatherInfo(stateRes?.data);
+      }
+
+    };
+    getAsyncWeather();
+  }, [])
   
   return (
     <Card

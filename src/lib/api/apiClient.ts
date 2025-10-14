@@ -6,7 +6,7 @@ export const API_URL = "https://api-famtech-backend-app.onrender.com";
 
 const apiClient = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 60000,
 });
 
 // 🚀 Request Interceptor → attach accessToken automatically

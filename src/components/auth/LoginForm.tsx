@@ -44,8 +44,6 @@ const Login: React.FC = () => {
         isVerified: responseUser.isVerified ?? false,
       };
 
-      console.log("Login response:", user);
-
       useAuthStore.getState().setUser(user);
       useAuthStore.getState().setToken(tokens.accessToken);
       useAuthStore.getState().setRefreshToken(tokens.refreshToken);
