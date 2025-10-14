@@ -2,9 +2,14 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { getAdvice } from "@/lib/services/advisory";
+import { getAdvice, createAdvice } from "@/lib/services/advisory";
 
-export const FarmingType = ({
+import apiClient from "../../lib/api/apiClient";
+import { useAuthStore } from "@/lib/store/authStore";
+import { useRouter } from "next/navigation";
+
+
+export const GenerateAdvice = ({
   location,
   setShowFarmingType,
 }: {
@@ -16,6 +21,8 @@ export const FarmingType = ({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<{ type: string; produce: string; level: string }>();
+
+  const {user} = useAuthStore()
 
   const [loading, setLoading] = useState(false);
 
@@ -42,18 +49,28 @@ export const FarmingType = ({
       };
 
       const advice = await getAdvice(
-        `Generate a detailed roadmap for ${data.type} farming of ${data.produce} for a user with ${data.level} proficiency. The output should be a JSON object with a "title" and a "body". The "body" should be an array of objects, where each object represents a week and has a "week" number and a "tasks" array. Each object in the "tasks" array should have a "day" and a "instruction". The instruction for each day should be a long, detailed explanation of the task for better understanding. For example, instead of "Water the plants", it should be a more detailed explanation of how to water the plants, why it's important, and what to look for.`,
+        `Generate a detailed roadmap for ${data.type} farming of ${data.produce} for a user with ${data.level} proficiency. The output should be a JSON object with a "title" and a "body". The "body" should be an array of objects, where each object represents a week and has a "week" number and a "tasks" array. Each object in the "tasks" array should have a "day" and a "instruction". The instruction for each day should be a long, detailed explanation of the task for better understanding. For example, instead of "Water the plants", it should be a more detailed explanation of how to water the plants, why it\'s important, and what to look for. IMPORTANT: Respond with ONLY the JSON object, and no other text, formatting, or explanations.
+        The response must be a valid JSON object only. 
+        Do NOT wrap the JSON in quotes or strings. 
+        Do NOT add escape characters like \n or \". 
+        Do NOT use markdown or backticks. 
+        Return plain JSON, not a string.
+        `,
         context
       );
 
-      if (!advice) {
-        toast.error("No advice returned from server");
-      }
+      const userId = user?.id || "";
 
-      console.log(advice);
+      await createAdvice(
+        data?.type,
+        data?.produce,
+        data?.level,
+        userId,
+        JSON.stringify(advice) // Stringify the advice object
+      );
+    
       toast.success("Your advice is ready!");
       setShowFarmingType(false);
-      // router.push("/verify-email");
     } catch (err: unknown) {
       console.error("Advice failed:", err);
       const errorMessage =

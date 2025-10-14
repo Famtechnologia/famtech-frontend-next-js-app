@@ -12,9 +12,10 @@ interface AdviceCardProps {
     country: string;
   };
   advice: string;
+  id: string;
 }
 
-const AdviceCard: React.FC<AdviceCardProps> = ({ farmType, produce, location, advice }) => {
+const AdviceCard: React.FC<AdviceCardProps> = ({ farmType, produce, location, advice, id }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
@@ -40,7 +41,7 @@ const AdviceCard: React.FC<AdviceCardProps> = ({ farmType, produce, location, ad
           </button>
         </div>
       </Card>
-      {isModalOpen && <AdviceModal advice={advice} onClose={closeModal} />}
+      {isModalOpen && <AdviceModal id={id} advice={advice} onClose={closeModal} />}
     </>
   );
 };
