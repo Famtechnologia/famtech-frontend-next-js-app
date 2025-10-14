@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 
 import { CheckCircle } from "lucide-react";
-import axios, { AxiosError } from "axios";
 import apiClient from "@/lib/api/apiClient"
 import { API_URL } from "../../../../../config";
 import { useAuthStore } from "@/lib/store/authStore";
