@@ -4,9 +4,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { getAdvice, createAdvice } from "@/lib/services/advisory";
 
-import apiClient from "../../lib/api/apiClient";
+
 import { useAuthStore } from "@/lib/store/authStore";
-import { useRouter } from "next/navigation";
 
 
 export const GenerateAdvice = ({

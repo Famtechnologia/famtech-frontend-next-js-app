@@ -105,16 +105,18 @@ export default function Page() {
   const owner = farmProfile?.owner;
 
   const ActiveComponent = useMemo(() => {
+    const defaultLocation = { state: "", country: "" };
+
     switch (activeTabKey) {
       case "health":
-        return <FarmHealthCard location={farmProfile?.location} />;
+        return <FarmHealthCard location={farmProfile?.location ?? defaultLocation} />;
       case "chat":
         return <SmartInsight />;
       case "explore":
-        return <Explore location={farmProfile?.location} />;
+        return <Explore location={farmProfile?.location ?? defaultLocation} />;
         
       default:
-        return <Explore location={farmProfile?.location} />;
+        return <Explore location={farmProfile?.location ?? defaultLocation} />;
     }
   }, [activeTabKey, farmProfile?.location]);
 
