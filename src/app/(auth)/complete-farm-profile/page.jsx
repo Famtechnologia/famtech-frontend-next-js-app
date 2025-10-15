@@ -67,24 +67,7 @@ export default function ModernFarmRegistration() {
     },
   ];
 
-  const cropOptions = [
-    "Maize/Corn",
-    "Rice",
-    "Yam",
-    "Cassava",
-    "Cocoa",
-    "Oil Palm",
-    "Plantain",
-    "Tomatoes",
-    "Pepper",
-    "Onions",
-    "Beans",
-    "Groundnuts",
-    "Millet",
-    "Sorghum",
-    "Sweet Potato",
-    "Other",
-  ];
+
   // will be used later on
   // const farmingMethodOptions = [
   //   'Organic', 'Conventional', 'Integrated Pest Management', 'Precision Agriculture',
@@ -245,26 +228,7 @@ export default function ModernFarmRegistration() {
           newErrors.seasonalPattern = "Seasonal pattern is required";
         }
 
-        if (formData.farmingMethods) {
-          if (!Array.isArray(formData.farmingMethods)) {
-            newErrors.farmingMethods = "Farming methods must be an array";
-          } else if (formData.farmingMethods.length === 0) {
-            newErrors.farmingMethods =
-              "At least one farming method is required";
-          } else {
-            // Check for empty or invalid method names
-            const invalidMethods = formData.farmingMethods.filter(
-              (method) =>
-                !method || typeof method !== "string" || method.trim() === ""
-            );
-            if (invalidMethods.length > 0) {
-              newErrors.farmingMethods =
-                "All farming methods must be non-empty strings";
-            }
-          }
-        } else {
-          newErrors.farmingMethods = "At least one farming method is required";
-        }
+
         break;
 
       default:
@@ -375,13 +339,7 @@ export default function ModernFarmRegistration() {
       setLoading(false);
     }
   };
-  const toggleCrop = (crop) => {
-    const current = formData.primaryCrops;
-    const updated = current.includes(crop)
-      ? current.filter(c => c !== crop)
-      : [...current, crop];
-    updateFormData('primaryCrops', updated);
-  };
+
 
   const toggleMethod = (method) => {
     const current = formData.farmingMethods;
@@ -920,47 +878,7 @@ export default function ModernFarmRegistration() {
         </p>
       </div>
       <div className="p-0  md:p-4 space-y-8">
-        {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
-          <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg className="w-5 h-5 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            Primary Crops
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {cropOptions.map(crop => (
-              <label key={crop} className="flex items-center space-x-3 cursor-pointer group">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={formData.primaryCrops.includes(crop)}
-                    onChange={() => toggleCrop(crop)}
-                  />
-                  <div className={`w-5 h-5 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${formData.primaryCrops.includes(crop)
-                    ? 'bg-emerald-500 border-emerald-500 shadow-lg'
-                    : 'border-gray-300 group-hover:border-emerald-400 bg-white'
-                    }`}>
-                    {formData.primaryCrops.includes(crop) && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-emerald-700 transition-colors">
-                  {crop}
-                </span>
-              </label>
-            ))}
-          </div>
-          {errors.primaryCrops && (
-            <p className="text-red-500 text-sm mt-3 flex items-center">
-              <span className="mr-1">⚠️</span>
-              {errors.primaryCrops}
-            </p>
-          )}
-        </div> */}
+
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">

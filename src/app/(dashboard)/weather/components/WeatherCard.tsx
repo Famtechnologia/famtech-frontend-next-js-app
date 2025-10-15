@@ -77,19 +77,32 @@ export default function WeatherForecast() {
 
   useEffect(() => {
     const getAsyncWeather = async () => {
-      const lgaRes = await getWeatherByLga(user?.lga)
-
-      const stateRes = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
-
-      if (user?.lga  && lgaRes) {
-        setWeatherInfo(lgaRes?.data);
-      } else {
-        setWeatherInfo(stateRes?.data);
+      if (user?.lga) {
+        try {
+          const lgaRes = await getWeatherByLga(user.lga);
+          if (lgaRes) {
+            setWeatherInfo(lgaRes);
+            return; // Exit if LGA weather is successful
+          }
+        } catch (error) {
+          console.error("Failed to fetch weather data by LGA:", error);
+          // Don't return, proceed to fetch by state
+        }
       }
 
+      // Fetch by state if LGA is not available or failed
+      try {
+        const stateRes = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
+        setWeatherInfo(stateRes);
+      } catch (error) {
+        console.error("Failed to fetch weather data by state:", error);
+      }
     };
-    getAsyncWeather();
-  }, [user?.lga, user?.country, user?.state])
+
+    if (user) {
+      getAsyncWeather();
+    }
+  }, [user]);
   
   return (
     <Card
