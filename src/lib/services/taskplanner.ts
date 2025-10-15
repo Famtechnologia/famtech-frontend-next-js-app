@@ -63,6 +63,9 @@ export const deleteTask = async (id: string): Promise<{ message: string }> => {
 // 🔔 Notification Types & API
 // ----------------------------
 export interface Notification {
+  timeline: {dueDate: Date; dueTime: string;};
+  notification: string;
+  title: string;
   id: string;
   message: string;
   taskId: string;
@@ -70,12 +73,10 @@ export interface Notification {
   timestamp: string;
 }
 
-// Fetch notifications for a specific user
+// Fetch notifications for a specific user 
 export const getNotifications = async (
   userId: string
 ): Promise<Notification[]> => {
-  const response = await apiClient.get(
-    `${BASE_URL}/notification/${userId}`
-  );
+  const response = await apiClient.get(`${BASE_URL}/notification/${userId}`);
   return response.data;
 };
