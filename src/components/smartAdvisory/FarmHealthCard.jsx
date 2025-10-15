@@ -7,7 +7,8 @@ import {
   getLivestockRecords,
 } from "@/lib/services/croplivestock";
 import { useAuthStore } from "@/lib/store/authStore";
-
+import Link from "next/link";
+import {  Link2, MoveRight } from "lucide-react";
 export default function FarmHealthCard({ location }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -117,11 +118,18 @@ export default function FarmHealthCard({ location }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 min-h-40">
       {smartProduct?.length === 0 ? (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-600 text-medium text-center">
-            You Don&apos;t have any Crop and Livestock
-          </p>
+       <div className="w-full px-2 md:px-6 p-6 md:col-span-2 lg:col-span-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+       <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl md:2xl font-bold">Farming Health</h2>
+          <Link href='/farm-operation?tab=records' className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-150"
+          >
+            Add <span className="hidden md:flex">Record</span>
+          </Link>
         </div>
+        <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">
+            No crop or livestock records found. Please add some to view health tips.
+          </div>
+          </div>
       ) : (
         smartProduct?.map((smart, index) => (
           <SmartCard

@@ -69,35 +69,35 @@ const AdviceModal: React.FC<AdviceModalProps> = ({ advice, onClose, id }) => {
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      const isDelete = await deleteAdvice(id);
+  //const handleDelete = async () => {
+  //  try {
+  //    const isDelete = await deleteAdvice(id);
 
-      if (!isDelete) {
-        toast.success(isDelete?.message);
-      }
+    //  if (!isDelete) {
+  //      toast.success(isDelete?.message);
+    //  }
 
-      toast.success(isDelete?.message);
-      setShowModal(false);
+   //   toast.success(isDelete?.message);
+   //   setShowModal(false);
 
-      router.refresh();
-    } catch (error) {
-      console.error("Advice failed:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Advice Generation Failed";
-      toast.error(errorMessage);
-    }
-  };
+   //   router.refresh();
+   // } catch (error) {
+    //  console.error("Advice failed:", error);
+    //  const errorMessage =
+    //    error instanceof Error ? error.message : "Advice Generation Failed";
+    //  toast.error(errorMessage);
+   // }
+ // };
 
   return (
     <Modal show={showModal} onClose={onClose} title={getTitle(advice)}>
       {parseAdvice(advice)}
-      <button
+     {/*<button
         onClick={handleDelete}
         className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-150 float-right mb-4"
       >
         Delete
-      </button>
+      </button>*/}
     </Modal>
   );
 };

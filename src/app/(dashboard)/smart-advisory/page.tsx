@@ -123,11 +123,11 @@ export default function Page() {
   return (
     <div className="p-0 md:p-6 bg-white">
       <div>
-        <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight">
+        <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight mb-4">
           Hi <span className="capitalize">{owner?.firstName || "Farmer"}</span>,
           here&apos;s is your farm health&apos;s today ⛅
         </h2>
-        <p className="text-gray-500 text-sm leading-relaxed">
+        <p className="text-gray-500 text-base leading-relaxed mb-4">
           {new Date().toLocaleDateString("en-NG", {
             weekday: "long",
             month: "short",
@@ -145,7 +145,7 @@ export default function Page() {
             <button
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
-              className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors
+              className={`flex items-center space-x-2 px-1 mr-8 py-3 text-base font-medium transition-colors
                                 ${
                                   isActive
                                     ? "border-b-2 border-green-600 text-green-700"

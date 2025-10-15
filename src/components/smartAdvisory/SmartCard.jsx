@@ -74,7 +74,7 @@ export const SmartCard = ({
         </div>
       </div>
       <div className="border-t border-gray-100 p-4">
-        <Link href="#" className="text-green-700 hover:underline text-sm inline-flex gap-1 items-center">
+        <Link href="/farm-operation?tab=records" className="text-green-700 hover:underline text-sm inline-flex gap-1 items-center">
           View More
           <MoveRight size={16} />
         </Link>

@@ -35,7 +35,7 @@ export const updateUser = async (
   if (!user?.id) {
     throw new Error("User ID not available for update.");
   }
-  const response = await apiClient.put(`${API_BASE_URL}/update`, updateData);
+  const response = await apiClient.put(`${API_URL}/api/auth/update`, updateData);
   return response.data;
 };
 
