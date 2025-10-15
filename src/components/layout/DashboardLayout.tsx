@@ -309,7 +309,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     setIsLoading(true);
     try {
       const data = await getNotifications(userId);
-      console.log(data)
       setNotifications(data);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
