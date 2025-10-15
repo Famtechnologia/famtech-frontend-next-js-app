@@ -81,7 +81,7 @@ export default function WeatherForecast() {
 
       const stateRes = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
 
-      if (user?.lga !== "") {
+      if (user?.lga  && lgaRes) {
         setWeatherInfo(lgaRes?.data);
       } else {
         setWeatherInfo(stateRes?.data);
