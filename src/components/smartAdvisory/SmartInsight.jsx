@@ -209,8 +209,9 @@ export const SmartInsight = () => {
 
           <form
             onSubmit={handleChat}
-            className="relative w-full space-x-2 flex items-center"
+            className="relative w-full space-x-2 space-y-2 flex flex-wrap items-center  "
           >
+           
             <button
               type="button"
               className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors duration-200"
@@ -227,6 +228,7 @@ export const SmartInsight = () => {
             >
               <Plus className="h-4 w-4 mr-2" /> Livestock
             </button>
+        
             <input
               type="text"
               placeholder="Ask for smart advice..."
@@ -237,7 +239,7 @@ export const SmartInsight = () => {
             />
             <button
               type="submit"
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-100 rounded-md bg-green-700 hover:bg-green-600 transition-colors duration-200"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-100 rounded-md bg-green-600 hover:bg-green-600 transition-colors duration-200"
               disabled={isLoading}
             >
               <Send className="h-4 w-4 mr-2" /> Send
@@ -284,7 +286,7 @@ export const SmartInsight = () => {
         >
           <div className="space-y-2">
             {cropRecords.length === 0 ? (
-              <p>You Don&apos; have any Crop</p>
+              <p>You Don&apos; have any Crop, Kindly add in your farm operation</p>
             ) : (
               cropRecords.map(
                 (record, index) => {
@@ -328,7 +330,7 @@ export const SmartInsight = () => {
         >
           <div className="space-y-2">
             {livestockRecords.length === 0 ? (
-              <p>You Don&apos; have any Crop</p>
+              <p>You Don&apos; have any livestock, kindly add in your farm operation</p>
             ) : (
               livestockRecords.map(
                 (record, index) => {

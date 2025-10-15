@@ -89,7 +89,7 @@ export default function WeatherForecast() {
 
     };
     getAsyncWeather();
-  }, [])
+  }, [user?.lga, user?.country, user?.state])
   
   return (
     <Card

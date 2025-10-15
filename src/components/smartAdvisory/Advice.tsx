@@ -38,19 +38,19 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
   );
 
   return (
-    <div className="p-4">
+    <div className="px-3 md:px-4 p-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Farming Advice</h2>
+        <h2 className="text-xl md:text-2xl font-bold">Farming Advice</h2>
         <button
           onClick={() => setShowFarmingType(true)}
-          className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-150"
+          className="bg-green-600 text-white py-2 px-2 md:px-4 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-150"
         >
-          New Advice
+          New <span className="hidden md:flex">Advice</span>
         </button>
       </div>
       {adviceData.length === 0 ? (
         <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">
-          No advice available
+          No advice available, click on &#34;New (Advice)&#34; to generate one.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
