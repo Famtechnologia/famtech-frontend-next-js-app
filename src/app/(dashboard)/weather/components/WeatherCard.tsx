@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card'
 import {  Sun, CloudRain, Wind, Eye, Cloudy, CloudFog, CloudDrizzle, CloudLightning } from 'lucide-react';
-import { getWeather, getWeatherByLga } from '@/lib/services/weatherAPI';
+import { getWeather } from '@/lib/services/weatherAPI';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { WeatherApiResponse } from '@/types/weather';
 
@@ -74,35 +74,18 @@ export default function WeatherForecast() {
  const [weatherInfo, setWeatherInfo] = useState<WeatherApiResponse | undefined>();
 
   const {user} = useAuth()
+  console.log(user)
 
   useEffect(() => {
-    const getAsyncWeather = async () => {
-      if (user?.lga) {
-        try {
-          const lgaRes = await getWeatherByLga(user.lga);
-          if (lgaRes) {
-            setWeatherInfo(lgaRes);
-            return; // Exit if LGA weather is successful
-          }
-        } catch (error) {
-          console.error("Failed to fetch weather data by LGA:", error);
-          // Don't return, proceed to fetch by state
-        }
-      }
-
-      // Fetch by state if LGA is not available or failed
-      try {
-        const stateRes = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
-        setWeatherInfo(stateRes);
-      } catch (error) {
-        console.error("Failed to fetch weather data by state:", error);
-      }
-    };
-
-    if (user) {
-      getAsyncWeather();
-    }
-  }, [user]);
+    const getAsyncWeather = async () => {
+     // These values are used inside the effect, so they must be dependencies.
+     const res = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
+      console.log("this is the weather data ", res.data);
+      setWeatherInfo(res?.data);
+    };
+    getAsyncWeather();
+  // FIX: Include user?.country and user?.state in the dependency array.
+  }, [user?.country, user?.state]) 
   
   return (
     <Card

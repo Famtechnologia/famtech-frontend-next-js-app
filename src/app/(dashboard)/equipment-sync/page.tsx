@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Modal from "@/components/ui/Modal";
 import { 
@@ -16,6 +16,7 @@ import {
   Signal
 } from "lucide-react";
 import Link from 'next/link'
+import EquipmentSyncSkeletonLoader from "@/components/layout/skeleton/EquipmentSync";
 type EquipmentType = "Tractor" | "Drone" | "Soil Sensor" | "Irrigation System";
 type SyncMethod = "Bluetooth" | "QR Code" | "Manual";
 
@@ -32,7 +33,7 @@ const EquipmentSyncPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<"success" | "error" | null>(null);
   const [currentDevice, setCurrentDevice] = useState<Device | null>(null);
-
+  const [isLoading, setIsLoading] = useState(true);
   const devices: Device[] = [
     { id: "1", name: "Drone Ply", status: "Available", distance: "5m" },
     { id: "2", name: "Soil Sense Monitor", status: "Available", distance: "5m" },
@@ -166,6 +167,16 @@ const EquipmentSyncPage: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    // Simulate data fetching or device scanning delay
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 2. Conditional Rendering
+  if (isLoading) {
+    return <EquipmentSyncSkeletonLoader />;
+  }
   return (
     <div className="min-h-screen bg-background p-0 md:p-6">
       <div className="max-w-7xl mx-auto">
