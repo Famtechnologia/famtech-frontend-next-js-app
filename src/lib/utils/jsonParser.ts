@@ -1,4 +1,4 @@
-export const extractAndParseJson = (rawAdviceString: string): any | null => {
+export const extractAndParseJson = (rawAdviceString: string): unknown | null => {
   try {
     // First, try to parse the outer JSON string
     const outerObject = JSON.parse(rawAdviceString);

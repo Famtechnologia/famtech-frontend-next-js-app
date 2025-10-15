@@ -82,28 +82,28 @@ export const GenerateAdvice = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={`relative bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer p-4 hover:border-green-500 hover:border-2 transition-all duration-300`}
+      className={`relative bg-white rounded-lg shadow-base border border-gray-200 overflow-hidden cursor-pointer p-4 hover:border-green-500 hover:border-2 transition-all duration-300`}
     >
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-2">
           Welcome to Smart Advisory
         </h2>
-        <p className="text-gray-500">
+        <p className="text-gray-500 text-sm md:text-base">
           Lets help you to manage our farm - from seed to harvest
         </p>
       </div>
       
-      <div className="mb-4">
-        <label htmlFor="type" className="text-gray-500 mb-2">
+      <div className="mb-4 mt-4">
+        <label htmlFor="type" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
           Choose Farm Type
         </label>
         {/* type */}
         <select
           id="type"
           {...register("type", { required: "Crop Type is required" })} // Fix: 'type' is a valid property in SignupFormInputs
-          className="w-full p-3 border-gray-600 border rounded-xl"
+          className="w-full p-3 mt-1 border-gray-400 border rounded-xl text-gray-500 text-sm"
         >
-          <option value="" hidden>
+          <option value="" hidden >
             Select Crop Type
           </option>
           {["Crop farming", "livestock farming", "Mixed (both)"]?.map(
@@ -120,7 +120,7 @@ export const GenerateAdvice = ({
       </div>
 
       <div className="mb-4">
-        <label htmlFor="produce" className="text-gray-500 mb-2">
+        <label htmlFor="produce" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
           Farm Produce
         </label>
         {/* produce */}
@@ -129,7 +129,7 @@ export const GenerateAdvice = ({
           type="produce"
           placeholder="Produce"
           {...register("produce", { required: "Produce is required" })}
-          className="w-full p-3 border-gray-600 border rounded-xl"
+          className="w-full p-3 border-gray-400 border rounded-xl"
         />
         {errors.produce && (
           <p className="text-red-600 text-sm">{errors?.produce?.message}</p>
@@ -137,14 +137,14 @@ export const GenerateAdvice = ({
       </div>
 
       <div className="mb-4">
-        <label htmlFor="level" className="text-gray-500 mb-2">
+        <label htmlFor="level" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
           Level
         </label>
         {/* level */}
         <select
           id="level"
           {...register("level", { required: "Level is required" })}
-          className="w-full p-3 border-gray-600 border rounded-xl"
+          className="w-full p-3 border-gray-400 border rounded-xl  text-gray-500 text-sm"
         >
           <option value="" hidden>
             Select Level
@@ -165,7 +165,7 @@ export const GenerateAdvice = ({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-auto bg-green-600 text-white py-3 px-4 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400 float-right"
+        className="w-auto bg-green-600 text-white text-sm md:text-base py-3 px-4 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400 float-right"
       >
         {loading ? "Generating..." : "Generate Advice"}
       </button>

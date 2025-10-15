@@ -247,23 +247,23 @@ export default function ModernFarmRegistration() {
         }
 
         // Enhanced array validations - matches backend exactly
-        // if (formData.primaryCrops) {
-        //   if (!Array.isArray(formData.primaryCrops)) {
-        //     newErrors.primaryCrops = 'Primary crops must be an array';
-        //   } else if (formData.primaryCrops.length === 0) {
-        //     newErrors.primaryCrops = 'At least one primary crop is required';
-        //   } else {
-        //     // Check for empty or invalid crop names
-        //     const invalidCrops = formData.primaryCrops.filter(
-        //       (crop) => !crop || typeof crop !== 'string' || crop.trim() === ''
-        //     );
-        //     if (invalidCrops.length > 0) {
-        //       newErrors.primaryCrops = 'All primary crops must be non-empty strings';
-        //     }
-        //   }
-        // } else {
-        //   newErrors.primaryCrops = 'At least one primary crop is required';
-        // }
+        if (formData.primaryCrops) {
+          if (!Array.isArray(formData.primaryCrops)) {
+            newErrors.primaryCrops = 'Primary crops must be an array';
+          } else if (formData.primaryCrops.length === 0) {
+            newErrors.primaryCrops = 'At least one primary crop is required';
+          } else {
+            // Check for empty or invalid crop names
+            const invalidCrops = formData.primaryCrops.filter(
+              (crop) => !crop || typeof crop !== 'string' || crop.trim() === ''
+            );
+            if (invalidCrops.length > 0) {
+              newErrors.primaryCrops = 'All primary crops must be non-empty strings';
+            }
+          }
+        } else {
+          newErrors.primaryCrops = 'At least one primary crop is required';
+        }
 
         if (formData.farmingMethods) {
           if (!Array.isArray(formData.farmingMethods)) {
@@ -301,7 +301,7 @@ export default function ModernFarmRegistration() {
   };
 
   const nextStep = () => {
-    if (validateStep(currentStep)) {
+    if (validateStep(formData, currentStep, setErrors)) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length));
     }
   };
@@ -312,7 +312,7 @@ export default function ModernFarmRegistration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep(currentStep)) return;
+    if (!validateStep(formData, currentStep, setErrors)) return;
 
     setLoading(true);
     setRegistrationError("");
@@ -396,16 +396,13 @@ export default function ModernFarmRegistration() {
       setLoading(false);
     }
   };
-  {
-    /*might be added later on}
   const toggleCrop = (crop) => {
     const current = formData.primaryCrops;
     const updated = current.includes(crop)
       ? current.filter(c => c !== crop)
       : [...current, crop];
     updateFormData('primaryCrops', updated);
-  };*/
-  }
+  };
 
   const toggleMethod = (method) => {
     const current = formData.farmingMethods;
@@ -944,7 +941,7 @@ export default function ModernFarmRegistration() {
         </p>
       </div>
       <div className="p-0  md:p-4 space-y-8">
-        {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4  md:p-6 border border-green-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <svg className="w-5 h-5 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -984,7 +981,7 @@ export default function ModernFarmRegistration() {
               {errors.primaryCrops}
             </p>
           )}
-        </div>*/}
+        </div>
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
           <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">

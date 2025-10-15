@@ -7,7 +7,7 @@ import { useAuthStore, User } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
 import apiClient, { API_URL } from "@/lib/api/apiClient";
 
-const API_BASE_URL = `${API_URL}/api/auth`;
+//const API_BASE_URL = `http://localhost:4000/api/auth`;
 
 // --- Types ---
 interface State {
@@ -21,6 +21,7 @@ interface Country {
 }
 
 interface UpdateFormInputs {
+  email: string;
   country: string;
   state: string;
   lga?: string;
@@ -30,7 +31,11 @@ interface UpdateFormInputs {
 export const updateUser = async (
   updateData: Partial<UpdateFormInputs>
 ): Promise<{ data: { user: User }; message: string }> => {
-  const response = await apiClient.patch(`${API_BASE_URL}/update`, updateData);
+  const { user } = useAuthStore.getState(); // Get user from store
+  if (!user?.id) {
+    throw new Error("User ID not available for update.");
+  }
+  const response = await apiClient.put(`${API_URL}/api/auth/update`, updateData);
   return response.data;
 };
 
@@ -142,7 +147,7 @@ export default function UpdateDetailsForm() {
     }
 
     try {
-      const res = await updateUser(dataToUpdate);
+      const res = await updateUser({email: user.email, country: dataToUpdate?.country, state: dataToUpdate?.state, lga: dataToUpdate?.lga});
       const { data: resData, message } = res;
       const { user: responseUser } = resData;
 
