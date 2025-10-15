@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import Modal from "../ui/Modal"; // Assuming the path to your generic Modal component
-import { deleteAdvice } from "@/lib/services/advisory";
-import { toast } from "react-hot-toast";
-import { useRouter } from "next/navigation";
+//import { deleteAdvice } from "@/lib/services/advisory";
+//import { toast } from "react-hot-toast";
+//import { useRouter } from "next/navigation";
 
 interface AdviceModalProps {
   advice: string;
@@ -22,9 +22,9 @@ interface AdviceFormat {
   }[];
 }
 
-const AdviceModal: React.FC<AdviceModalProps> = ({ advice, onClose, id }) => {
-  const [showModal, setShowModal] = useState(true);
-  const router = useRouter();
+const AdviceModal: React.FC<AdviceModalProps> = ({ advice, onClose}) => {
+const [showModal] = useState(true);
+//const router = useRouter();
   const parseAdvice = (adviceString: string) => {
     try {
       const adviceJson: AdviceFormat = JSON.parse(adviceString);

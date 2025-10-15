@@ -7,7 +7,7 @@ import { useAuthStore, User } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
 import apiClient, { API_URL } from "@/lib/api/apiClient";
 
-const API_BASE_URL = `http://localhost:4000/api/auth`;
+//const API_BASE_URL = `http://localhost:4000/api/auth`;
 
 // --- Types ---
 interface State {

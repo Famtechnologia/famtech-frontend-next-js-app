@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist, StateStorage } from "zustand/middleware";
+import { persist, StateStorage, PersistStorage } from "zustand/middleware";
 import Cookies from "js-cookie";
 
 export interface User {
@@ -68,7 +68,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      storage: cookieStorage,
+      storage: cookieStorage as unknown as PersistStorage<AuthState, unknown>,
     }
   )
 );

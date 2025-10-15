@@ -50,7 +50,7 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
       </div>
       {adviceData.length === 0 ? (
         <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">
-          No advice available, click on "New (Advice)" to generate one.
+          No advice available, click on &#34;New (Advice)&#34; to generate one.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

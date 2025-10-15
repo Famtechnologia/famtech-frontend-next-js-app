@@ -54,10 +54,7 @@ export const deleteTask = async (id: string): Promise<{ message: string }> => {
 };
 
 export const getCalendarData = async (
-  year: number,
-  month: number,
-  p0: string
-): Promise<CalendarData> => {
+year: number, month: number, p0: string): Promise<CalendarData> => {
   const response = await apiClient.get(`${API_BASE_URL}/calendar`, {
     params: { year, month },
   });

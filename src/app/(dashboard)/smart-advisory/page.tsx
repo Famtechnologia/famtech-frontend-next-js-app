@@ -26,6 +26,11 @@ interface Owner {
   phoneNumber: string;
 }
 
+interface FarmLocation {
+  state: string;
+  country: string;
+}
+
 interface FarmProfileData {
   id: string;
   uid: string;
@@ -34,7 +39,7 @@ interface FarmProfileData {
   farmSize: number;
   farmSizeUnit: string;
   establishedYear: number;
-  location: Location;
+  location: FarmLocation;
   currency: string;
   timezone: string;
   primaryCrops: string[];
