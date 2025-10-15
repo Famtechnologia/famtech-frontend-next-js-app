@@ -20,7 +20,7 @@ export const getWeather = async (country: string, state: string) => {
     throw new Error("An unknown error occurred while fetching weather data");
   }
 };
-
+{/*}
 export const getWeatherByLga = async (lga?: string) => {
   try {
     const endpoint = `${WEATHER_URL}/${lga}`;
@@ -37,4 +37,4 @@ export const getWeatherByLga = async (lga?: string) => {
     }
     throw new Error("An unknown error occurred while fetching weather data");
   }
-};
+};*/}
