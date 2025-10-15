@@ -40,10 +40,9 @@ const Login: React.FC = () => {
         role: responseUser.role ?? "user",
         country: responseUser.country ?? "",
         state: responseUser.state ?? "en",
+        lga: responseUser.lga ?? "",
         isVerified: responseUser.isVerified ?? false,
       };
-
-      console.log("Login response:", user);
 
       useAuthStore.getState().setUser(user);
       useAuthStore.getState().setToken(tokens.accessToken);

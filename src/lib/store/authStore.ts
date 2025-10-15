@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, StateStorage, PersistStorage } from "zustand/middleware";
+import Cookies from "js-cookie";
 
 export interface User {
   id: string;
@@ -7,6 +8,7 @@ export interface User {
   role: string;
   country: string;
   state: string;
+  lga?:string;
   isVerified: boolean;
 }
 
@@ -25,6 +27,18 @@ export interface AuthState {
   initializeAuth: () => void;
   clearUser: () => void;
 }
+
+const cookieStorage: StateStorage = {
+  getItem: (name: string): string | null => {
+    return Cookies.get(name) || null;
+  },
+  setItem: (name: string, value: string): void => {
+    Cookies.set(name, value, { expires: 3 }); // Expires in 3 days
+  },
+  removeItem: (name: string): void => {
+    Cookies.remove(name);
+  },
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -52,6 +66,9 @@ export const useAuthStore = create<AuthState>()(
 
       clearUser: () => set({ user: null, token: null, refreshToken: null, claims: null }),
     }),
-    { name: "auth-storage" }
+    {
+      name: "auth-storage",
+      storage: cookieStorage as unknown as PersistStorage<AuthState, unknown>,
+    }
   )
 );

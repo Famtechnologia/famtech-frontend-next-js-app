@@ -42,7 +42,7 @@ import {
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
 import { useAuthStore, User } from "@/lib/store/authStore";
-
+import InventorySkeleton from "@/components/layout/skeleton/farm-operation/Inventory";
 // --- TYPE DEFINITIONS & USER ID RETRIEVAL ---
 
 // Define placeholder type for ToolData while it is commented out
@@ -98,7 +98,6 @@ const InventoryManagement = () => {
   const [inventoryItems, setInventoryItems] = useState<UnifiedInventoryItem[]>(
     []
   );
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   // NEW: Dedicated state for form-specific errors (to avoid modal closing on API error)
   const [formError, setFormError] = useState<string | null>(null); 
@@ -153,12 +152,12 @@ const InventoryManagement = () => {
   const fetchInventoryItems = async () => {
     // FIX 3: Add runtime check for userId before calling getInventoryItems
     if (!requiredUserId) {
-      setLoading(false);
+      setIsLoading(false);
       setError("Cannot fetch inventory: User ID is missing. Please log in.");
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     setError(null); // Clear previous fetch error
     try {
       // FIX 4: Pass the required userId argument to getInventoryItems
@@ -168,13 +167,12 @@ const InventoryManagement = () => {
       console.error("Failed to fetch inventory:", err);
       setError('Failed to load inventory items. Please check your connection.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchInventoryItems();
-
   }, []);
 
   const handleTabChange = (category: string) => {
@@ -586,17 +584,9 @@ const InventoryManagement = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="p-6 flex justify-center items-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading inventory...</p>
-        </div>
-      </div>
-    );
-  }
-
+ if (isLoading) {
+  return <InventorySkeleton />;
+}
   // Improved Error Display
   if (error && inventoryItems.length === 0) {
     return (

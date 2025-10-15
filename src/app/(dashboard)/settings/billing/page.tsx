@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-
+import PlanAndBillingSkeletonLoader from "@/components/layout/skeleton/settings/Billing";
 // Define a type for the pricing plan
 interface Plan {
   id: string;
@@ -54,13 +54,17 @@ const plans: Plan[] = [
 
 const App: React.FC = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>('enterprise');
-
+  const [isLoading, setIsLoading] = useState(true); 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
   };
 
   const isCurrentPlan = (planId: string) => selectedPlanId === planId;
   const isSelected = (planId: string) => selectedPlanId === planId;
+  
+  if (isLoading) {
+    return <PlanAndBillingSkeletonLoader />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 md:p-8 flex flex-col items-center">
