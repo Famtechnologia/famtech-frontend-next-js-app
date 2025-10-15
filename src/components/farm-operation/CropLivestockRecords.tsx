@@ -18,7 +18,7 @@ import {
     CropRecord as BaseCropRecord,
     LivestockRecord as BaseLivestockRecord,
 } from "@/lib/services/croplivestock";
-
+import RecordsListSkeletonLoader from "@/components/layout/skeleton/farm-operation/Record";
 // --- Revised Interfaces to resolve Type Mismatches and implement card view logic ---
 
 /**
@@ -356,7 +356,9 @@ const CropLivestockRecords: React.FC = () => {
             return "bg-yellow-500";
         return "bg-green-500";
     };
-
+    if (loading) {
+        return <RecordsListSkeletonLoader />;
+    }
     return (
         <div className="p-2 lg:p-6">
             <div className="flex items-center justify-start border-b border-gray-200 mb-6 -mt-2">

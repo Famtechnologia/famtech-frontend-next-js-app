@@ -42,7 +42,7 @@ import {
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
 import { useAuthStore, User } from "@/lib/store/authStore";
-import InventorySkeleton from "@/components/layout/skeleton/Inventory";
+import InventorySkeleton from "@/components/layout/skeleton/farm-operation/Inventory";
 // --- TYPE DEFINITIONS & USER ID RETRIEVAL ---
 
 // Define placeholder type for ToolData while it is commented out

@@ -12,6 +12,7 @@ import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
 import { useAuthStore } from "@/lib/store/authStore";
 import { getTasks, updateTask, Task  } from '../../lib/services/taskplanner';
+import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
 
 // ----------------------------------------------------------------------
 // 1. INTERFACES AND TYPES
@@ -285,6 +286,9 @@ const CalendarView: React.FC = () => {
   // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
   const blankDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
+   if (isLoading) {
+    return <CalendarSkeletonLoader />;
+  }
 
   return (
     <div className="bg-white p-2 lg::p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">

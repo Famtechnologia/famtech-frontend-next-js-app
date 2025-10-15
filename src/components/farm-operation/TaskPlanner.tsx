@@ -13,7 +13,7 @@ import {
 import Modal from '../ui/Modal';
 import { getTasks, createTask, updateTask, deleteTask , Task as ApiTask } from '../../lib/services/taskplanner';
 import { useAuthStore, User } from "@/lib/store/authStore";
-import TaskSkeleton from "@/components/layout/skeleton/TaskPlanner";
+import TaskSkeleton from "@/components/layout/skeleton/farm-operation/TaskPlanner";
 
 interface Task {
   id: string; 
