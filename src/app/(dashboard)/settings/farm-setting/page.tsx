@@ -1,4 +1,5 @@
-import React from 'react';
+'use client';
+import React, { useState } from 'react'; 
 import {
   Pencil,
   Bell,
@@ -8,6 +9,7 @@ import {
   PencilRuler
 } from 'lucide-react';
 import Link from 'next/link';
+import SettingsNavigationSkeleton from '@/components/layout/skeleton/settings/FarmSetting';
 const settingsSections = [
   {
     title: 'Farm Information',
@@ -17,6 +19,7 @@ const settingsSections = [
         label: 'Farm Profile',
         description: 'Edit information about the farm',
         action: 'Edit',
+        href: '/settings/edit-farm-profile'
       },
       {
         icon: <PencilRuler className="h-6 w-6 text-blue-600" />,
@@ -34,6 +37,7 @@ const settingsSections = [
         label: 'Edit Profile',
         description: 'Change personal information',
         action: 'Edit',
+        href: '/settings/edit-farm-profile'
       },
       {
         icon: <Bell className="h-6 w-6 text-blue-600" />,
@@ -46,6 +50,7 @@ const settingsSections = [
         label: 'Security',
         description: 'Set two-factor verification to keep your account secure',
         action: 'Edit',
+        
       },
     ],
   },
@@ -63,6 +68,13 @@ const settingsSections = [
 ];
 
 const Settings: React.FC = () => {
+  const [isLoading] = useState(true);
+  
+
+
+ if (isLoading) {
+        return <SettingsNavigationSkeleton />;
+    }
   return (
     <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
       <div className="space-y-2">

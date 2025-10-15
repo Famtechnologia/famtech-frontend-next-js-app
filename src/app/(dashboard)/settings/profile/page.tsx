@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 import { API_URL } from '../../../../../config';
 import { useAuthStore } from "@/lib/store/authStore"; 
 import Link from 'next/link'; // Import Link for navigation
-
+import SettingsSkeletonLoader from '@/components/layout/skeleton/settings/Profile';
 // --- TYPE DEFINITIONS FOR FARM PROFILE ---
 interface Owner {
     firstName: string;
@@ -107,8 +107,9 @@ const Settings: React.FC = () => {
     }, [token]);
 
     if (isLoading) {
-        return <div className="md:p-8 text-center text-xl text-gray-700">Loading...</div>;
-    }
+    // Display the skeleton while data is being fetched
+    return <SettingsSkeletonLoader />;
+  }
 
     if (error || !farmProfile) {
         return <div className="md:p-8 text-center text-xl text-red-600">
