@@ -214,7 +214,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "equipment-sync",
           expandable: false,
           href: `/equipment-sync`,
-          comingSoon: false,
+          comingSoon: true,
         },
         {
           name: "Reports",
