@@ -37,7 +37,7 @@ export default function AdviceDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [structuredAdvice, setStructuredAdvice] = useState<StructuredAdviceBody | null>(null);
   const [activeWeek, setActiveWeek] = useState<number | null>(null);
-   const [isLoading, setIsLoading] = useState<boolean>(true);
+   const [, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchAdvice = async () => {
