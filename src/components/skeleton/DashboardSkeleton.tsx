@@ -33,7 +33,7 @@ const DashboardSkeleton = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="ml-64">
+      <div className="ml-24">
         {/* Top Header/Navigation Bar */}
         <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
