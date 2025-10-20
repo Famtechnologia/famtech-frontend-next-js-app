@@ -104,7 +104,7 @@ export default function AdviceDetailsPage() {
   switch (activeWeek) {
     default:
       return (
-        <div className="pt-6 bg-white rounded-xl ">
+        <div className=" px-1.5 pt-6  pb-6 bg-white rounded-xl ">
           <h3 className="text-xl font-semibold mb-4 text-green-600 border-b pb-2">
             Weekly Action Plan — Week {selectedWeek.week}
           </h3>
@@ -177,7 +177,7 @@ export default function AdviceDetailsPage() {
       </button>
 
       {/* --- Header --- */}
-      <div className="w-full bg-white rounded-xl shadow-xl p-2 md:p-10 border-t-2 border-gray-200">
+      <div className="w-full bg-white rounded-xl shadow-xl p-3 pt-6 md:p-10 border-t-2 border-gray-200">
         <div className="flex items-center mb-4">
         {/* <span className="text-4xl mr-4">🌱</span>*/}
           <div>

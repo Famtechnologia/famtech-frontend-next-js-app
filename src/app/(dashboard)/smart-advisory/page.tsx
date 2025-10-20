@@ -126,7 +126,7 @@ export default function Page() {
   }, [activeTabKey, farmProfile?.location]);
 
   return (
-    <div className="p-0 md:p-6 bg-white">
+    <div className="p-3 pt-6 md:p-6 bg-white">
       <div>
         <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight mb-4">
           Hi <span className="capitalize">{owner?.firstName || "Farmer"}</span>,
