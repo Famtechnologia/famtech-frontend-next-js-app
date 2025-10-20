@@ -94,7 +94,7 @@ export default function FarmHealthCard({ location }) {
       )
         return 80;
       if (
-        normalizedStage.includes("harvest") ||
+        normalizedStage.includes("maturity") ||
         normalizedStage.includes("completed")
       )
         return 100;
@@ -127,7 +127,7 @@ export default function FarmHealthCard({ location }) {
           </Link>
         </div>
         <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">
-            No crop or livestock records found. Please add some to view health tips.
+            No crop or livestock records found. Please add some in your farm operation to view health tips.
           </div>
           </div>
       ) : (

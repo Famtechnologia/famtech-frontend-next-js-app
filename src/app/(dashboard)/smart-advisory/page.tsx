@@ -12,7 +12,7 @@ import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 import { Explore } from "@/components/smartAdvisory/Explore";
 
 const tabsConfig = [
-  { label: "Explore", icon: Telescope, key: "explore" },
+  { label: "Farm Advice", icon: Telescope, key: "farm advice" },
   { label: "Farm Health", icon: HeartPulse, key: "health" },
   { label: "Smart Insight", icon: BrainCircuit, key: "chat" },
 ];
