@@ -10,7 +10,7 @@ import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
 import { BrainCircuit, HeartPulse, Telescope } from "lucide-react";
 import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 import { Explore } from "@/components/smartAdvisory/Explore";
-
+import SmartAdvisory from '@/components/layout/skeleton/smart-advisory/SmartAdvisory'
 const tabsConfig = [
   { label: "Farm Advice", icon: Telescope, key: "farm advice" },
   { label: "Farm Health", icon: HeartPulse, key: "health" },
@@ -55,6 +55,7 @@ export default function Page() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Get the current tab from the URL query, defaulting to 'farm advice' (the first tab's key)
   // 💡 CORRECTION MADE HERE
@@ -108,6 +109,14 @@ export default function Page() {
     fetchProfile();
   }, [token]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // ⏳ 1.5 seconds (you can adjust this)
+
+    return () => clearTimeout(timer);
+  }, [])
+
   const owner = farmProfile?.owner;
 
   const ActiveComponent = useMemo(() => {
@@ -127,6 +136,11 @@ export default function Page() {
     }
   }, [activeTabKey, farmProfile?.location]);
 
+
+  if (isLoading) {
+      return <SmartAdvisory />;
+    }
+  
   return (
     <div className="p-3 pt-6 md:p-6 bg-white">
       <div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getUserAdvice } from "@/lib/services/advisory";
 import { useAuthStore } from "@/lib/store/authStore";
-
+import Id from '@/components/layout/skeleton/smart-advisory/Id'
 // --- Type Definitions ---
 interface Task {
   day: string;
@@ -37,6 +37,7 @@ export default function AdviceDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [structuredAdvice, setStructuredAdvice] = useState<StructuredAdviceBody | null>(null);
   const [activeWeek, setActiveWeek] = useState<number | null>(null);
+   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchAdvice = async () => {
@@ -130,12 +131,15 @@ export default function AdviceDetailsPage() {
       );
   }
 };
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-[70vh]">
-        <p className="text-lg text-gray-500">Loading personalized roadmap...</p>
-      </div>
-    );
+useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // ⏳ 1.5 seconds (you can adjust this)
+
+    return () => clearTimeout(timer);
+  }, [])
+
+  if (loading) return <Id/>;
 
   if (!advice)
     return (
