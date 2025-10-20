@@ -3,7 +3,7 @@ import React from "react";
 
 export default function AdviceLoader() {
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 animate-pulse">
+    <div className="w-full p-4 animate-pulse">
       {/* Back button skeleton */}
       <div className="h-4 w-40 bg-gray-200 rounded mb-6"></div>
 
