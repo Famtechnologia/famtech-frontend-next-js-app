@@ -27,9 +27,9 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
       title="Farming Plan"
       className="hover:border-green-500 transition-all duration-300"
     >
-      <div className="flex flex-col items-start p-4">
+      <div className="flex flex-col items-start  md:p-4">
         <div className="flex items-center mb-4">
-          <ClipboardList className="w-8 h-8 text-green-600 mr-4" />
+          <ClipboardList className="w-8 h-8 text-green-600 mr-4 hidden md:flex " />
           <div>
             <p className="text-gray-600">
               Type: <span className="font-semibold">{farmType}</span>
@@ -39,7 +39,7 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
             </p>
             <p className="text-gray-600">
               Location:{" "}
-              <span className="font-semibold">
+              <span className="font-semibold capitalize">
                 {location.state}, {location.country}
               </span>
             </p>

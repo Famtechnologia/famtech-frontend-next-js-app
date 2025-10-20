@@ -56,8 +56,9 @@ export default function Page() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Get the current tab from the URL query, defaulting to 'planner'
-  const activeTabKey = searchParams.get("tab") || "planner";
+  // Get the current tab from the URL query, defaulting to 'farm advice' (the first tab's key)
+  // 💡 CORRECTION MADE HERE
+  const activeTabKey = searchParams.get("tab") || "farm advice";
 
   // Function to handle tab clicks (updates the URL query)
   const handleTabChange = (key: string) => {
@@ -117,10 +118,11 @@ export default function Page() {
         return <FarmHealthCard location={farmProfile?.location ?? defaultLocation} />;
       case "chat":
         return <SmartInsight />;
-      case "explore":
+      case "farm advice":
         return <Explore location={farmProfile?.location ?? defaultLocation} />;
         
       default:
+        // Use the first tab's component as the default if a strange key is found
         return <Explore location={farmProfile?.location ?? defaultLocation} />;
     }
   }, [activeTabKey, farmProfile?.location]);
