@@ -12,7 +12,7 @@ import Link from 'next/link';
 
 // Assuming this path is correct for your skeleton component
 import SettingsNavigationSkeleton from '@/components/layout/skeleton/settings/FarmSetting'; 
-import { HiRefresh } from 'react-icons/hi';
+
 
 const settingsSections = [
     // Your static data array remains the same

@@ -19,7 +19,7 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
   farmType,
   produce,
   location,
-  advice,
+ // advice,
   id,
 }) => {
   return (
