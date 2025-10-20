@@ -12,6 +12,7 @@ import Link from 'next/link';
 
 // Assuming this path is correct for your skeleton component
 import SettingsNavigationSkeleton from '@/components/layout/skeleton/settings/FarmSetting'; 
+import { HiRefresh } from 'react-icons/hi';
 
 const settingsSections = [
     // Your static data array remains the same
@@ -30,6 +31,7 @@ const settingsSections = [
                 label: 'Land Mapping',
                 description: 'Re-map farming area to get accurate data on farm produce and livestock',
                 action: 'Re-map',
+
             },
         ],
     },
@@ -66,6 +68,7 @@ const settingsSections = [
                 label: 'Enterprise Plan - $150 (Current plan)',
                 description: 'Customizable and scalable solutions for enterprises',
                 action: 'Change Plan',
+                href: '/settings/billing',
             },
         ],
     },
@@ -124,7 +127,7 @@ const Settings: React.FC = () => {
                                 </div>
                                 {/* Use item.href if available, otherwise default to a known path */}
                                 <Link 
-                                    href={item.href || '/settings/billing'} 
+                                    href={item.href || ''} 
                                     className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 focus:outline-none bg-gray-100"
                                 >
                                     {item.action}

@@ -195,8 +195,8 @@ export default function UpdateDetailsForm() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-lg mx-auto bg-white rounded-xl shadow-md">
-      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+    <div className="p-4 md:p-6  bg-white rounded-xl shadow-md">
+      <h2 className="text-3xl font-bold mb-6 text-start text-green-700">
         Update Sign-In Details
       </h2>
 
@@ -299,7 +299,7 @@ export default function UpdateDetailsForm() {
         <button
           type="submit"
           disabled={isSubmitting || !isDirty}
-          className="w-full flex items-center justify-center bg-green-600 text-white p-3 rounded-xl font-semibold hover:bg-green-700 transition duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="max-w-lg flex items-center justify-center md:justify-end bg-green-600 text-white p-3 rounded-xl font-semibold hover:bg-green-700 transition duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Updating..." : "Update Details"}
         </button>
