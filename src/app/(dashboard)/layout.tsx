@@ -6,7 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 export default function DashboardPageLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <ProtectedRoute requiredRole="farmer">
+      <ProtectedRoute>
         <DashboardLayout title="FamTech - Dashboard">
           {children}
           <Toaster position="top-right" />

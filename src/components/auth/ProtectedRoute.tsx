@@ -1,33 +1,27 @@
-"use client"
+"use client";
 
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useAuthStore } from '@/lib/store/authStore';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuthStore } from "@/lib/store/authStore";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole: string;
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  requiredRole, 
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { loading } = useAuth();
   const router = useRouter();
 
-  const token = useAuthStore.getState().token
+  const token = useAuthStore.getState().token;
 
   useEffect(() => {
     if (loading) return;
 
     if (!token) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
-
-
   }, [loading, token, router]);
 
   if (loading) {
