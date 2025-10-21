@@ -214,7 +214,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "equipment-sync",
           expandable: false,
           href: `/equipment-sync`,
-          comingSoon: false,
+          comingSoon: true,
         },
         {
           name: "Reports",
@@ -367,7 +367,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-50 ${
+        } fixed inset-y-0 left-0 z-150 ${
           // z-50 is the max index for the main sidebar
           sidebarCollapsed ? "w-16" : "w-64"
         } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 overflow-y-scroll scrollbar-hide`}
@@ -695,7 +695,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </div>
             </div>
-            <header className="bg-white p-4 sticky top-0">
+            <header className="bg-white p-4 sticky top-0 z-[20]">
               <div className="flex justify-end">
                 {/* 🎯 Notification Dropdown Container (Relative position for absolute dropdown) */}
                 <div className="relative" ref={dropdownRef}>
@@ -728,7 +728,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                   {/* 📥 Notification Dropdown Content (Only visible if isDropdownOpen is TRUE) */}
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[999999] overflow-hidden">
+                    <div className="absolute right-2 md:right-0 mt-3 w-70 md:w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[110] overflow-hidden">
                       <div className="p-4 border-b">
                         <h3 className="text-lg font-semibold text-gray-800">
                           Notifications ({unreadCount})

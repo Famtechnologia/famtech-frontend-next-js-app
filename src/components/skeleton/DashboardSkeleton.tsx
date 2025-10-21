@@ -4,7 +4,7 @@ const DashboardSkeleton = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Left Sidebar Skeleton */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg animate-pulse">
+      <div className="fixed inset-y-0 left-0 z-50 w-full bg-white shadow-lg animate-pulse">
         {/* Logo/Brand Area */}
         <div className="flex h-16 items-center justify-center border-b border-gray-200 px-4">
           <div className="h-8 w-32 bg-gray-200 rounded"></div>

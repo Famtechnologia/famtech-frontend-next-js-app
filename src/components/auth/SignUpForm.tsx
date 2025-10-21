@@ -8,7 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore, User } from "@/lib/store/authStore";
 import { register as signupRequest } from "@/lib/api/auth";
 import { countries } from "@/lib/services/countries.js";
-
+import { useRouter } from "next/navigation";
 // --- Type Definitions ---
 interface SignupFormInputs {
   email: string;
@@ -34,7 +34,7 @@ const countryData: Country[] = countries as Country[];
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
-
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -94,6 +94,7 @@ export default function SignupPage() {
         message ||
           "Signup successful! Please check your email for verification."
       );
+      router.push("/post-signup");
       // router.push("/verify-email");
     } catch (err) {
       console.error("Signup failed:", err);

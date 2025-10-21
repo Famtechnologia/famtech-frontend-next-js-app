@@ -1,11 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-
 import { SmartCard } from "@/components/smartAdvisory/SmartCard";
-import {
-  getCropRecords,
-  getLivestockRecords,
-} from "@/lib/services/croplivestock";
+import { getCropRecords, getLivestockRecords } from "@/lib/services/croplivestock";
 import { useAuthStore } from "@/lib/store/authStore";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -32,7 +28,8 @@ export default function FarmHealthCard({ location }) {
     } catch (err) {
       setError(err);
     } finally {
-      setIsLoading(false);
+      // ⏳ ensure loader stays for at least 2s
+      setTimeout(() => setIsLoading(false), 2000);
     }
   }, [user?._id]);
 
@@ -52,7 +49,7 @@ export default function FarmHealthCard({ location }) {
     } catch (err) {
       setError(err);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => setIsLoading(false), 2000);
     }
   }, [user?._id]);
 
@@ -68,42 +65,14 @@ export default function FarmHealthCard({ location }) {
   const getGrowthPercentageFromStage = (stage, type) => {
     if (!stage || !type) return 0;
 
+    const normalizedStage = stage.trim().toLowerCase();
     if (type === "crop") {
-      // Normalize and trim the stage name for robust matching
-      const normalizedStage = stage.trim().toLowerCase();
-
-      // Define your 5 stages and their percentage steps (20% each)
-      if (
-        normalizedStage.includes("seeding") ||
-        normalizedStage.includes("planting")
-      )
-        return 20;
-      if (
-        normalizedStage.includes("vegetative") ||
-        normalizedStage.includes("early growth")
-      )
-        return 40;
-      if (
-        normalizedStage.includes("flowering") ||
-        normalizedStage.includes("tasseling")
-      )
-        return 60;
-      if (
-        normalizedStage.includes("fruiting") ||
-        normalizedStage.includes("maturation") ||
-        normalizedStage.includes("ripening")
-      )
-        return 80;
-      if (
-        normalizedStage.includes("harvest") ||
-        normalizedStage.includes("completed")
-      )
-        return 100;
+      if (normalizedStage.includes("seeding") || normalizedStage.includes("planting")) return 20;
+      if (normalizedStage.includes("vegetative") || normalizedStage.includes("early growth")) return 40;
+      if (normalizedStage.includes("flowering") || normalizedStage.includes("tasseling")) return 60;
+      if (normalizedStage.includes("fruiting") || normalizedStage.includes("maturation") || normalizedStage.includes("ripening")) return 80;
+      if (normalizedStage.includes("maturity") || normalizedStage.includes("completed")) return 100;
     } else if (type === "livestock") {
-      // Normalize and trim the stage name for robust matching
-      const normalizedStage = stage.trim().toLowerCase();
-
-      // Define your 5 stages and their percentage steps (20% each)
       if (normalizedStage.includes("newborn")) return 20;
       if (normalizedStage.includes("juvenile")) return 40;
       if (normalizedStage.includes("young")) return 60;
@@ -143,10 +112,7 @@ export default function FarmHealthCard({ location }) {
             tip={smart}
             record={
               smart.type === "crop"
-                ? getGrowthPercentageFromStage(
-                    smart.currentGrowthStage,
-                    smart?.type
-                  )
+                ? getGrowthPercentageFromStage(smart.currentGrowthStage, smart?.type)
                 : 20
             }
           />

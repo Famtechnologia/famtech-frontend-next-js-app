@@ -1,7 +1,7 @@
 "use client";
 import { Lightbulb, ArrowRight } from 'lucide-react';
 import Card from '@/components/ui/Card';
-
+import Link from 'next/link';
 const SmartAdvisory = () => {
   // 🔒 Mock data (temporarily disabled until backend integration)
   /*
@@ -32,9 +32,7 @@ const SmartAdvisory = () => {
       title={
         <div className="flex items-center justify-between">
           <span>Smart Advisory</span>
-          <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
-            Coming Soon
-          </span>
+         
         </div>
       }
       className="h-fit"
@@ -52,6 +50,9 @@ const SmartAdvisory = () => {
 
         
       </div>
+      <Link href="/smart-advisory" className="mt-4 inline-flex items-center text-blue-600 hover:underline">
+      Get Started <ArrowRight className="w-4 h-4 ml-1" />
+      </Link>
     </Card>
   );
 };

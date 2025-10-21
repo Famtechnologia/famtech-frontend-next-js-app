@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { getAdvice, createAdvice } from "@/lib/services/advisory";
@@ -22,7 +22,7 @@ export const GenerateAdvice = ({
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(false);
-
+ const [isLoading, setIsLoading] = useState<boolean>(true);
   const onSubmit = async (data: {
     type: string;
     produce: string;
@@ -77,13 +77,25 @@ export const GenerateAdvice = ({
       setLoading(false);
     }
   };
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1500); // ⏳ 1.5 seconds (you can adjust this)
+  
+      return () => clearTimeout(timer);
+    }, [])
+
+    if (isLoading) {
+      return <FormSkeleton />;
+    } 
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={`relative bg-white rounded-lg shadow-base border border-gray-200 overflow-hidden cursor-pointer p-4 hover:border-green-500 hover:border-2 transition-all duration-300`}
+      className={`relative bg-white rounded-lg shadow-base border border-gray-200 overflow-hidden cursor-pointer p-4 transition-all duration-300`}
     >
       <div className="mb-4">
-        <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-2">
+        <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-2 mt-8 ">
           Welcome to Smart Advisory
         </h2>
         <p className="text-gray-500 text-sm md:text-base">

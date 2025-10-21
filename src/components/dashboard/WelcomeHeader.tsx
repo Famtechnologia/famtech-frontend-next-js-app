@@ -93,7 +93,7 @@ const sliderData = [
         </div>
              
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative z-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
               <div className="mb-3 sm:mb-4 flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-0">

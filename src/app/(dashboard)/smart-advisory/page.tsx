@@ -10,9 +10,9 @@ import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
 import { BrainCircuit, HeartPulse, Telescope } from "lucide-react";
 import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 import { Explore } from "@/components/smartAdvisory/Explore";
-
+import SmartAdvisory from '@/components/layout/skeleton/smart-advisory/SmartAdvisory'
 const tabsConfig = [
-  { label: "Explore", icon: Telescope, key: "explore" },
+  { label: "Farm Advice", icon: Telescope, key: "farm advice" },
   { label: "Farm Health", icon: HeartPulse, key: "health" },
   { label: "Smart Insight", icon: BrainCircuit, key: "chat" },
 ];
@@ -55,9 +55,11 @@ export default function Page() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Get the current tab from the URL query, defaulting to 'planner'
-  const activeTabKey = searchParams.get("tab") || "planner";
+  // Get the current tab from the URL query, defaulting to 'farm advice' (the first tab's key)
+  // 💡 CORRECTION MADE HERE
+  const activeTabKey = searchParams.get("tab") || "farm advice";
 
   // Function to handle tab clicks (updates the URL query)
   const handleTabChange = (key: string) => {
@@ -107,6 +109,14 @@ export default function Page() {
     fetchProfile();
   }, [token]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // ⏳ 1.5 seconds (you can adjust this)
+
+    return () => clearTimeout(timer);
+  }, [])
+
   const owner = farmProfile?.owner;
 
   const ActiveComponent = useMemo(() => {
@@ -117,16 +127,22 @@ export default function Page() {
         return <FarmHealthCard location={farmProfile?.location ?? defaultLocation} />;
       case "chat":
         return <SmartInsight />;
-      case "explore":
+      case "farm advice":
         return <Explore location={farmProfile?.location ?? defaultLocation} />;
         
       default:
+        // Use the first tab's component as the default if a strange key is found
         return <Explore location={farmProfile?.location ?? defaultLocation} />;
     }
   }, [activeTabKey, farmProfile?.location]);
 
+
+  if (isLoading) {
+      return <SmartAdvisory />;
+    }
+  
   return (
-    <div className="p-0 md:p-6 bg-white">
+    <div className="p-3 pt-6 md:p-6 bg-white">
       <div>
         <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight mb-4">
           Hi <span className="capitalize">{owner?.firstName || "Farmer"}</span>,

@@ -41,34 +41,63 @@ export default function ModernFarmRegistration() {
     fetchProfile();
   }, [token]);
 
-  const [formData, setFormData] = useState({
-    firstName: farmProfile?.owner?.farmName || "",
-    lastName: farmProfile?.owner?.lastName || "",
-    phoneNumber: farmProfile?.owner?.phoneNumber || "", // Farm Information
-    farmName: farmProfile?.farmName || "",
-    farmType: farmProfile?.farmType || "crop",
-    farmSize: farmProfile?.farmSize || "",
-    farmSizeUnit: farmProfile?.farmSizeUnit || "hectares",
-    establishedYear: farmProfile?.establishedYear || "", // Changed to empty string to make it truly optional
+ // 1️⃣ Keep this as an empty state initially
+const [formData, setFormData] = useState({
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  farmName: "",
+  farmType: "crop",
+  farmSize: "",
+  farmSizeUnit: "hectares",
+  establishedYear: "",
+  country: "",
+  state: "",
+  city: "",
+  address: "",
+  coordinates: {
+    latitude: "",
+    longitude: "",
+  },
+  currency: "NGN",
+  timezone: "Africa/Lagos",
+  primaryCrops: [],
+  farmingMethods: [],
+  seasonalPattern: "year-round",
+  language: "en",
+});
 
-    // Location Information
-    country: farmProfile?.location?.country || "", // Changed from hardcoded 'Nigeria' to empty string
-    state: farmProfile?.location?.state || "",
-    city: farmProfile?.location?.city || "",
-    address: farmProfile?.location?.address || "",
-    coordinates: {
-      latitude: farmProfile?.location?.coordinates?.latitude || "",
-      longitude: farmProfile?.location?.coordinates?.longitude || "",
-    },
+// 2️⃣ When farmProfile updates (after fetching), populate the form fields
+useEffect(() => {
+  if (farmProfile && Object.keys(farmProfile).length > 0) {
+    console.log("farmProfile:", farmProfile); 
+    setFormData({
+      firstName: farmProfile?.owner?.firstName || "",
+      lastName: farmProfile?.owner?.lastName || "",
+      phoneNumber: farmProfile?.owner?.phoneNumber || "",
+      farmName: farmProfile?.farmName || "",
+      farmType: farmProfile?.farmType || "crop",
+      farmSize: farmProfile?.farmSize || "",
+      farmSizeUnit: farmProfile?.farmSizeUnit || "hectares",
+      establishedYear: farmProfile?.establishedYear || "",
+      country: farmProfile?.location?.country || "",
+      state: farmProfile?.location?.state || "",
+      city: farmProfile?.location?.city || "",
+      address: farmProfile?.location?.address || "",
+      coordinates: {
+        latitude: farmProfile?.location?.coordinates?.latitude || "",
+        longitude: farmProfile?.location?.coordinates?.longitude || "",
+      },
+      currency: farmProfile?.currency || "NGN",
+      timezone: farmProfile?.timezone || "Africa/Lagos",
+      primaryCrops: farmProfile?.primaryCrop || [],
+      farmingMethods: farmProfile?.farmingMethods || [],
+      seasonalPattern: farmProfile?.seasonalPattern || "year-round",
+      language: farmProfile?.language || "en",
+    });
+  }
+}, [farmProfile]);
 
-    // Farm Settings
-    currency: farmProfile?.currency || "NGN",
-    timezone: farmProfile?.timezone || "Africa/Lagos",
-    primaryCrops: farmProfile?.primaryCrop || [],
-    farmingMethods: farmProfile?.farmingMethods || [],
-    seasonalPattern: farmProfile?.seasonalPattern || "year-round",
-    language: farmProfile?.language || "en",
-  });
 
   const [errors, setErrors] = useState({});
 
@@ -149,7 +178,7 @@ export default function ModernFarmRegistration() {
         toast.error(
           errorData.message ||
             errorData.errors?.join(", ") ||
-            "Registration failed"
+            "Update failed"
         );
       }
 
@@ -175,8 +204,8 @@ export default function ModernFarmRegistration() {
 
   return (
     <div className="min-h-screen bg-none py-12 px-0 md:px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-green-600 flex justify-center text-center items-center mx-auto text-3xl font-bold mb-12">
+      <div className="w-full">
+        <h1 className="text-green-600 flex justify-start text-center md:text-start  text-3xl md:text-4xl font-bold mb-12">
           Update Farm Profile
         </h1>
         <div className="space-y-8 mb-8">
@@ -372,7 +401,7 @@ export default function ModernFarmRegistration() {
           </div>
         </div>
 
-        <div className="space-y-8 max-w-4xl mx-auto">
+        <div className="space-y-8 w-full">
           <div className="p-2 mt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="group">
@@ -642,7 +671,7 @@ export default function ModernFarmRegistration() {
           </div>
         </div>
 
-        <div className="space-y-8 max-w-4xl mx-auto mt-8">
+        <div className="space-y-8 w-full mt-8">
           <div className="p-0  md:p-0 space-y-8">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
               <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
