@@ -1,20 +1,20 @@
 import { create } from "zustand";
-import { persist, StateStorage, PersistStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import Cookies from "js-cookie";
 
-export interface AuthState {
-  token: string | null; // accessToken
-  claims: { role: string; subRole?: string } | null;
-  loading: boolean;
+// export interface AuthState {
+//   token: string | null; // accessToken
+//   claims: { role: string; subRole?: string } | null;
+//   loading: boolean;
 
-  setToken: (token: string) => void;
-  setClaims: (claims: { role: string; subRole?: string } | null) => void;
-  setLoading: (loading: boolean) => void;
-  logout: () => void;
-}
+//   setToken: (token: string) => void;
+//   setClaims: (claims: { role: string; subRole?: string } | null) => void;
+//   setLoading: (loading: boolean) => void;
+//   logout: () => void;
+// }
 
-const cookieStorage: StateStorage = {
-  getItem: (name: string): string | null => {
+const cookieStorage = {
+  getItem: (name) => {
     const cookie = Cookies.get(name);
     if (!cookie) return null;
     try {
@@ -24,15 +24,15 @@ const cookieStorage: StateStorage = {
       return null;
     }
   },
-  setItem: (name: string, value: string): void => {
+  setItem: (name, value) => {
     // The backend is responsible for setting the cookie.
   },
-  removeItem: (name: string): void => {
+  removeItem: (name) => {
     // The backend is responsible for removing the cookie.
   },
 };
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create()(
   persist(
     (set) => ({
       token: null,
@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "famtech-auth",
-      storage: cookieStorage as unknown as PersistStorage<AuthState, unknown>,
+      storage: cookieStorage,
       partialize: (state) => ({ token: state.token, claims: state.claims }),
     }
   )
