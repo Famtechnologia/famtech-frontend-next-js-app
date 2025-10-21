@@ -10,7 +10,6 @@ import {
 // createTask service is removed as it is no longer used
 import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
-import { useAuthStore } from "@/lib/store/authStore";
 import { getTasks, updateTask, Task  } from '../../lib/services/taskplanner';
 import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
 import { useAuth } from "@/lib/hooks/useAuth";

@@ -74,7 +74,7 @@ const DayTaskModal: React.FC<DayTaskModalProps> = ({ date, onClose }) => {
     if (date) {
       fetchTasks();
     }
-  }, [date]);
+  }, [date, user?._id]);
 
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString(
     "en-US",

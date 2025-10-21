@@ -5,11 +5,9 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useAuthStore} from "@/lib/store/authStore";
 import { register as signupRequest } from "@/lib/api/auth";
 import { countries } from "@/lib/services/countries.js";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/hooks/useAuth";
 // --- Type Definitions ---
 interface SignupFormInputs {
   email: string;
