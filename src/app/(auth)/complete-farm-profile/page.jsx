@@ -317,8 +317,6 @@ export default function ModernFarmRegistration() {
       const result = response.data;
 
       router.push("/dashboard");
-
-      console.log("Registration successful:", result);
     } catch (error) {
       console.error("Registration error:", error);
       let errorMessage = "Registration failed. Please try again.";

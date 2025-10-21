@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/lib/hooks/useAuth";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -18,7 +17,6 @@ const Login: React.FC = () => {
   const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { user } = useAuth();
 
   const router = useRouter();
 
@@ -38,14 +36,13 @@ const Login: React.FC = () => {
 
       toast.success(message || "Login successful!");
 
-      if (user?.farmProfile) {
-        router.push("/dashboard");
-      } else {
-        router.push("/complete-farm-profile");
-      }
+      router.push("/dashboard");
+
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Oops looks like your connection dropped, kindly refresh";
+        error instanceof Error
+          ? error.message
+          : "Oops looks like your connection dropped, kindly refresh";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -57,9 +54,7 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg relative">
         {loading && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg">
-            <p className="text-green-600 font-semibold">
-              Logging in...
-            </p>
+            <p className="text-green-600 font-semibold">Logging in...</p>
           </div>
         )}
 
