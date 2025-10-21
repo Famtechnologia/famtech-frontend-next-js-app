@@ -27,10 +27,10 @@ export default function ProtectedRoute({
       return;
     }
 
-    // if (!user?.role) {
-    //   router.push('/unauthorized');
-    //   return;
-    // }
+    if (!user?.farmProfile) {
+      router.push('/complete-farm-profile');
+      return;
+    }
 
     // const userRole = user?.role.toLowerCase();
     // const expectedRole = requiredRole.toLowerCase();

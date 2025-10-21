@@ -27,7 +27,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           '/reset-password',
           '/verify-code',
           '/verify-email',
-          '/complete-farm-profile',
         ];
 console.log(publicRoutes.includes(pathname))
         if (publicRoutes.includes(pathname)) {
