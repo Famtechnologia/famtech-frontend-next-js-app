@@ -89,7 +89,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     setId: (id: string) => void;
   };
 
-  setId(user?._id ?? "");
+  useEffect(() => {
+    if (user?._id) {
+      setId(user._id);
+    }
+  }, [user?._id, setId]);
+  
   // Close flyout when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
