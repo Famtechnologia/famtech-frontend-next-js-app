@@ -14,7 +14,7 @@ export default function ProtectedRoute({
   children, 
   requiredRole, 
 }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const router = useRouter();
 
   const token = useAuthStore.getState().token
@@ -27,19 +27,8 @@ export default function ProtectedRoute({
       return;
     }
 
-    if (!user?.farmProfile) {
-      router.push('/complete-farm-profile');
-      return;
-    }
 
-    // const userRole = user?.role.toLowerCase();
-    // const expectedRole = requiredRole.toLowerCase();
-
-    // if (userRole !== expectedRole) {
-    //   router.push('/unauthorized');
-    //   return;
-    // }
-  }, [user, loading, token, router]);
+  }, [loading, token, router]);
 
   if (loading) {
     return (

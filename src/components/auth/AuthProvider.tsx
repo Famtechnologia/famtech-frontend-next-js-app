@@ -1,8 +1,9 @@
-"use client"
-import { useEffect } from 'react';
-import { useAuthStore } from '@/lib/store/authStore';
-import Cookies from 'js-cookie';
-import { useRouter, usePathname } from 'next/navigation';
+"use client";
+import { useEffect } from "react";
+import { useAuthStore } from "@/lib/store/authStore";
+import Cookies from "js-cookie";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -14,33 +15,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const cookie = Cookies.get("famtech-auth");
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (cookie) {
       try {
         setToken(cookie);
         const publicRoutes = [
-          '/',
-          '/login',
-          '/register',
-          '/forgot-password',
-          '/reset-password',
-          '/verify-code',
-          '/verify-email',
+          "/",
+          "/login",
+          "/register",
+          "/forgot-password",
+          "/reset-password",
+          "/verify-code",
+          "/verify-email",
         ];
-console.log(publicRoutes.includes(pathname))
         if (publicRoutes.includes(pathname)) {
-            router.push('/dashboard');
-          
+          if (!user?.farmProfile) {
+            router.push("/complete-farm-profile");
+            return;
+          }
+          router.push("/dashboard");
+          return;
         }
       } catch (error) {
         console.error("Failed to parse auth cookie:", error);
       }
     }
     setLoading(false);
-  }, [setToken, setLoading, cookie, router, pathname]);
+  }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile]);
 
-  console.log(token)
+  console.log(token);
 
   return <>{children}</>;
 }
