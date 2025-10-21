@@ -1,53 +1,46 @@
-// components/auth/ProtectedRoute.tsx
-'use client';
+"use client"
+
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuthStore } from '@/lib/store/authStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole: string;
-  requiredSubRole?: string;
 }
 
 export default function ProtectedRoute({ 
   children, 
   requiredRole, 
 }: ProtectedRouteProps) {
-  const { user, loading, claims } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+
+  const token = useAuthStore.getState().token
+  console.log("protected routr tokrn: ", token)
 
   useEffect(() => {
     if (loading) return;
 
-    if (!user) {
+    if (!token) {
       router.push('/login');
       return;
     }
 
-    if (!user?.role) {
-      router.push('/unauthorized');
-      return;
-    }
+    // if (!user?.role) {
+    //   router.push('/unauthorized');
+    //   return;
+    // }
 
     const userRole = user?.role.toLowerCase();
     const expectedRole = requiredRole.toLowerCase();
 
-    if (userRole !== expectedRole) {
-      router.push('/unauthorized');
-      return;
-    }
-
-    // if (requiredSubRole) {
-    //   const userSubRole = claims.subRole?.toLowerCase();
-    //   const expectedSubRole = requiredSubRole.toLowerCase();
-
-    //   if (userSubRole !== expectedSubRole) {
-    //     router.push('/unauthorized');
-    //     return;
-    //   }
+    // if (userRole !== expectedRole) {
+    //   router.push('/unauthorized');
+    //   return;
     // }
-  }, [user, loading, claims, router, requiredRole]);
+  }, [user, loading, token, router, requiredRole]);
 
   if (loading) {
     return (
@@ -57,7 +50,7 @@ export default function ProtectedRoute({
     );
   }
 
-  if (!user) return null;
+  if (!token) return null;
 
   return <>{children}</>;
 }

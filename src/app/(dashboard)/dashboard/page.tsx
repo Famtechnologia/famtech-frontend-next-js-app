@@ -84,7 +84,6 @@ export default function FarmerAdminDashboard() {
   if (loading) return <DashboardSkeleton />;
 
   return (
-    <ProtectedRoute requiredRole="farmer">
       <div className="space-y-6">
         <WelcomeHeader />
 
@@ -105,13 +104,7 @@ export default function FarmerAdminDashboard() {
           <div className="lg:col-span-2">
             <TaskOverviewCard />
           </div>
-          <div className="lg:col-span-1">
-            {stats && (
-              <CropHealthCard
-              
-              />
-            )}
-          </div>
+          <div className="lg:col-span-1">{stats && <CropHealthCard />}</div>
         </div>
 
         {/* Bottom Section */}
@@ -121,6 +114,5 @@ export default function FarmerAdminDashboard() {
           <SmartAdvisory />
         </div>
       </div>
-    </ProtectedRoute>
   );
 }

@@ -1,7 +1,5 @@
 // src/lib/services/taskplanner.ts
-import apiClient, { API_URL } from "../api/farmoperation";
-
-const BASE_URL = `${API_URL}/api/task-planner`;
+import apiClient from "../api/apiClient";
 
 // ----------------------------
 // 📌 Task Types
@@ -32,7 +30,7 @@ export type TaskUpdatePayload = TaskCreationPayload & { id: string };
 
 // Fetch all tasks for a specific user
 export const getTasks = async (id: string): Promise<Task[]> => {
-  const response = await apiClient.get(`${BASE_URL}/assignee/${id}`);
+  const response = await apiClient.get(`/api/task-planner/assignee/${id}`);
   return response.data;
 };
 
@@ -40,7 +38,7 @@ export const getTasks = async (id: string): Promise<Task[]> => {
 export const createTask = async (
   taskData: TaskCreationPayload
 ): Promise<Task> => {
-  const response = await apiClient.post(BASE_URL, taskData);
+  const response = await apiClient.post("/api/task-planner", taskData);
   return response.data;
 };
 
@@ -49,13 +47,13 @@ export const updateTask = async (
   id: string,
   taskData: Partial<TaskCreationPayload>
 ): Promise<Task> => {
-  const response = await apiClient.put(`${BASE_URL}/${id}`, taskData);
+  const response = await apiClient.put(`/api/task-planner/${id}`, taskData);
   return response.data;
 };
 
 // Delete a task
 export const deleteTask = async (id: string): Promise<{ message: string }> => {
-  const response = await apiClient.delete(`${BASE_URL}/${id}`);
+  const response = await apiClient.delete(`/api/task-planner/${id}`);
   return response.data;
 };
 
@@ -77,6 +75,8 @@ export interface Notification {
 export const getNotifications = async (
   userId: string
 ): Promise<Notification[]> => {
-  const response = await apiClient.get(`${BASE_URL}/notification/${userId}`);
+  const response = await apiClient.get(
+    `/api/task-planner/notification/${userId}`
+  );
   return response.data;
 };

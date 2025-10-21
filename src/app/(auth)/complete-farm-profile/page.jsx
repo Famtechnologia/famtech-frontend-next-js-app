@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { API_URL } from "../../../../config";
+import apiClient from "@/lib/api/apiClient";
 import { useAuthStore } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
 export default function ModernFarmRegistration() {
@@ -307,14 +308,24 @@ export default function ModernFarmRegistration() {
         language: formData.language.trim().toLowerCase(), // Ensure lowercase for ISO format
       };
 
-      const response = await fetch(`${API_URL}/api/create-farm-profile`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(registrationData),
-      });
+      const response = await apiClient.post(
+        "/api/create-farm-profile",
+        registrationData, // raw object, not JSON.stringify
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // const response = await fetch(`${API_URL}/api/create-farm-profile`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+        
+      // });
 
       if (!response.ok) {
         const errorData = await response.json();

@@ -1,28 +1,11 @@
 // src/lib/api/auth.ts
 import apiClient from "./apiClient"; // ✅ use the shared client
 import axios from "axios";
-import { useAuthStore } from "@/lib/store/authStore";
-import { useRouter } from "next/navigation";
 
 export interface LoginResponse {
   success: boolean;
   message: string;
-  data: {
-    user: {
-      id: string;
-      email: string;
-      role?: string;
-      subRole?: string;
-      country?: string;
-      state?: string;
-      lga?: string;
-      isVerified?: boolean;
-    };
-    tokens: {
-      accessToken: string;
-      refreshToken: string;
-    };
-  };
+  token: string; 
 }
 
 export interface RegisterResponse {
@@ -57,7 +40,8 @@ export const login = async (
     const { data } = await apiClient.post<LoginResponse>("/auth/login", {
       email,
       password,
-    });
+    },
+  );
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -67,7 +51,7 @@ export const login = async (
         "Login failed";
       throw new Error(message);
     }
-    throw new Error("Network error occurred");
+    throw new Error(error?.message as string);
   }
 };
 
@@ -142,26 +126,23 @@ export const verifyEmail = async (
   }
 };
 
-export const useLogout = () => {
-  const router = useRouter();
-  const logout = useAuthStore((state) => state.clearUser);
-  const refreshToken = useAuthStore((state) => state.refreshToken);
+// export const useLogout = () => {
+//   const router = useRouter();
+//   const logout = useAuthStore((state) => state.clearUser);
 
-  const handleLogout = async () => {
-    try {
-      if (refreshToken) {
-        await apiClient.post("/auth/logout", { refreshToken });
-      }
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      logout();
-      router.push("/login");
-    }
-  };
+//   const handleLogout = async () => {
+//     try {
+//       await apiClient.post("/auth/logout",)
+//     } catch (err) {
+//       console.error("Logout failed:", err);
+//     } finally {
+//       logout();
+//       router.push("/login");
+//     }
+//   };
 
-  return { handleLogout };
-};
+//   return { handleLogout };
+// };
 
 export const forgotPassword = async (
   email: string,
@@ -199,6 +180,22 @@ export const resetPassword = async (
         error.response?.data?.message ||
         error.response?.data?.error ||
         "Password Reset failed";
+      throw new Error(message);
+    }
+    throw new Error("Network error occurred");
+  }
+};
+
+export const getMe = async (id: string) => {
+  try {
+    const { data } = await apiClient.get(`/auth/me/${id}`);
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to fetch user";
       throw new Error(message);
     }
     throw new Error("Network error occurred");

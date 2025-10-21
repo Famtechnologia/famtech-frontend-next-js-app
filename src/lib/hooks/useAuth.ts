@@ -1,24 +1,48 @@
-// lib/hooks/useAuth.ts
 import { useAuthStore } from '@/lib/store/authStore';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import { getMe } from '../api/auth';
 
 export const useAuth = () => {
-  const { user, token, claims, loading, initializeAuth, clearUser } = useAuthStore();
- 
+  const { token, loading, logout: storeLogout } = useAuthStore();
+  const [user, setUser] = useState<{
+    _id: string;
+    email: string;
+    role: string;
+    country: string;
+    state: string;
+    lga: string;
+    language: string;
+    farmAssets: [];
+    isVerified: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    farmProfile: string;
+  } | null>(null);
+  
 
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+  const fetchUser = useCallback(async () => {
+    if (!token) return;
+    try {
+      const userData = await getMe(token);
+      setUser(userData?.data);
+    } catch (error) {
+      console.log(error)
+    }
+  }, [token])
+
+useEffect(() => {
+  fetchUser();
+}, [fetchUser]);
+
 
   const logout = () => {
-    clearUser();
+    storeLogout();
   };
 
   return {
     user,
     token,
-    claims: claims || { role: user?.role, subRole: '' },
     loading,
     isAuthenticated: !!user && !!token,
     logout,

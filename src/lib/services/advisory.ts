@@ -1,12 +1,10 @@
 import apiClient from "../api/apiClient";
 import axios from "axios";
-import { API_URL } from "../../../config";
 // Base URLs for the new endpoints
-const ADVISORY_URL = `${API_URL}/api/advisory`;
 
 export const getAdvice = async (question: string, context: object) => {
   try {
-    const response = await apiClient.post(`${ADVISORY_URL}`, {
+    const response = await apiClient.post(`/api/advisory`, {
       question,
       context,
     });
@@ -32,7 +30,7 @@ export const createAdvice = async (
   advice: string
 ) => {
   try {
-    const response = await apiClient.post(`${API_URL}/api/farm-advice`, {
+    const response = await apiClient.post(`/api/farm-advice`, {
       type,
       produce,
       level,
@@ -57,7 +55,7 @@ export const createAdvice = async (
 export const getUserAdvice = async (id: string) => {
   try {
     const response = await apiClient.get(
-      `${API_URL}/api/farm-advice/farmer/${id}`
+      `/api/farm-advice/farmer/${id}`
     );
     return response.data;
   } catch (error) {
@@ -76,7 +74,7 @@ export const getUserAdvice = async (id: string) => {
 export const deleteAdvice = async (id: string) => {
   try {
     const response = await apiClient.delete(
-      `${API_URL}/api/farm-advice/${id}`
+      `/api/farm-advice/${id}`
     );
     return response.data;
   } catch (error) {

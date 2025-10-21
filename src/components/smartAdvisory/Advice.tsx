@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import AdviceCard from "./AdviceCard";
-import { useAuthStore } from "@/lib/store/authStore";
 import { getUserAdvice } from "@/lib/services/advisory";
+import {useAuth} from "@/lib/hooks/useAuth"
 
 interface AdviceData {
   id: string;
@@ -14,13 +14,13 @@ interface AdviceData {
 const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
   setShowFarmingType,
 }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [adviceData, setAdviceData] = useState<AdviceData[]>([]);
 
   useEffect(() => {
     const fetchUserAdvice = async () => {
-      if (user?.id) {
-        const user_advice = await getUserAdvice(user.id);
+      if (user?._id) {
+        const user_advice = await getUserAdvice(user._id);
 
         setAdviceData(user_advice?.data);
       }

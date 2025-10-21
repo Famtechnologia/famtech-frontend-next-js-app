@@ -1,8 +1,5 @@
-import apiClient, { API_URL } from "../api/croplivestock";
+import apiClient from "../api/apiClient";
 
-// Base URLs for the new endpoints
-const CROP_BASE_URL = `${API_URL}/api/crop-record`;
-const LIVESTOCK_BASE_URL = `${API_URL}/api/livestock-record`;
 
 // --- NEW TYPE: Structure for an Image Object in the Response Array ---
 export interface RecordImage {
@@ -97,19 +94,19 @@ export interface UpdateLivestockPayload {
 // --- Crop Record API Functions ---
 
 export const getCropRecords = async (id: string): Promise<CropRecord[]> => {
-    const response = await apiClient.get(`${CROP_BASE_URL}/user/${id}`);
+    const response = await apiClient.get(`/api/crop-record/user/${id}`);
     return response.data;
 };
 
 export const createCropRecord = async (data: FormData): Promise<CropRecord> => {
     // Log FormData entries for debugging
     
-    const response = await apiClient.post(CROP_BASE_URL, data);
+    const response = await apiClient.post(`/api/crop-record`, data);
         return response.data;
 };
 
 export const getCropRecordById = async (id: string): Promise<CropRecord> => {
-    const response = await apiClient.get(`${CROP_BASE_URL}/${id}`);
+    const response = await apiClient.get(`/api/crop-record/${id}`);
     return response.data;
 };
 
@@ -117,12 +114,12 @@ export const updateCropRecord = async (
     id: string,
     data: FormData | UpdateCropPayload
 ): Promise<CropRecord> => {
-    const response = await apiClient.put(`${CROP_BASE_URL}/${id}`, data);
+    const response = await apiClient.put(`/api/crop-record/${id}`, data);
     return response.data;
 };
 
 export const deleteCropRecord = async (id: string): Promise<ApiResponse> => {
-    const response = await apiClient.delete(`${CROP_BASE_URL}/${id}`);
+    const response = await apiClient.delete(`/api/crop-record/${id}`);
     return response.data;
 };
 
@@ -130,7 +127,7 @@ export const addCropImages = async (
     id: string,
     data: FormData
 ): Promise<ImageResponse> => {
-    const response = await apiClient.post(`${CROP_BASE_URL}/${id}/images`, data, {
+    const response = await apiClient.post(`/api/crop-record/${id}/images`, data, {
         headers: {
             "Content-Type": "multipart/form-data",
         },
@@ -142,7 +139,7 @@ export const deleteCropImages = async (
     id: string,
     fileIds: string[]
 ): Promise<ApiResponse> => {
-    const response = await apiClient.delete(`${CROP_BASE_URL}/${id}/images`, {
+    const response = await apiClient.delete(`/api/crop-record/${id}/images`, {
         data: { fileIds },
     });
     return response.data;
@@ -151,20 +148,20 @@ export const deleteCropImages = async (
 // --- Livestock Record API Functions (ALL EXPORTED) ---
 
 export const getLivestockRecords = async (id: string): Promise<LivestockRecord[]> => {
-    const response = await apiClient.get(`${LIVESTOCK_BASE_URL}/user/${id}`);
+    const response = await apiClient.get(`/api/livestock-record/user/${id}`);
     return response.data;
 };
 
 export const createLivestockRecord = async (
     data: FormData
 ): Promise<LivestockRecord> => {
-    const response = await apiClient.post(LIVESTOCK_BASE_URL, data);
+    const response = await apiClient.post(`/api/livestock-record`, data);
         return response.data;};
 
 export const getLivestockRecordById = async (
     id: string
 ): Promise<LivestockRecord> => {
-    const response = await apiClient.get(`${LIVESTOCK_BASE_URL}/${id}`);
+    const response = await apiClient.get(`/api/livestock-record/${id}`);
     return response.data;
 };
 
@@ -172,12 +169,12 @@ export const updateLivestockRecord = async (
     id: string,
     data: FormData | UpdateLivestockPayload
 ): Promise<LivestockRecord> => {
-    const response = await apiClient.put(`${LIVESTOCK_BASE_URL}/${id}`, data);
+    const response = await apiClient.put(`/api/livestock-record/${id}`, data);
     return response.data;
 };
 
 export const deleteLivestockRecord = async (id: string): Promise<ApiResponse> => {
-    const response = await apiClient.delete(`${LIVESTOCK_BASE_URL}/${id}`);
+    const response = await apiClient.delete(`/api/livestock-record/${id}`);
     return response.data;
 };
 
@@ -186,7 +183,7 @@ export const addLivestockImages = async (
     data: FormData
 ): Promise<ImageResponse> => {
     const response = await apiClient.post(
-        `${LIVESTOCK_BASE_URL}/${id}/images`,
+        `/api/livestock-record/${id}/images`,
         data,
         {
             headers: {
@@ -202,7 +199,7 @@ export const deleteLivestockImages = async (
     fileIds: string[]
 ): Promise<ApiResponse> => {
     const response = await apiClient.delete(
-        `${LIVESTOCK_BASE_URL}/${id}/images`,
+        `/api/livestock-record/${id}/images`,
         {
             data: { fileIds },
         }

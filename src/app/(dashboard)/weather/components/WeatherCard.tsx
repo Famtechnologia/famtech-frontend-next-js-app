@@ -80,7 +80,6 @@ export default function WeatherForecast() {
     const getAsyncWeather = async () => {
      // These values are used inside the effect, so they must be dependencies.
      const res = await getWeather(user?.country || "nigeria", user?.state || 'lagos');
-      console.log("this is the weather data ", res.data);
       setWeatherInfo(res?.data);
     };
     getAsyncWeather();

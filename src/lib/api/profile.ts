@@ -42,14 +42,12 @@ export interface  ProfileResponse {
   updatedAt: string;
 }
 
-
-
-
 export const getProfile = async (
-  token: string
+  token: string,
+  id: string
 ): Promise<ProfileResponse | null> => {
   try {
-    const { data } = await apiClient.get<ProfileResponse>("/api/get-profile", {
+    const { data } = await apiClient.get<ProfileResponse>(`/api/get-profile/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return data;

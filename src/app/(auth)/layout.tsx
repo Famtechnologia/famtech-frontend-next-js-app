@@ -1,13 +1,9 @@
-// src/app/(dashboard)/layout.tsx
-"use client";
+import { AuthProvider } from '@/components/auth/AuthProvider';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
- 
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="">{children}</main> 
+    <AuthProvider>
+      <main className="">{children}</main>
+    </AuthProvider>
   );
 }

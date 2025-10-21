@@ -1,12 +1,12 @@
 "use client";
 
+import { useAuth } from "@/lib/hooks/useAuth";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Image from "next/image";
-import { useAuthStore, User } from "@/lib/store/authStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { login } from "@/lib/api/auth";
-import { getProfile } from "@/lib/api/profile";
 import { toast } from "react-hot-toast";
 
 interface LoginForm {
@@ -18,7 +18,7 @@ const Login: React.FC = () => {
   const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [checkingProfile, setCheckingProfile] = useState(false);
+  const { user } = useAuth();
 
   const router = useRouter();
 
@@ -32,30 +32,13 @@ const Login: React.FC = () => {
 
     try {
       const res = await login(form.email, form.password);
-      const { user: responseUser, tokens } = res.data;
+      const { token, message } = res;
 
-      const user: User = {
-        id: responseUser.id,
-        email: responseUser.email,
-        role: responseUser.role ?? "user",
-        country: responseUser.country ?? "",
-        state: responseUser.state ?? "en",
-        lga: responseUser.lga ?? "",
-        isVerified: responseUser.isVerified ?? false,
-      };
+      useAuthStore.getState().setToken(token);
 
-      useAuthStore.getState().setUser(user);
-      useAuthStore.getState().setToken(tokens.accessToken);
-      useAuthStore.getState().setRefreshToken(tokens.refreshToken);
+      toast.success(message || "Login successful!");
 
-      toast.success(res.message || "Login successful!");
-
-      // ✅ check profile with spinner
-      setCheckingProfile(true);
-      const profile = await getProfile(tokens.accessToken);
-      setCheckingProfile(false);
-
-      if (profile) {
+      if (user?.farmProfile) {
         router.push("/dashboard");
       } else {
         router.push("/complete-farm-profile");
@@ -64,7 +47,6 @@ const Login: React.FC = () => {
       const errorMessage =
         error instanceof Error ? error.message : "Oops looks like your connection dropped, kindly refresh";
       toast.error(errorMessage);
-      setCheckingProfile(false);
     } finally {
       setLoading(false);
     }
@@ -73,10 +55,10 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg relative">
-        {(loading || checkingProfile) && (
+        {loading && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg">
             <p className="text-green-600 font-semibold">
-              {checkingProfile ? "Checking profile..." : "Logging in..."}
+              Logging in...
             </p>
           </div>
         )}
@@ -131,7 +113,7 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading || checkingProfile}
+            disabled={loading}
             className="w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700"
           >
             {loading ? "Logging in..." : "Login"}

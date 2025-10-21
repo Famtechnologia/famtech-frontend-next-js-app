@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLogout } from "@/lib/api/auth";
+// import { useLogout } from "@/lib/api/auth";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -79,9 +79,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
 
-  const { claims } = useAuth();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
-  const { handleLogout } = useLogout();
+  // const { handleLogout } = useLogout();
 
   const { profile } = useProfileStore() as {
     profile?: Profile;
@@ -136,8 +136,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const getNavItems = (): NavItem[] => {
-    const role = claims?.role || "";
-    const subRole = claims?.subRole || "";
+    const role = user?.role || "";
+    const subRole = user?.role || "";
 
     if (role === "farmer") {
       return [
@@ -295,8 +295,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const activeParentItem = navItems.find((item) => item.key === hoveredMenuKey);
 
-  const { user } = useAuthStore();
-
   // Reference for closing the dropdown when clicking outside
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -353,9 +351,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const dateFormatter = (d: string) => {
     const [hours, minutes] = d.split(":").map(Number);
 
-    const formatted = new Date(0, 0, 0, hours, minutes).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return formatted
-  }
+    const formatted = new Date(0, 0, 0, hours, minutes).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return formatted;
+  };
 
   // Calculate unread count (for the red dot)
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -602,7 +603,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               )}
             </div>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
@@ -780,7 +781,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                   <span className="text-gray-400">-</span>
                                   <p className="text-xs text-gray-400 mt-1 flex items-center">
                                     <Clock size={12} className="mr-1" />
-                                    {dateFormatter(notification?.timeline?.dueTime)}
+                                    {dateFormatter(
+                                      notification?.timeline?.dueTime
+                                    )}
                                   </p>
                                 </div>
                               </div>
