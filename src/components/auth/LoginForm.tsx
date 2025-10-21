@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useAuthStore } from "@/lib/store/authStore";
 import { login } from "@/lib/api/auth";
 import { toast } from "react-hot-toast";
+import Cookies from "js-cookie";
 
 interface LoginForm {
   email: string;
@@ -33,11 +34,11 @@ const Login: React.FC = () => {
       const { token, message } = res;
 
       useAuthStore.getState().setToken(token);
+      // Cookies.set("famtech-auth", token, { expires: 3 });
 
       toast.success(message || "Login successful!");
 
       router.push("/dashboard");
-
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
