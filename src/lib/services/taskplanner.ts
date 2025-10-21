@@ -31,6 +31,7 @@ export type TaskUpdatePayload = TaskCreationPayload & { id: string };
 // Fetch all tasks for a specific user
 export const getTasks = async (id: string): Promise<Task[]> => {
   const response = await apiClient.get(`/api/task-planner/assignee/${id}`);
+  console.log(`/api/task-planner/assignee/${id}`);
   return response.data;
 };
 

@@ -39,7 +39,7 @@ export default function ProtectedRoute({
     //   router.push('/unauthorized');
     //   return;
     // }
-  }, [user, loading, token, router, requiredRole]);
+  }, [user, loading, token, router]);
 
   if (loading) {
     return (
