@@ -2,20 +2,20 @@
 import { useState, useEffect } from "react";
 
 import { CheckCircle } from "lucide-react";
-import apiClient from "@/lib/api/apiClient"
-import { API_URL } from "../../../../../config";
+import apiClient from "@/lib/api/apiClient";
 import { useAuthStore } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@/lib/hooks/useAuth";
 
-const GET_PROFILE_ENDPOINT = "/api/get-profile";
-const GET_PROFILE_URL = `${API_URL}${GET_PROFILE_ENDPOINT}`;
+const GET_PROFILE_URL = "/api/get-profile";
 
 export default function ModernFarmRegistration() {
   const [loading, setLoading] = useState(false);
   const [updateError, setUpdateError] = useState("");
-  const { token, user } = useAuthStore();
+  const { token } = useAuthStore();
   const [farmProfile, setFarmProfile] = useState({});
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,9 +29,8 @@ export default function ModernFarmRegistration() {
 
         const profileData = response.data?.data?.farmProfile;
 
-        setFarmProfile(profileData)
-        console.log("this is the profile data: ", profileData)
-
+        setFarmProfile(profileData);
+        console.log("this is the profile data: ", profileData);
       } catch (err) {
         let errorMessage = "Failed to load profile due to an unknown error.";
         toast.error(errorMessage);
@@ -41,63 +40,62 @@ export default function ModernFarmRegistration() {
     fetchProfile();
   }, [token]);
 
- // 1️⃣ Keep this as an empty state initially
-const [formData, setFormData] = useState({
-  firstName: "",
-  lastName: "",
-  phoneNumber: "",
-  farmName: "",
-  farmType: "crop",
-  farmSize: "",
-  farmSizeUnit: "hectares",
-  establishedYear: "",
-  country: "",
-  state: "",
-  city: "",
-  address: "",
-  coordinates: {
-    latitude: "",
-    longitude: "",
-  },
-  currency: "NGN",
-  timezone: "Africa/Lagos",
-  primaryCrops: [],
-  farmingMethods: [],
-  seasonalPattern: "year-round",
-  language: "en",
-});
+  // 1️⃣ Keep this as an empty state initially
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    farmName: "",
+    farmType: "crop",
+    farmSize: "",
+    farmSizeUnit: "hectares",
+    establishedYear: "",
+    country: "",
+    state: "",
+    city: "",
+    address: "",
+    coordinates: {
+      latitude: "",
+      longitude: "",
+    },
+    currency: "NGN",
+    timezone: "Africa/Lagos",
+    primaryCrops: [],
+    farmingMethods: [],
+    seasonalPattern: "year-round",
+    language: "en",
+  });
 
-// 2️⃣ When farmProfile updates (after fetching), populate the form fields
-useEffect(() => {
-  if (farmProfile && Object.keys(farmProfile).length > 0) {
-    console.log("farmProfile:", farmProfile); 
-    setFormData({
-      firstName: farmProfile?.owner?.firstName || "",
-      lastName: farmProfile?.owner?.lastName || "",
-      phoneNumber: farmProfile?.owner?.phoneNumber || "",
-      farmName: farmProfile?.farmName || "",
-      farmType: farmProfile?.farmType || "crop",
-      farmSize: farmProfile?.farmSize || "",
-      farmSizeUnit: farmProfile?.farmSizeUnit || "hectares",
-      establishedYear: farmProfile?.establishedYear || "",
-      country: farmProfile?.location?.country || "",
-      state: farmProfile?.location?.state || "",
-      city: farmProfile?.location?.city || "",
-      address: farmProfile?.location?.address || "",
-      coordinates: {
-        latitude: farmProfile?.location?.coordinates?.latitude || "",
-        longitude: farmProfile?.location?.coordinates?.longitude || "",
-      },
-      currency: farmProfile?.currency || "NGN",
-      timezone: farmProfile?.timezone || "Africa/Lagos",
-      primaryCrops: farmProfile?.primaryCrop || [],
-      farmingMethods: farmProfile?.farmingMethods || [],
-      seasonalPattern: farmProfile?.seasonalPattern || "year-round",
-      language: farmProfile?.language || "en",
-    });
-  }
-}, [farmProfile]);
-
+  // 2️⃣ When farmProfile updates (after fetching), populate the form fields
+  useEffect(() => {
+    if (farmProfile && Object.keys(farmProfile).length > 0) {
+      console.log("farmProfile:", farmProfile);
+      setFormData({
+        firstName: farmProfile?.owner?.firstName || "",
+        lastName: farmProfile?.owner?.lastName || "",
+        phoneNumber: farmProfile?.owner?.phoneNumber || "",
+        farmName: farmProfile?.farmName || "",
+        farmType: farmProfile?.farmType || "crop",
+        farmSize: farmProfile?.farmSize || "",
+        farmSizeUnit: farmProfile?.farmSizeUnit || "hectares",
+        establishedYear: farmProfile?.establishedYear || "",
+        country: farmProfile?.location?.country || "",
+        state: farmProfile?.location?.state || "",
+        city: farmProfile?.location?.city || "",
+        address: farmProfile?.location?.address || "",
+        coordinates: {
+          latitude: farmProfile?.location?.coordinates?.latitude || "",
+          longitude: farmProfile?.location?.coordinates?.longitude || "",
+        },
+        currency: farmProfile?.currency || "NGN",
+        timezone: farmProfile?.timezone || "Africa/Lagos",
+        primaryCrops: farmProfile?.primaryCrop || [],
+        farmingMethods: farmProfile?.farmingMethods || [],
+        seasonalPattern: farmProfile?.seasonalPattern || "year-round",
+        language: farmProfile?.language || "en",
+      });
+    }
+  }, [farmProfile]);
 
   const [errors, setErrors] = useState({});
 
@@ -161,28 +159,19 @@ useEffect(() => {
         language: formData.language.trim().toLowerCase(), // Ensure lowercase for ISO format
       };
 
-      const response = await fetch(
-        `${API_URL}/api/update-farm-profile/${user?.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(registrationData),
-        }
+      const response = await apiClient.put(
+        `/api/update-farm-profile/${user?._id}`,
+        registrationData
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.data;
         toast.error(
-          errorData.message ||
-            errorData.errors?.join(", ") ||
-            "Update failed"
+          errorData.message || errorData.errors?.join(", ") || "Update failed"
         );
       }
 
-      const result = await response.json();
+      const result = await response.data;
 
       toast.success(result?.message);
     } catch (error) {
@@ -200,7 +189,6 @@ useEffect(() => {
       : [...current, method];
     setFormData({ ...formData, farmingMethods: updated });
   };
-  console.log("This is the farm profile from the state", farmProfile)
 
   return (
     <div className="min-h-screen bg-none py-12 px-0 md:px-4">

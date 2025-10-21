@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { useAuthStore, User } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
-import apiClient, { API_URL } from "@/lib/api/apiClient";
+import apiClient from "@/lib/api/apiClient";
+
+import { useAuth } from "@/lib/hooks/useAuth";
 
 //const API_BASE_URL = `http://localhost:4000/api/auth`;
 
@@ -27,25 +28,10 @@ interface UpdateFormInputs {
   lga?: string;
 }
 
-// ✅ Real API call to update user details
-export const updateUser = async (
-  updateData: Partial<UpdateFormInputs>
-): Promise<{ data: { user: User }; message: string }> => {
-  const { user } = useAuthStore.getState(); // Get user from store
-  if (!user?.id) {
-    throw new Error("User ID not available for update.");
-  }
-  const response = await apiClient.put(
-    `${API_URL}/auth/update/${user?.id}`,
-    updateData
-  );
-  return response.data;
-};
-
 const countryList = countries as Country[];
 
 export default function UpdateDetailsForm() {
-  const { user, setUser } = useAuthStore();
+  const { user, setUser } = useAuth();
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
   const {
@@ -84,7 +70,10 @@ export default function UpdateDetailsForm() {
     [selectedCountry, selectedStateName]
   );
 
-  const lgas = useMemo(() => selectedStateObj?.subdivision || [], [selectedStateObj]);
+  const lgas = useMemo(
+    () => selectedStateObj?.subdivision || [],
+    [selectedStateObj]
+  );
 
   // 🧠 Initialize form when user data loads
   useEffect(() => {
@@ -113,7 +102,13 @@ export default function UpdateDetailsForm() {
         setValue("lga", "", { shouldValidate: false, shouldDirty: true });
       }
     }
-  }, [selectedCountryName, selectedCountry, setValue, watch, isFormInitialized]);
+  }, [
+    selectedCountryName,
+    selectedCountry,
+    setValue,
+    watch,
+    isFormInitialized,
+  ]);
 
   // 🧹 Clear lga if state changes
   useEffect(() => {
@@ -150,7 +145,13 @@ export default function UpdateDetailsForm() {
     }
 
     try {
-      const res = await updateUser({email: user.email, country: dataToUpdate?.country, state: dataToUpdate?.state, lga: dataToUpdate?.lga});
+      const response = await apiClient.put(`/auth/update/${user?._id}`, {
+        email: user.email,
+        country: dataToUpdate?.country,
+        state: dataToUpdate?.state,
+        lga: dataToUpdate?.lga,
+      });
+      const res = response.data;
       const { data: resData, message } = res;
       const { user: responseUser } = resData;
 
@@ -158,7 +159,7 @@ export default function UpdateDetailsForm() {
         throw new Error("No user returned from server after update");
       }
 
-      const updatedUser: User = {
+      const updatedUser = {
         ...user,
         country: responseUser.country ?? data.country,
         state: responseUser.state ?? data.state,
@@ -203,7 +204,9 @@ export default function UpdateDetailsForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Email - Read-only */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
           <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 truncate max-w-3xl md:max-w-full">
             {user.email}
           </div>
@@ -214,12 +217,15 @@ export default function UpdateDetailsForm() {
 
         {/* Password - Read-only */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
           <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 tracking-widest font-bold">
             ********
           </div>
           <p className="mt-1 text-xs text-gray-500">
-            To change your password, please use the dedicated &quot;Change Password&quot; section.
+            To change your password, please use the dedicated &quot;Change
+            Password&quot; section.
           </p>
         </div>
 
@@ -227,7 +233,10 @@ export default function UpdateDetailsForm() {
 
         {/* Country */}
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="country"
+            className="block text-sm font-medium text-gray-700"
+          >
             Country
           </label>
           <select
@@ -245,13 +254,18 @@ export default function UpdateDetailsForm() {
             ))}
           </select>
           {errors.country && (
-            <p className="mt-1 text-red-600 text-sm">{errors.country.message}</p>
+            <p className="mt-1 text-red-600 text-sm">
+              {errors.country.message}
+            </p>
           )}
         </div>
 
         {/* State */}
         <div>
-          <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="state"
+            className="block text-sm font-medium text-gray-700"
+          >
             State
           </label>
           <select
@@ -277,7 +291,10 @@ export default function UpdateDetailsForm() {
         {/* LGA (optional) */}
         {selectedCountryName === "nigeria" && lgas.length > 0 && (
           <div>
-            <label htmlFor="lga" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="lga"
+              className="block text-sm font-medium text-gray-700"
+            >
               LGA (Optional)
             </label>
             <select

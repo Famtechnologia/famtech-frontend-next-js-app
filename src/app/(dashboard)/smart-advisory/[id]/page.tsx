@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getUserAdvice } from "@/lib/services/advisory";
-import { useAuthStore } from "@/lib/store/authStore";
 import Id from '@/components/layout/skeleton/smart-advisory/Id'
+import { useAuth } from "@/lib/hooks/useAuth";
 // --- Type Definitions ---
 interface Task {
   day: string;
@@ -31,7 +31,7 @@ interface AdviceData {
 export default function AdviceDetailsPage() {
   const router = useRouter();
   const { id } = useParams();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   const [advice, setAdvice] = useState<AdviceData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ export default function AdviceDetailsPage() {
   useEffect(() => {
     const fetchAdvice = async () => {
       try {
-        const userAdvice = await getUserAdvice(user?.id || "");
+        const userAdvice = await getUserAdvice(user?._id || "");
         const selected = userAdvice?.data?.find(
           (item: AdviceData) => String(item.id) === String(id)
         );
@@ -81,7 +81,7 @@ export default function AdviceDetailsPage() {
       }
     };
 
-    if (user?.id && id) fetchAdvice();
+    if (user?._id && id) fetchAdvice();
   }, [user, id]);
 
  const renderWeekContent = () => {

@@ -1,14 +1,12 @@
-// app/(WeatherForecast.tsx
 "use client";
 import { useEffect, useState } from 'react';
-import Card from '@/components/ui/Card'
+import Card from '@/components/ui/Card';
 import { Sun, CloudRain, Wind, Eye, Cloudy, CloudFog, CloudDrizzle, CloudLightning, Loader2 } from 'lucide-react';
 import { getWeather } from '@/lib/services/weatherAPI';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { WeatherApiResponse } from '@/types/weather';
 
-// Helper functions (estimateUVIndex, getWeatherIcon) remain the same...
-// ... (omitted for brevity)
+// Helper function to estimate UV Index
 const estimateUVIndex = (weather: WeatherApiResponse | undefined) => {
     if (!weather || !weather.weather || !weather.clouds) {
         return null;
@@ -34,6 +32,8 @@ const estimateUVIndex = (weather: WeatherApiResponse | undefined) => {
 
     return null;
 };
+
+// Helper function to get weather icon
 function getWeatherIcon(description: string) {
     const desc = description.toLowerCase();
     if (desc.includes("sun") || desc.includes("clear")) return <Sun className="w-12 h-12 text-yellow-500" />;
@@ -44,50 +44,37 @@ function getWeatherIcon(description: string) {
     if (desc.includes("fog") || desc.includes("mist") || desc.includes("haze")) return <CloudFog className="w-12 h-12 text-gray-300" />;
     return <Sun className="w-12 h-12 text-yellow-500" />;
 }
-// ---------------------------------------------
 
-
-export default function WeatherForecast() {
+export default function WeatherCard() {
     const [weatherInfo, setWeatherInfo] = useState<WeatherApiResponse | undefined>();
     const [isLoading, setIsLoading] = useState(true);
-    // 💡 NEW STATE: Store the determined location string once the user is ready
     const [displayLocation, setDisplayLocation] = useState('N/A'); 
-
     const { user } = useAuth();
-    
-    // --- Effect to Fetch Weather ---
+
     useEffect(() => {
-        // 💡 CRITICAL CHECK: Wait until the user object is not null/undefined AND 
-        // has had its properties set (country/state are the values we care about).
         if (!user) {
-            // Check if useAuth has a dedicated property to signal it's done loading
-            // If useAuth is asynchronous, this return prevents premature API calls.
-            return; 
+            // User data is not yet available.
+            return;
         }
 
         const country = user.country || "nigeria";
         const state = user.state || 'lagos';
         
-        // Prepare the display string immediately, so it's ready when the card renders
-        const formattedState = state.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const formattedState = state.charAt(0).toUpperCase() + state.slice(1);
         setDisplayLocation(formattedState);
 
         const getAsyncWeather = async () => {
             setIsLoading(true);
-
             try {
                 const res = await getWeather(country, state);
                 setWeatherInfo(res?.data);
 
-                // FINAL LOCATION ADJUSTMENT: If the API city name is different, combine them
                 if (res?.data?.name && res.data.name.toLowerCase() !== state.toLowerCase()) {
                     setDisplayLocation(`${res.data.name}, ${formattedState}`);
                 }
             } catch (error) {
                 console.error("Failed to fetch weather:", error);
                 setWeatherInfo(undefined);
-                // On error, revert to just the state name
-                setDisplayLocation(formattedState); 
             } finally {
                 setIsLoading(false);
             }
@@ -95,15 +82,14 @@ export default function WeatherForecast() {
         
         getAsyncWeather();
 
-    }, [user]); // Depend only on the `user` object.
+    }, [user]);
 
-    // --- Render Logic ---
     const renderContent = () => {
         if (isLoading) {
             return (
                 <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center">
                     <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-2" />
-                    <p className="text-gray-500 text-sm">Loading weather for {displayLocation}...</p>
+                    <p className="text-gray-500 text-sm">Loading weather for your location...</p>
                 </div>
             );
         }
@@ -112,7 +98,7 @@ export default function WeatherForecast() {
             return (
                 <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center">
                     <p className="text-red-500 font-medium">Weather data unavailable.</p>
-                    <p className="text-gray-500 text-sm">Could not fetch weather for **{displayLocation}**.</p>
+                    <p className="text-gray-500 text-sm">Could not fetch weather for {displayLocation}.</p>
                 </div>
             );
         }
@@ -130,7 +116,6 @@ export default function WeatherForecast() {
                             <div className="text-sm text-gray-600">
                                 {weatherInfo.weather?.[0]?.description || "N/A"}
                             </div>
-                            {/* 💡 RENDER THE NEW STATE VARIABLE */}
                             <div className="text-xs text-gray-500 mt-1 font-medium">
                                 {displayLocation} 
                             </div>
