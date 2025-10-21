@@ -33,7 +33,6 @@ import { usePathname } from "next/navigation";
 // import { useLogout } from "@/lib/api/auth";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
-import { useAuthStore } from "@/lib/store/authStore";
 // --- Interface Definitions for clarity ---
 
 interface NavChild {
@@ -301,7 +300,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   // --- Data Fetching Logic ---
   // Fetch notifications ONLY when the component mounts or the user changes
   const fetchNotifications = useCallback(async () => {
-    const userId = user?.id;
+    const userId = user?._id;
     if (!userId) return;
 
     setIsLoading(true);
@@ -313,7 +312,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user?._id]);
 
   // Initial fetch to get the unread count
   useEffect(() => {

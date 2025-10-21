@@ -18,7 +18,6 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   const token = useAuthStore.getState().token
-  console.log("protected routr tokrn: ", token)
 
   useEffect(() => {
     if (loading) return;
@@ -33,8 +32,8 @@ export default function ProtectedRoute({
     //   return;
     // }
 
-    const userRole = user?.role.toLowerCase();
-    const expectedRole = requiredRole.toLowerCase();
+    // const userRole = user?.role.toLowerCase();
+    // const expectedRole = requiredRole.toLowerCase();
 
     // if (userRole !== expectedRole) {
     //   router.push('/unauthorized');

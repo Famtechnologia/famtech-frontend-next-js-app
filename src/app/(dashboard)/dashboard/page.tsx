@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
 import DashboardSkeleton from "@/components/skeleton/DashboardSkeleton";
 import WeatherForecast from "@/app/(dashboard)/weather/components/WeatherCard";

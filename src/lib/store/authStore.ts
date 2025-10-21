@@ -44,6 +44,7 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (loading) => set({ loading }),
       logout: () => {
         set({ token: null, claims: null });
+        Cookies.remove("famtech-auth");
       },
     }),
     {

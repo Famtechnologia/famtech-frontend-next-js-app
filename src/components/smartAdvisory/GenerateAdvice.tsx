@@ -86,7 +86,7 @@ export const GenerateAdvice = ({
     }, [])
 
     if (isLoading) {
-      return <FormSkeleton />;
+      // return <FormSkeleton />;
     } 
 
   return (

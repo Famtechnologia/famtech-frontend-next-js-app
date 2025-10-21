@@ -87,7 +87,7 @@ const Settings: React.FC = () => {
     };
 
     fetchProfile();
-  }, []);
+  }, [user?._id]);
 
   if (isLoading) {
     // Display the skeleton while data is being fetched

@@ -42,6 +42,7 @@ useEffect(() => {
 
   return {
     user,
+    setUser,
     token,
     loading,
     isAuthenticated: !!user && !!token,
