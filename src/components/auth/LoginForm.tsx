@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useAuthStore } from "@/lib/store/authStore";
 import { login } from "@/lib/api/auth";
 import { toast } from "react-hot-toast";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
 
 interface LoginForm {
   email: string;

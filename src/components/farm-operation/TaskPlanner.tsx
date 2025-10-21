@@ -299,7 +299,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = (await getTasks(user?._id)) as ApiTaskWithId[];
+      const data = (await getTasks(user?._id || "")) as ApiTaskWithId[];
 
       const mappedTasks: Task[] = data.map((task) => {
         const dateObject = task.timeline?.dueDate
@@ -309,7 +309,7 @@ const App: React.FC = () => {
         const formattedDateForDisplay = dateObject
           ? dateObject.toLocaleDateString("en-US", {
               day: "2-digit",
-              month: "2-digit",
+              month: "2-digit", 
               year: "numeric",
             })
           : "N/A";

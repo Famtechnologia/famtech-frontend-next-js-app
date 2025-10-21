@@ -82,12 +82,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   // const { handleLogout } = useLogout();
 
-  const { profile } = useProfileStore() as {
+  const { profile, setId } = useProfileStore() as {
     profile?: Profile;
     loading: boolean;
     error: unknown;
+    setId: (id: string) => void;
   };
 
+  setId(user?._id ?? "");
   // Close flyout when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

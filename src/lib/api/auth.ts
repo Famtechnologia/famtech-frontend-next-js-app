@@ -51,7 +51,7 @@ export const login = async (
         "Login failed";
       throw new Error(message);
     }
-    throw new Error(error as any);
+    throw new Error("An unknown error occurred during login.");
   }
 };
 

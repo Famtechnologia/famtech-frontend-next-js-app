@@ -13,25 +13,6 @@ import Cookies from "js-cookie";
 //   logout: () => void;
 // }
 
-const cookieStorage = {
-  getItem: (name) => {
-    const cookie = Cookies.get(name);
-    if (!cookie) return null;
-    try {
-      const parsed = JSON.parse(cookie);
-      return parsed.state.token;
-    } catch (error) {
-      return null;
-    }
-  },
-  setItem: (name, value) => {
-    // The backend is responsible for setting the cookie.
-  },
-  removeItem: (name) => {
-    // The backend is responsible for removing the cookie.
-  },
-};
-
 export const useAuthStore = create()(
   persist(
     (set) => ({
@@ -47,10 +28,5 @@ export const useAuthStore = create()(
         Cookies.remove("famtech-auth");
       },
     }),
-    {
-      name: "famtech-auth",
-      storage: cookieStorage,
-      partialize: (state) => ({ token: state.token, claims: state.claims }),
-    }
   )
 );
