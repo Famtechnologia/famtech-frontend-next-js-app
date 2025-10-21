@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getTasks, Task as ApiTask } from '../../lib/services/taskplanner';
-import { useAuthStore, User } from "@/lib/store/authStore";
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface DayTaskModalProps {
   date: string; // YYYY-MM-DD
@@ -30,14 +30,14 @@ const DayTaskModal: React.FC<DayTaskModalProps> = ({ date, onClose }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchTasks = async () => {
       setLoading(true);
       setError(null);
       try {
-        const userData = useAuthStore.getState().user as User;
-        const data = await getTasks(userData.id) as ApiTaskWithId[];
+        const data = await getTasks(user?._id || "") as ApiTaskWithId[];
 
         const mappedTasks: Task[] = data.map((task) => {
           const dateObject = task.timeline?.dueDate ? new Date(task.timeline.dueDate) : null;
