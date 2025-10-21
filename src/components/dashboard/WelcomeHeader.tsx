@@ -94,9 +94,14 @@ export default function WelcomeHeader() {
     setId: (id: string) => void;
   };
 
+  useEffect(() => {
+    if (user?._id) {
+      setId(user._id);
+    }
+  }, [user?._id, setId]);
+
   // Auto-slide functionality
   useEffect(() => {
-    setId(user?._id ?? "");
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
@@ -104,7 +109,7 @@ export default function WelcomeHeader() {
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, setId, user?._id]);
+  }, [isAutoPlaying]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
