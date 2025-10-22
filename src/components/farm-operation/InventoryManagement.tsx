@@ -603,7 +603,7 @@ const InventoryManagement = () => {
   return <InventorySkeleton />;
 }
   // Improved Error Display
-  if (error && inventoryItems.length === 0) {
+ {/* if (error && inventoryItems.length === 0) {
     return (
       <div className="p-6 flex justify-center items-center min-h-96">
         <div className="text-center p-6 border border-red-300 rounded-lg bg-red-50">
@@ -619,6 +619,7 @@ const InventoryManagement = () => {
       </div>
     );
   }
+*/}
 
   return (
     <div className="p-2 lg:pt-8 lg:pb-8 max-w-7xl mx-auto">

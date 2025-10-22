@@ -128,17 +128,17 @@ const ChatWithOfficerPage: React.FC = () => {
       </div>
       <div className="lg:flex space-x-2  lg:h-full pt-6">
         {/* Left section: Conversation/Default View (3/5 width) */}
-        <div className="w-full lg:w-3/5 rounded-lg flex items-center justify-center">
+        <div className="w-full  rounded-lg flex items-center justify-center">
           {renderContent()}
         </div>
 
-        {/* Right section: Officer List (2/5 width) */}
+        {/* Right section: Officer List (2/5 width)
         <OfficerList 
           officers={officers} 
           onViewProfile={handleViewProfileClick} 
           onStartChat={handleStartChatClick} 
           
-        />
+        /> */}
       </div>
     </>
   );

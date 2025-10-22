@@ -146,7 +146,7 @@ export default function Page() {
       <div>
         <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight mb-4">
           Hi <span className="capitalize">{owner?.firstName || "Farmer"}</span>,
-          here&apos;s is your farm health&apos;s today ⛅
+          here&apos;s your farm health&apos;s today ⛅
         </h2>
         <p className="text-gray-500 text-base leading-relaxed mb-4">
           {new Date().toLocaleDateString("en-NG", {

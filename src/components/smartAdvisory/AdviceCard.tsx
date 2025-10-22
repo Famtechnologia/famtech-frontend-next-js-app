@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../ui/Card";
 import { ClipboardList, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import AdviceCardSkeleton from "../layout/skeleton/smart-advisory/AdviceCard"; // 👈 import skeleton
 
 interface AdviceCardProps {
   farmType: string;
@@ -11,7 +12,7 @@ interface AdviceCardProps {
     state: string;
     country: string;
   };
-  advice:string;
+  advice: string;
   id: string;
 }
 
@@ -23,6 +24,13 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
 }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(true); // 👈 skeleton state
+
+  // 👇 simulate loading delay before showing real card
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSkeleton(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleViewAdvice = () => {
     setLoading(true);
@@ -31,6 +39,11 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
       router.push(`/smart-advisory/${id}`);
     }, 1000);
   };
+
+  // 👇 show skeleton if still loading
+  if (showSkeleton) {
+    return <AdviceCardSkeleton />;
+  }
 
   return (
     <Card
