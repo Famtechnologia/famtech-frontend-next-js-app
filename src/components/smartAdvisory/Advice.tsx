@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import AdviceCard from "./AdviceCard";
-import AdviceCardSkeleton from "../layout/skeleton/smart-advisory/AdviceCard"; // ✅ import the skeleton component
-import { useAuthStore } from "@/lib/store/authStore";
 import { getUserAdvice } from "@/lib/services/advisory";
+import {useAuth} from "@/lib/hooks/useAuth"
 
 interface AdviceData {
   id: string;
@@ -15,18 +14,16 @@ interface AdviceData {
 const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
   setShowFarmingType,
 }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [adviceData, setAdviceData] = useState<AdviceData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchUserAdvice = async () => {
-      if (!user?.id) return;
-
       try {
         setLoading(true);
 
-        const user_advice = await getUserAdvice(user.id);
+        const user_advice = await getUserAdvice(user?._id || "");
         setAdviceData(user_advice?.data || []);
 
         // 🕒 Ensure skeleton shows for at least 2s even if fetch is fast
@@ -40,7 +37,7 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
     };
 
     fetchUserAdvice();
-  }, [user]);
+  }, [user?._id]);
 
   return (
     <div className="px-3 md:px-4 p-4">
@@ -58,9 +55,9 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
       {/* 🧭 Loading state with skeletons */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
+          {/* {[...Array(3)].map((_, i) => (
             <AdviceCardSkeleton key={i} />
-          ))}
+          ))} */}
         </div>
       ) : adviceData.length === 0 ? (
         <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">

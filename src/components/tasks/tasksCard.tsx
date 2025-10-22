@@ -3,9 +3,9 @@ import React from 'react';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import { CheckCircle, Loader2, ListChecks, AlertTriangle, PlusCircle } from 'lucide-react';
-import { useAuthStore } from '@/lib/store/authStore'; 
 import { getTasks, updateTask, Task } from '@/lib/services/taskplanner'; 
 import useSWR from 'swr'; 
+import { useAuth } from '@/lib/hooks/useAuth';
 
 // --- Custom Task Hook ---
 
@@ -40,8 +40,10 @@ export const useTaskSummary = () => {
         setIsClient(true);
     }, []);
 
+    const { user } = useAuth()
+
     // Get the user ID from the store
-    const userId = useAuthStore((state) => state.user?.id);
+    const userId = user?._id;
     
     // ⚠️ CRITICAL: useSWR will only fetch if the key is NOT null/undefined.
     // This handles the initial hydration/auth loading state.

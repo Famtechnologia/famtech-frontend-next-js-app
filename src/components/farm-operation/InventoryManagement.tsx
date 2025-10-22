@@ -5,6 +5,7 @@ import React, {
   useMemo,
   Dispatch,
   SetStateAction,
+  useCallback
 } from "react";
 import {
   Plus,
@@ -17,7 +18,7 @@ import {
   X,
   TriangleAlert,
   CheckCircle,
-  ListFilter,
+  ListFilter, 
   LayoutGrid,
   Download,
   Loader2,
@@ -41,17 +42,12 @@ import {
   updateInventoryItem,
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
-import { useAuthStore, User } from "@/lib/store/authStore";
+import { useAuth } from "@/lib/hooks/useAuth";
 import InventorySkeleton from "@/components/layout/skeleton/farm-operation/Inventory";
 // --- TYPE DEFINITIONS & USER ID RETRIEVAL ---
 
 // Define placeholder type for ToolData while it is commented out
 type ToolData = Record<string, unknown> | null | undefined;
-
-// Retrieve userId from the store immediately. This value is 'string | undefined'.
-const userData = useAuthStore.getState().user as User | null;
-const requiredUserId = userData?.id;
-
 
 /**
  * 1. NewInventoryItemData: The final shape required by the create API service (userId must be string).
@@ -87,6 +83,9 @@ type FormDataType = Record<
 type NullableSetter<T> = Dispatch<SetStateAction<T | null>>;
 
 const InventoryManagement = () => {
+  const { user } = useAuth();
+  console.log(user)
+  const requiredUserId = user?._id || "";
   // State declarations
   const [activeInventoryTab, setActiveInventoryTab] = useState<string>("seeds");
   const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
@@ -119,7 +118,8 @@ const InventoryManagement = () => {
 
     toolData: undefined, // Set to undefined since ToolData is commented out
 
-    equipmentPartData: { // KEEPING ACTIVE: Equipment part-related fields
+    equipmentPartData: {
+      // KEEPING ACTIVE: Equipment part-related fields
       model: undefined,
       partNumber: undefined,
       manufacturer: undefined,
@@ -130,7 +130,7 @@ const InventoryManagement = () => {
 
     model: undefined,
     // FIX 1: Use the retrieved user ID.
-    userId: requiredUserId,
+    userId: user?._id || "",
   };
 
   const getInitialFormData = (
@@ -149,9 +149,9 @@ const InventoryManagement = () => {
 
   // --- DATA FETCHING & HANDLERS ---
 
-  const fetchInventoryItems = async () => {
+  const fetchInventoryItems = useCallback(async () => {
     // FIX 3: Add runtime check for userId before calling getInventoryItems
-    if (!requiredUserId) {
+    if (!user?._id) {
       setIsLoading(false);
       setError("Cannot fetch inventory: User ID is missing. Please log in.");
       return;
@@ -161,7 +161,7 @@ const InventoryManagement = () => {
     setError(null); // Clear previous fetch error
     try {
       // FIX 4: Pass the required userId argument to getInventoryItems
-      const items = await getInventoryItems(requiredUserId);
+      const items = await getInventoryItems(user?._id || "");
       setInventoryItems(items);
     } catch (err) {
       console.error("Failed to fetch inventory:", err);
@@ -169,11 +169,11 @@ const InventoryManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?._id]);
 
   useEffect(() => {
     fetchInventoryItems();
-  }, []);
+  }, [fetchInventoryItems]);
 
   const handleTabChange = (category: string) => {
     setActiveInventoryTab(category);
@@ -346,8 +346,9 @@ const InventoryManagement = () => {
     setFormError(null); // Clear previous form error
     setIsLoading(true); // 👈 1. START LOADING
 
-    if (!requiredUserId) {
-        setError("User ID is missing. Please log in again.");
+    const currentUserId = user?._id;
+    if (!currentUserId) {
+        setFormError("User ID is missing. Please log in again.");
         setIsLoading(false); // ⚠️ Stop loading on early exit
         return;
     }
@@ -362,7 +363,11 @@ const InventoryManagement = () => {
     }
 
     try {
-        const payload = processPayload(formData) as NewInventoryItemData;
+        const dataWithUser = {
+            ...formData,
+            userId: currentUserId,
+        };
+        const payload = processPayload(dataWithUser) as NewInventoryItemData;
 
         const newItem = await createInventoryItem(payload);
 
@@ -412,11 +417,21 @@ const InventoryManagement = () => {
       return;
     }
 
+    const currentUserId = user?._id;
+    if (!currentUserId) {
+        setFormError("User ID is missing. Please log in again.");
+        return;
+    }
+
     setIsUpdating(true);
     try {
       const itemId = updateFormData.id;
 
-      const dataToUpdate = processPayload(updateFormData);
+      const dataWithUser = {
+          ...updateFormData,
+          userId: currentUserId,
+      };
+      const dataToUpdate = processPayload(dataWithUser);
 
       const updatedItem = await updateInventoryItem(itemId, dataToUpdate);
 

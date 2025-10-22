@@ -5,7 +5,6 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useAuthStore, User } from "@/lib/store/authStore";
 import { register as signupRequest } from "@/lib/api/auth";
 import { countries } from "@/lib/services/countries.js";
 import { useRouter } from "next/navigation";
@@ -78,17 +77,18 @@ export default function SignupPage() {
         throw new Error("No user returned from server");
       }
 
-      const user: User = {
-        id: responseUser.id,
-        email: responseUser.email,
-        role: responseUser.role ?? "user",
-        country: responseUser.country ?? "",
-        state: responseUser.state ?? "",
-        isVerified: responseUser.isVerified ?? false,
-        lga: responseUser.lga ?? "",
-      };
+      //not needed any more
+      // const user = {
+      //   id: responseUser.id,
+      //   email: responseUser.email,
+      //   role: responseUser.role ?? "user",
+      //   country: responseUser.country ?? "",
+      //   state: responseUser.state ?? "",
+      //   isVerified: responseUser.isVerified ?? false,
+      //   lga: responseUser.lga ?? "",
+      // };
 
-      useAuthStore.getState().setUser(user);
+      // useAuthStore.getState().setUser(user);
 
       toast.success(
         message ||

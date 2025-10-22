@@ -1,8 +1,7 @@
-import apiClient, { API_URL } from "../api/inventory";
+import apiClient from "../api/apiClient";
 
 // Import the new, refined types
 import { UnifiedInventoryItem } from '@/types/inventory';
-const INVENTORY_BASE_URL = `${API_URL}/api/inventory-management`;
 
 export interface DeleteResponse {
     message: string;
@@ -12,7 +11,7 @@ export interface DeleteResponse {
  * Fetches all inventory items from the API.
  */
 export const getInventoryItems = async (id:string): Promise<UnifiedInventoryItem[]> => {
-    const response = await apiClient.get(`${INVENTORY_BASE_URL}/user/${id}`);
+    const response = await apiClient.get(`/api/inventory-management/user/${id}`);
     return response.data;
 };
 
@@ -24,7 +23,7 @@ export const getInventoryItems = async (id:string): Promise<UnifiedInventoryItem
 export const createInventoryItem = async (
     item: Omit<UnifiedInventoryItem, 'id' | 'timestamp' | '_id'>
 ): Promise<UnifiedInventoryItem> => {
-    const res = await apiClient.post(INVENTORY_BASE_URL, item);
+    const res = await apiClient.post(`/api/inventory-management`, item);
     return res.data;
 };
 
@@ -33,7 +32,7 @@ export const createInventoryItem = async (
  * Fetches a single inventory item by its ID.
  */
 export const getInventoryItemById = async (id: string): Promise<UnifiedInventoryItem> => {
-    const response = await apiClient.get(`${INVENTORY_BASE_URL}/${id}`);
+    const response = await apiClient.get(`/api/inventory-management/${id}`);
     return response.data;
 };
 
@@ -45,7 +44,7 @@ export const updateInventoryItem = async (
     id: string, 
     inventoryData: Partial<Omit<UnifiedInventoryItem, 'id' | '_id' | 'timestamp'>>
 ): Promise<UnifiedInventoryItem> => {
-    const response = await apiClient.put(`${INVENTORY_BASE_URL}/${id}`, inventoryData);
+    const response = await apiClient.put(`/api/inventory-management/${id}`, inventoryData);
     return response.data;
 };
 
@@ -53,6 +52,6 @@ export const updateInventoryItem = async (
  * Deletes an inventory item by its ID.
  */
 export const deleteInventoryItem = async (id: string): Promise<DeleteResponse> => {
-    const response = await apiClient.delete(`${INVENTORY_BASE_URL}/${id}`);
+    const response = await apiClient.delete(`/api/inventory-management/${id}`);
     return response.data;
 };

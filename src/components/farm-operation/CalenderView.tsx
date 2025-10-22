@@ -10,9 +10,9 @@ import {
 // createTask service is removed as it is no longer used
 import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
-import { useAuthStore } from "@/lib/store/authStore";
 import { getTasks, updateTask, Task  } from '../../lib/services/taskplanner';
 import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 // ----------------------------------------------------------------------
 // 1. INTERFACES AND TYPES
@@ -65,12 +65,12 @@ const DayTasksModal: React.FC<{
   onTaskUpdate: () => void;
 }> = ({ selectedDay, onClose, onTaskUpdate, selectedDate }) => {
   const [task, setTask] = useState<Task | null>(null);
+  const {user} = useAuth();
 
 useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const userData = useAuthStore.getState().user;
-        const data = (await getTasks(userData?.id as string));
+        const data = (await getTasks(user?._id as string));
 
         const mappedTasks = data.find((task) => task?.timeline?.dueDate && new Date(task.timeline.dueDate).toISOString().split("T")[0] === selectedDate);
 
@@ -86,7 +86,7 @@ useEffect(() => {
     if (selectedDate) {
       fetchTasks();
     }
-  }, [selectedDate]);
+  }, [selectedDate, user?._id]);
 
   if (!selectedDay) return null;
 
@@ -220,7 +220,7 @@ const CalendarView: React.FC = () => {
     "December",
   ];
 
-  const { user } = useAuthStore(); // Get user from auth store
+  const { user } = useAuth(); // Get user from auth store
 
   const fetchCalendar = useCallback(async () => {
     setIsLoading(true);
@@ -230,7 +230,7 @@ const CalendarView: React.FC = () => {
       const data = await getCalendarData(
         currentYear,
         currentMonth,
-        user?.id || ""
+        user?._id || ""
       );
       setCalendarData(data);
     } catch (err) {

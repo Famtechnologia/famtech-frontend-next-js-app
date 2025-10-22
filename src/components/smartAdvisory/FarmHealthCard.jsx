@@ -4,7 +4,7 @@ import { SmartCard } from "@/components/smartAdvisory/SmartCard";
 import { getCropRecords, getLivestockRecords } from "@/lib/services/croplivestock";
 import { useAuthStore } from "@/lib/store/authStore";
 import Link from "next/link";
-import FarmCardSkeleton from "@/components/layout/skeleton/smart-advisory/FarmCardSkeleton"; // ✅ import skeleton
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function FarmHealthCard({ location }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,16 +13,16 @@ export default function FarmHealthCard({ location }) {
   const [livestockRecords, setLivestockRecords] = useState([]);
   const [smartProduct, setSmartProduct] = useState([]);
 
-  const userId = useAuthStore((state) => state.user?.id);
+  const { user } = useAuth();
 
   const fetchCropData = useCallback(async () => {
-    if (!userId) {
+    if (!user?._id) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const data = await getCropRecords(userId);
+      const data = await getCropRecords(user?._id);
       setCropRecords(data?.map((record) => ({ ...record, type: "crop" })));
       setError(null);
     } catch (err) {
@@ -31,16 +31,17 @@ export default function FarmHealthCard({ location }) {
       // ⏳ ensure loader stays for at least 2s
       setTimeout(() => setIsLoading(false), 2000);
     }
-  }, [userId]);
+  }, [user?._id]);
 
   const fetchLivestockData = useCallback(async () => {
-    if (!userId) {
+    if (!user?._id) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const data = await getLivestockRecords(userId);
+      const data = await getLivestockRecords(user?._id);
+
       setLivestockRecords(
         data?.map((record) => ({ ...record, type: "livestock" }))
       );
@@ -50,7 +51,7 @@ export default function FarmHealthCard({ location }) {
     } finally {
       setTimeout(() => setIsLoading(false), 2000);
     }
-  }, [userId]);
+  }, [user?._id]);
 
   useEffect(() => {
     fetchCropData();
@@ -78,15 +79,14 @@ export default function FarmHealthCard({ location }) {
       if (normalizedStage.includes("adult")) return 80;
       if (normalizedStage.includes("senior")) return 100;
     }
+
+    // Fallback in case a stage name doesn't match a defined keyword
     return 0;
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 min-h-40">
-      {isLoading ? (
-        // 🦴 show skeletons while loading
-        [...Array(3)].map((_, i) => <FarmCardSkeleton key={i} />)
-      ) : smartProduct?.length === 0 ? (
+      {smartProduct?.length === 0 ? (
         <div className="w-full px-2 md:px-6 p-6 md:col-span-2 lg:col-span-3 bg-white border border-gray-200 rounded-lg shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl md:2xl font-bold">Farming Health</h2>
@@ -98,7 +98,8 @@ export default function FarmHealthCard({ location }) {
             </Link>
           </div>
           <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">
-            No crop or livestock records found. Please add some in your farm operation to view health tips.
+            No crop or livestock records found. Please add some to view health
+            tips.
           </div>
         </div>
       ) : (

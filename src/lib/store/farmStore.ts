@@ -2,13 +2,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getProfile } from "@/lib/api/profile";
-import { useAuthStore } from "@/lib/store/authStore"; // still get token from auth
+import { useAuthStore } from "@/lib/store/authStore";
 
 interface ProfileState {
   profile: unknown | null;
   loading: boolean;
   error: string | null;
-  fetchProfile: () => Promise<void>;
+  id: string | null;
+  fetchProfile: (id: string) => Promise<void>;
+  setId: (id: string) => void;
 }
 
 export const useProfileStore = create<ProfileState>()(
@@ -17,8 +19,10 @@ export const useProfileStore = create<ProfileState>()(
       profile: null,
       loading: false,
       error: null,
+      id: null,
+      setId: (id) => set({ id }),
 
-      fetchProfile: async () => {
+      fetchProfile: async (id) => {
         try {
           set({ loading: true, error: null });
 
@@ -28,13 +32,11 @@ export const useProfileStore = create<ProfileState>()(
             return;
           }
 
-          console.log(token);
-
-          const profileData = await getProfile(token);
+          const profileData = await getProfile(token, id);
           console.log(profileData?.data);
-
-          // If data is an array, get the first profile or handle as needed
-          const farm = Array.isArray(profileData?.data) ? profileData.data[0] : undefined;
+          const farm = Array.isArray(profileData?.data)
+            ? profileData.data[0]
+            : undefined;
 
           if (farm) {
             console.log("on");

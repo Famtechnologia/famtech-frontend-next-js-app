@@ -9,6 +9,7 @@ import {
 import Modal from "../ui/Modal";
 import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 const formatMessage = (text) => {
   if (!text) return { __html: "" };
@@ -32,16 +33,16 @@ export const SmartInsight = () => {
   const [livestockRecords, setLivestockRecords] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const userId = useAuthStore((state) => state.user?.id);
+  const { user } = useAuth();
 
   const fetchCropData = useCallback(async () => {
-    if (!userId) {
+    if (!user?._id) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const data = await getCropRecords(userId);
+      const data = await getCropRecords(user?._id);
 
       setCropRecords(data);
       setError(null);
@@ -50,16 +51,16 @@ export const SmartInsight = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [user?._id]);
 
   const fetchLivestockData = useCallback(async () => {
-    if (!userId) {
+    if (!user?._id) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const data = await getLivestockRecords(userId);
+      const data = await getLivestockRecords(user?._id);
 
       setLivestockRecords(data);
       setError(null);
@@ -68,7 +69,7 @@ export const SmartInsight = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [user?._id]);
 
   useEffect(() => {
     fetchCropData();
@@ -192,8 +193,7 @@ export const SmartInsight = () => {
               />
               <div>
                 <h3 className="text-gray-800 font-semibold text-sm capitalize">
-                  {
-                  selectedRecord?.type === "crop"
+                  {selectedRecord?.type === "crop"
                     ? selectedRecord?.cropName
                     : selectedRecord?.breed}
                 </h3>
@@ -211,7 +211,6 @@ export const SmartInsight = () => {
             onSubmit={handleChat}
             className="relative w-full space-x-2 space-y-2 flex flex-wrap items-center  "
           >
-           
             <button
               type="button"
               className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors duration-200"
@@ -228,7 +227,7 @@ export const SmartInsight = () => {
             >
               <Plus className="h-4 w-4 mr-2" /> Livestock
             </button>
-        
+
             <input
               type="text"
               placeholder="Ask for smart advice..."
@@ -286,40 +285,38 @@ export const SmartInsight = () => {
         >
           <div className="space-y-2">
             {cropRecords.length === 0 ? (
-              <p>You Don&apos; have any Crop, Kindly add in your farm operation</p>
+              <p>
+                You Don&apos; have any Crop, Kindly add in your farm operation
+              </p>
             ) : (
-              cropRecords.map(
-                (record, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className="flex gap-2 items-center p-2 hover:bg-gray-200 rounded-xl"
-                      onClick={() => {
-                        setSelectedRecord({ type: "crop", ...record });
-                        setIsCropRecord(!isCropRecord);
-                        setIsPreview(true);
-                      }}
-                    >
-                      <Image
-                        alt={record?.cropName}
-                        width={30}
-                        height={30}
-                        className="size-16 aspect-square rounded-md"
-                        src={record?.cropImages[0]?.url}
-                      />
-                      <div>
-                        <h3 className="text-gray-800 font-semibold text-sm capitalize">
-                          {record?.cropName}
-                        </h3>
-                        <p className="text-gray-700 text-sm">
-                          {record?.variety}
-                        </p>
-                        <p className="text-gray-600 text-sm">{record?.note}</p>
-                      </div>
+              cropRecords.map((record, index) => {
+                return (
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center p-2 hover:bg-gray-200 rounded-xl"
+                    onClick={() => {
+                      setSelectedRecord({ type: "crop", ...record });
+                      setIsCropRecord(!isCropRecord);
+                      setIsPreview(true);
+                    }}
+                  >
+                    <Image
+                      alt={record?.cropName}
+                      width={30}
+                      height={30}
+                      className="size-16 aspect-square rounded-md"
+                      src={record?.cropImages[0]?.url}
+                    />
+                    <div>
+                      <h3 className="text-gray-800 font-semibold text-sm capitalize">
+                        {record?.cropName}
+                      </h3>
+                      <p className="text-gray-700 text-sm">{record?.variety}</p>
+                      <p className="text-gray-600 text-sm">{record?.note}</p>
                     </div>
-                  );
-                }
-              )
+                  </div>
+                );
+              })
             )}
           </div>
         </Modal>
@@ -330,40 +327,39 @@ export const SmartInsight = () => {
         >
           <div className="space-y-2">
             {livestockRecords.length === 0 ? (
-              <p>You Don&apos; have any livestock, kindly add in your farm operation</p>
+              <p>
+                You Don&apos; have any livestock, kindly add in your farm
+                operation
+              </p>
             ) : (
-              livestockRecords.map(
-                (record, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className="flex gap-2 items-center p-2 hover:bg-gray-200 rounded-xl"
-                      onClick={() => {
-                        setSelectedRecord({ type: "livestock", ...record });
-                        setIsLivestockRecord(!isLivestockRecord);
-                        setIsPreview(true);
-                      }}
-                    >
-                      <Image
-                        alt={record?.note}
-                        width={30}
-                        height={30}
-                        className="size-16 aspect-square rounded-md"
-                        src={record?.livestockImages[0]?.url}
-                      />
-                      <div>
-                        <h3 className="text-gray-800 font-semibold text-sm capitalize">
-                          {record?.breed}
-                        </h3>
-                        <p className="text-gray-700 text-sm">
-                          {record?.specie}
-                        </p>
-                        <p className="text-gray-600 text-sm">{record?.note}</p>
-                      </div>
+              livestockRecords.map((record, index) => {
+                return (
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center p-2 hover:bg-gray-200 rounded-xl"
+                    onClick={() => {
+                      setSelectedRecord({ type: "livestock", ...record });
+                      setIsLivestockRecord(!isLivestockRecord);
+                      setIsPreview(true);
+                    }}
+                  >
+                    <Image
+                      alt={record?.note}
+                      width={30}
+                      height={30}
+                      className="size-16 aspect-square rounded-md"
+                      src={record?.livestockImages[0]?.url}
+                    />
+                    <div>
+                      <h3 className="text-gray-800 font-semibold text-sm capitalize">
+                        {record?.breed}
+                      </h3>
+                      <p className="text-gray-700 text-sm">{record?.specie}</p>
+                      <p className="text-gray-600 text-sm">{record?.note}</p>
                     </div>
-                  );
-                }
-              )
+                  </div>
+                );
+              })
             )}
           </div>
         </Modal>

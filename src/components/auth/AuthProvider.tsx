@@ -1,30 +1,51 @@
-// components/auth/AuthProvider.tsx
-'use client';
-
-import { useEffect } from 'react';
-import { useAuthStore } from '@/lib/store/authStore';
-import { useProfileStore } from '@/lib/store/farmStore';
+"use client";
+import { useEffect } from "react";
+import { useAuthStore } from "@/lib/store/authStore";
+import Cookies from "js-cookie";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const initializeAuth = useAuthStore((state) => state.initializeAuth);
-  
-// Let TypeScript infer the type automatically
-const fetchProfile = useProfileStore(state => state.fetchProfile);
+  const { setLoading, token } = useAuthStore();
+  const setToken = useAuthStore((state) => state.setToken);
+  const cookie = Cookies.get("famtech-auth");
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const init = async () => {
-      await initializeAuth();
-      if (useAuthStore.getState().token) {
-        await fetchProfile();
+    if (cookie) {
+      try {
+        setToken(cookie);
+        const publicRoutes = [
+          "/",
+          "/login",
+          "/register",
+          "/forgot-password",
+          "/reset-password",
+          "/verify-code",
+          "/verify-email",
+        ];
+        if (publicRoutes.includes(pathname)) {
+          if (!user?.farmProfile) {
+            router.push("/complete-farm-profile");
+            return;
+          }
+          router.push("/dashboard");
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to parse auth cookie:", error);
       }
-    };
-    init();
-  }, 
-); // run once on mount
+    }
+    setLoading(false);
+  }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile]);
+
+  console.log(token);
 
   return <>{children}</>;
 }

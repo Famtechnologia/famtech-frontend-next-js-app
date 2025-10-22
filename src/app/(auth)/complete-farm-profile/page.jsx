@@ -10,15 +10,17 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { API_URL } from "../../../../config";
-import { useAuthStore } from "@/lib/store/authStore";
+
+import apiClient from "@/lib/api/apiClient";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { countries } from "@/lib/services/countries";
 export default function ModernFarmRegistration() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
-  const { token } = useAuthStore();
+  const {user} = useAuth()
+  console.log(user)
 
   const [formData, setFormData] = useState({
     // Personal Information
@@ -307,34 +309,28 @@ export default function ModernFarmRegistration() {
         language: formData.language.trim().toLowerCase(), // Ensure lowercase for ISO format
       };
 
-      const response = await fetch(`${API_URL}/api/create-farm-profile`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(registrationData),
-      });
+      const response = await apiClient.post(
+        "/api/create-farm-profile",
+        registrationData
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || errorData.errors?.join(", ") || errorData.error || "Registration failed" 
-        );
-      }
-
-      const result = await response.json();
+      const result = response.data;
 
       router.push("/dashboard");
-
-      console.log("Registration successful:", result);
     } catch (error) {
-      console.error("Registration error:", error.errors);
-      setRegistrationError(
-        error.message ||
-          error?.errors ||
-          "Registration failed. Please try again."
-      );
+      console.error("Registration error:", error);
+      let errorMessage = "Registration failed. Please try again.";
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        errorMessage =
+          errorData.message ||
+          errorData.errors?.join(", ") ||
+          errorData.error ||
+          errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      setRegistrationError(errorMessage);
     } finally {
       setLoading(false);
     }
