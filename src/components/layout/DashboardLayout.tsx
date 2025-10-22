@@ -695,6 +695,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   />
                   <input
                     type="text"
+                    disabled
                     placeholder="Search Famtech..."
                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm w-34 md:w-64"
                   />
