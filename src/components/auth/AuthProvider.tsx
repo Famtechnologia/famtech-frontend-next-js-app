@@ -31,7 +31,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "/verify-email",
         ];
         if (publicRoutes.includes(pathname)) {
-          if (!user?.farmProfile) {
+          if (!user?.farmProfile || user?.farmProfile === null || user?.farmProfile === undefined || user?.farmProfile === "") {
             router.push("/complete-farm-profile");
             return;
           }
@@ -44,8 +44,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     setLoading(false);
   }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile]);
-
-  console.log(token);
-
+  
   return <>{children}</>;
 }

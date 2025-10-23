@@ -39,7 +39,7 @@ useEffect(() => {
   const logout = () => {
     storeLogout();
   };
-
+ 
   return {
     user,
     setUser,
