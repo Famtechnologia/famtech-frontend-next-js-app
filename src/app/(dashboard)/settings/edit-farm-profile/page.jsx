@@ -147,13 +147,6 @@ export default function ModernFarmRegistration() {
         registrationData
       );
 
-      if (!response.ok) {
-        const errorData = await response.data;
-        toast.error(
-          errorData.message || errorData.errors?.join(", ") || "Update failed"
-        );
-      }
-
       const result = await response.data;
 
       toast.success(result?.message);
