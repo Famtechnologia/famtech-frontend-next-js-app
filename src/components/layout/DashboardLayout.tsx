@@ -591,7 +591,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Bottom Profile/Logout */}
-          <div className="border-t border-gray-200 p-4">
+          <div className="border-t border-gray-200 pt-4">
             <div
               className={`flex items-center ${
                 sidebarCollapsed ? "justify-center" : "space-x-3"
