@@ -90,10 +90,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   useEffect(() => {
-    if (user?._id) {
-      setId(user._id);
+    if (user?.farmProfile) {
+      setId(user?.farmProfile);
     }
-  }, [user?._id, setId]);
+  }, [user?.farmProfile, setId]);
   
   // Close flyout when clicking outside
   useEffect(() => {

@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useProfileStore } from "@/lib/store/farmStore";
+import { useState, useEffect, use } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
+import apiClient from "@/lib/api/apiClient";
+import { useProfileStore } from "@/lib/store/farmStore";
+import axios, { AxiosError } from "axios";
+import { useProfile } from "@/lib/hooks/useProfile";
 
 const sliderData = [
   {
@@ -79,29 +82,13 @@ const sliderData = [
 export default function WelcomeHeader() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const { user } = useAuth();
-  // Define the expected profile type
-  type Profile = {
-    farmName?: string;
-    // add other properties as needed
-  };
+  const [farmProfile, setFarmProfile] = useState(null);
 
-  // Tell TypeScript the shape of profile
-  const { profile, setId } = useProfileStore() as {
-    profile: Profile;
-    loading: boolean;
-    error: unknown;
-    setId: (id: string) => void;
-  };
-
-  useEffect(() => {
-    if (user?._id) {
-      setId(user._id);
-    }
-  }, [user?._id, setId]);
+  const {profile} = useProfile()
 
   // Auto-slide functionality
   useEffect(() => {
+    console.log(profile)
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
@@ -109,7 +96,7 @@ export default function WelcomeHeader() {
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, profile]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -152,7 +139,10 @@ export default function WelcomeHeader() {
                 <br className="sm:hidden" />
                 <span className="text-white">
                   {" "}
-                  {profile?.farmName ?? "Farmer"}
+                  {profile?.owner?.firstName
+                    ? profile.owner.firstName.charAt(0).toUpperCase() +
+                      profile.owner.firstName.slice(1).toLowerCase()
+                    : "Farmer"}
                 </span>
                 !
               </h2>

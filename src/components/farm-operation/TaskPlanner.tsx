@@ -299,7 +299,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = (await getTasks(user?._id || "")) as ApiTaskWithId[];
+      const data = (await getTasks(user?._id as string)) as ApiTaskWithId[];
 
       const mappedTasks: Task[] = data.map((task) => {
         const dateObject = task.timeline?.dueDate
