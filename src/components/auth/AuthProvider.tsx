@@ -10,7 +10,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setLoading, token } = useAuthStore();
+  const { setLoading} = useAuthStore();
   const setToken = useAuthStore((state) => state.setToken);
   const cookie = Cookies.get("famtech-auth");
   const router = useRouter();

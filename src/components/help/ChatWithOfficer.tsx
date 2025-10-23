@@ -1,6 +1,6 @@
 // ChatWithOfficerPage.tsx
 import React, { useState } from 'react';
-import OfficerList from './chatwithofficer/OfficerList';
+//import OfficerList from './chatwithofficer/OfficerList';
 import DefaultChatView from './chatwithofficer/DefaultChatView';
 import OfficerProfile from './chatwithofficer/OfficerProfile1';
 import ChatWindow from './chatwithofficer/ChatWindow';
@@ -11,7 +11,7 @@ const ChatWithOfficerPage: React.FC = () => {
   const [activeScreen, setActiveScreen] = useState<'default' | 'chat' | 'profile'>('default');
   const [selectedOfficer, setSelectedOfficer] = useState<Officer | null>(null);
   
-  const officers: Officer[] = [
+{/*}  const officers: Officer[] = [
     {
       id: 1,
       name: 'Grace Adebayo',
@@ -86,12 +86,12 @@ const ChatWithOfficerPage: React.FC = () => {
       }
     
     },
-  ];
+  ]; */}
 
-  const handleViewProfileClick = (officer: Officer) => {
+ {/* const handleViewProfileClick = (officer: Officer) => {
     setSelectedOfficer(officer);
     setActiveScreen('profile');
-  };
+  };*/}
 
   const handleStartChatClick = (officer: Officer) => {
     setSelectedOfficer(officer);

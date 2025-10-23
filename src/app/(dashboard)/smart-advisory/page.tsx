@@ -2,9 +2,9 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import axios, { AxiosError } from "axios";
-import apiClient from "@/lib/api/apiClient";
-import { useAuth } from "@/lib/hooks/useAuth";
+//import axios, { AxiosError } from "axios";
+//import apiClient from "@/lib/api/apiClient";
+//import { useAuth } from "@/lib/hooks/useAuth";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
 import { BrainCircuit, HeartPulse, Telescope } from "lucide-react";

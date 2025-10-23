@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
-import apiClient from "@/lib/api/apiClient";
-import { useProfileStore } from "@/lib/store/farmStore";
-import axios, { AxiosError } from "axios";
+//import { useAuth } from "@/lib/hooks/useAuth";
+//import apiClient from "@/lib/api/apiClient";
+//import { useProfileStore } from "@/lib/store/farmStore";
+//import axios, { AxiosError } from "axios";
 import { useProfile } from "@/lib/hooks/useProfile";
 
 const sliderData = [
@@ -82,7 +82,7 @@ const sliderData = [
 export default function WelcomeHeader() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [farmProfile, setFarmProfile] = useState(null);
+ // const [farmProfile, setFarmProfile] = useState(null);
 
   const {profile} = useProfile()
 
