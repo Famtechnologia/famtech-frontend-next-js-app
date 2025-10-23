@@ -7,6 +7,7 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useProfile } from "@/lib/hooks/useProfile";
 
 const GET_PROFILE_URL = "/api/get-profile";
 
@@ -16,29 +17,11 @@ export default function ModernFarmRegistration() {
   const { token } = useAuthStore();
   const [farmProfile, setFarmProfile] = useState({});
   const { user } = useAuth();
+  const { profile } = useProfile();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!token) {
-        toast.error("You are not authenticated. Please log in.");
-        return;
-      }
-
-      try {
-        const response = await apiClient.get(GET_PROFILE_URL);
-
-        const profileData = response.data?.data?.farmProfile;
-
-        setFarmProfile(profileData);
-        console.log("this is the profile data: ", profileData);
-      } catch (err) {
-        let errorMessage = "Failed to load profile due to an unknown error.";
-        toast.error(errorMessage);
-      }
-    };
-
-    fetchProfile();
-  }, [token]);
+    setFarmProfile(profile);
+  }, [profile]);
 
   // 1️⃣ Keep this as an empty state initially
   const [formData, setFormData] = useState({
