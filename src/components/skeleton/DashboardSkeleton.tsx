@@ -3,41 +3,54 @@ import React from 'react';
 const DashboardSkeleton = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Left Sidebar Skeleton */}
-      <div className="fixed inset-y-0 left-0 z-50 w-full bg-white shadow-lg animate-pulse">
+      
+      {/* ========================================
+        1. Left Sidebar Skeleton (Desktop/LG+)
+        ========================================
+        - Hidden on mobile (hidden)
+        - Fixed and full height on LG screens (lg:fixed lg:block lg:w-24) 
+      */}
+      <div className="hidden lg:block lg:w-24 fixed inset-y-0 left-0 z-50 bg-white shadow-lg animate-pulse">
+        
         {/* Logo/Brand Area */}
         <div className="flex h-16 items-center justify-center border-b border-gray-200 px-4">
-          <div className="h-8 w-32 bg-gray-200 rounded"></div>
+          <div className="h-8 w-16 bg-gray-200 rounded"></div>
         </div>
         
         {/* Navigation Menu */}
-        <div className="mt-8 px-4 space-y-2">
+        <div className="mt-8 px-2 space-y-4">
+          {/* Using icons only for narrow LG sidebar */}
           {[1, 2, 3, 4, 5, 6].map((item) => (
-            <div key={item} className="flex items-center space-x-3 px-3 py-2 rounded-lg">
-              <div className="w-5 h-5 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
+            <div key={item} className="flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-gray-100">
+              <div className="w-6 h-6 bg-gray-200 rounded"></div>
+              <div className="h-2 bg-gray-200 rounded w-10"></div> {/* small label placeholder */}
             </div>
           ))}
         </div>
 
         {/* Bottom Section */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="flex items-center space-x-3 px-3 py-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-            <div className="space-y-1">
-              <div className="h-3 bg-gray-200 rounded w-16"></div>
-              <div className="h-3 bg-gray-200 rounded w-12"></div>
-            </div>
-          </div>
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+          <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="ml-24">
-        {/* Top Header/Navigation Bar */}
-        <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-6 py-4">
+      {/* ========================================
+        2. Main Content Area 
+        ========================================
+        - Full width on mobile (no margin)
+        - Margin applied only on LG screens (lg:ml-24) to offset the sidebar 
+      */}
+      <div className="lg:ml-24">
+        
+        {/* Top Header/Navigation Bar (Always visible) */}
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 animate-pulse">
           <div className="flex items-center justify-between">
-            <div className="h-8 bg-gray-200 rounded w-32"></div>
+            {/* Mobile/Small screen logo/title area */}
+            <div className="lg:hidden h-8 bg-gray-200 rounded w-32"></div> 
+            
+            {/* Desktop title area */}
+            <div className="hidden lg:block h-8 bg-gray-200 rounded w-48"></div> 
+
             <div className="flex items-center space-x-4">
               <div className="w-8 h-8 bg-gray-200 rounded"></div>
               <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
@@ -46,9 +59,10 @@ const DashboardSkeleton = () => {
         </div>
 
         {/* Page Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <div className="space-y-6 animate-pulse">
-            {/* Welcome Header Skeleton */}
+            
+            {/* Welcome Header Skeleton (Responsive padding/sizing) */}
             <div className="mb-4 sm:mb-6">
               <div className="relative overflow-hidden rounded-lg sm:rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 p-4 sm:p-6 lg:p-8 shadow-xl">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -85,7 +99,10 @@ const DashboardSkeleton = () => {
               </div>
             </div>
 
-            {/* Main Grid Skeleton - First Row (Weather, Net Worth, Quick Actions) */}
+            {/* Main Grid Skeleton - First Row (Weather, Net Worth, Quick Actions) 
+                - Stacks on mobile (default grid-cols-1)
+                - 3 columns on LG screens (lg:grid-cols-3) 
+            */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Weather Forecast Skeleton */}
               <div className="bg-white rounded-lg shadow-sm p-6">
@@ -129,7 +146,10 @@ const DashboardSkeleton = () => {
               </div>
             </div>
 
-            {/* Bottom Grid Skeleton - Second Row (Task Overview and Crop Health) */}
+            {/* Bottom Grid Skeleton - Second Row (Task Overview and Crop Health)
+                - Stacks on mobile (default grid-cols-1)
+                - Left column spans 2 on LG screens (lg:col-span-2) 
+            */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column - Task Overview Skeleton */}
               <div className="lg:col-span-2">
@@ -214,8 +234,8 @@ const DashboardSkeleton = () => {
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu Overlay (hidden by default) */}
+      
+      {/* Mobile Menu Overlay (This is fine as it is hidden by default) */}
       <div className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden hidden"></div>
     </div>
   );
