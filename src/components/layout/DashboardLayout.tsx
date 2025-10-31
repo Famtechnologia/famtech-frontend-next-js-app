@@ -270,6 +270,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               comingSoon: true,
             },
             { name: "FAQ", href: `/help/faq` },
+            { name: "Request", href: `/help/request` },
+            { name: "Resources", href: `/help/support` },
           ],
         },
       ];
