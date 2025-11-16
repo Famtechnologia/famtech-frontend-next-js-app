@@ -3,7 +3,7 @@
 
 import React, { useMemo } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Calendar, Grid, ClipboardList, Leaf} from 'lucide-react';
+import { Calendar,  ClipboardList, Leaf} from 'lucide-react';
 
 // Import all your tab components
 

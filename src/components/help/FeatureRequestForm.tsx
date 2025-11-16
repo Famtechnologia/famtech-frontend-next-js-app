@@ -68,7 +68,7 @@ const FeatureRequestForm: React.FC<FeatureRequestFormProps> = ({ farmId, onSubmi
           <select
             id="category"
             value={category}
-            onChange={(e) => setCategory(e.target.value as any)}
+           // onChange={(e) => setCategory(e.target.value as any)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 appearance-none bg-white transition duration-150"
           >
             <option value="Integration">System Integration</option>
