@@ -27,6 +27,7 @@ import {
   Clock,
   CheckCircle,
   Calendar,
+  StoreIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -163,16 +164,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           children: [
             // Use query parameters to designate the active tab view
             { name: "Task Planner", href: `/farm-operation?tab=planner` },
+             { name: "Calendar View", href: `/farm-operation?tab=calendar` },
             {
               name: "Crop and Livestock Records",
               href: `/farm-operation?tab=records`,
             },
-            { name: "Calendar View", href: `/farm-operation?tab=calendar` },
-            {
-              name: "Inventory Management",
-              href: `/farm-operation?tab=inventory`,
-            },
+           
+            
           ],
+        },
+         {
+          name: "Inventory Management",
+          href: `/inventory`,
+          icon: StoreIcon,
+          key: "inventory",
+          expandable: false,
         },
         {
           name: "Smart Advisory",
@@ -270,8 +276,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               comingSoon: true,
             },
             { name: "FAQ", href: `/help/faq` },
-            { name: "Request", href: `/help/request` },
-            { name: "Resources", href: `/help/support` },
+           // { name: "Request", href: `/help/request` },
+           // { name: "Resources", href: `/help/support` },
           ],
         },
       ];

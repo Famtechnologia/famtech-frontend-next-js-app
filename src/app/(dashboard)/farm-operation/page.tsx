@@ -6,7 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Calendar, Grid, ClipboardList, Leaf} from 'lucide-react';
 
 // Import all your tab components
-import InventoryManagement from '@/components/farm-operation/InventoryManagement';
+
 import CropLivestockRecords from '@/components/farm-operation/CropLivestockRecords';
 import CalendarView from '@/components/farm-operation/CalenderView';
 import TaskPlanner from '@/components/farm-operation/TaskPlanner';
@@ -17,7 +17,6 @@ import TaskPlanner from '@/components/farm-operation/TaskPlanner';
 const tabsConfig = [
     { label: 'Task Planner', icon: ClipboardList, key: 'planner' },
     { label: 'Calendar View', icon: Calendar, key: 'calendar' },
-    { label: 'Inventory Management', icon: Grid, key: 'inventory' },
     { label: 'Crop & Livestock Records', icon: Leaf, key: 'records' },
     
 ];
@@ -44,8 +43,7 @@ export default function FarmOperationsPage() {
                 return <TaskPlanner />;
             case 'calendar':
                 return <CalendarView />;
-            case 'inventory':
-                return <InventoryManagement />;
+            
             case 'records':
                 return <CropLivestockRecords />;
            
