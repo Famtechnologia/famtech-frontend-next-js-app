@@ -172,6 +172,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               name: "Inventory Management",
               href: `/farm-operation?tab=inventory`,
             },
+            {
+              name: "Staff Management",
+              href: `/farm-operation?tab=staff`,
+            },
           ],
         },
         {
@@ -209,9 +213,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           expandable: true,
           comingSoon: true,
           children: [
-            { name: "Buy", href: "#" },
-            { name: "Sell", href: "#" },
-            { name: "My Orders", href: "#" },
+            // { name: "Market Overview", href: "/marketplace/market-overview" },
+            // { name: "Buy", href: "#" },
+            // { name: "Sell", href: "#" },
+            // { name: "My Orders", href: "#" },
           ],
         },
         {

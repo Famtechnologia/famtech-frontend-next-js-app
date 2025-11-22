@@ -3,16 +3,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Filter } from "lucide-react";
 // Assuming these types and services are correctly exported from your lib files
-import {
-  getCalendarData,
-  CalendarData,
-} from "@/lib/services/calender";
+import { getCalendarData, CalendarData } from "@/lib/services/calender";
 // createTask service is removed as it is no longer used
 import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
-import { getTasks, updateTask, Task  } from '../../lib/services/taskplanner';
+import { getTasks, updateTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { getStaffById, StaffType } from "@/lib/services/staff";
 
 // ----------------------------------------------------------------------
 // 1. INTERFACES AND TYPES
@@ -65,14 +63,20 @@ const DayTasksModal: React.FC<{
   onTaskUpdate: () => void;
 }> = ({ selectedDay, onClose, onTaskUpdate, selectedDate }) => {
   const [task, setTask] = useState<Task | null>(null);
-  const {user} = useAuth();
+  const [assignee, setAssignee] = useState<string>("");
+  const { user } = useAuth();
 
-useEffect(() => {
+  useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const data = (await getTasks(user?._id as string));
+        const data = await getTasks(user?._id as string);
 
-        const mappedTasks = data.find((task) => task?.timeline?.dueDate && new Date(task.timeline.dueDate).toISOString().split("T")[0] === selectedDate);
+        const mappedTasks = data.find(
+          (task) =>
+            task?.timeline?.dueDate &&
+            new Date(task.timeline.dueDate).toISOString().split("T")[0] ===
+              selectedDate
+        );
 
         // const filteredTasks = mappedTasks.filter(
         //   (task) => task.dueDate === date
@@ -80,13 +84,34 @@ useEffect(() => {
         setTask(mappedTasks || null);
       } catch (err) {
         console.error(err);
-      } 
+      }
     };
 
     if (selectedDate) {
       fetchTasks();
     }
   }, [selectedDate, user?._id]);
+
+  const getAssignee = async (id: string) => {
+    const res = await getStaffById(id);
+
+    try {
+      if (!res) {
+        return null;
+      }
+      setAssignee(res.name as string);
+      return res;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (task) {
+      getAssignee(task?.assignee as string);
+    }
+    
+  }, [task]);
 
   if (!selectedDay) return null;
 
@@ -99,8 +124,6 @@ useEffect(() => {
       day: "numeric",
     }
   );
-
-  console.log(selectedDate)
 
   const handleToggleStatus = async (task: Task) => {
     try {
@@ -120,6 +143,8 @@ useEffect(() => {
     }
   };
 
+  
+
   return (
     <Modal
       show={!!selectedDay}
@@ -127,31 +152,32 @@ useEffect(() => {
       title={`Tasks for ${formattedDate}`}
     >
       <div className="space-y-4 max-h-96 overflow-y-auto">
-        {task ? (<div 
-              key={task.id as string}
-              className="p-3 border rounded-md shadow-sm flex justify-between items-center transition-shadow hover:shadow-md border-gray-400"
-            >
-              <div className="flex-1 min-w-0">
-                <h4
-                  className={`font-semibold truncate capitalize ${task.status === "completed" ? "line-through text-gray-500" : "text-gray-900"}`}
-                >
-                  {task.title}
-                </h4>
-                <p className="text-xs text-gray-500">
-                  {task.assignee} - Priority: {task.priority}
-                </p>
-              </div>
-              <button
-                onClick={() => handleToggleStatus(task)}
-                className={`ml-4 px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
-                  task.status === "completed"
-                    ? "bg-green-500 text-white hover:bg-green-600"
-                    : "bg-orange-100 text-orange-700 hover:bg-orange-200"
-                }`}
-              > 
-                {task.status === "completed" ? "Done" : "Mark Complete"}
-              </button>
+        {task ? (
+          <div
+            key={task.id as string}
+            className="p-3 border rounded-md shadow-sm flex justify-between items-center transition-shadow hover:shadow-md border-gray-400"
+          >
+            <div className="flex-1 min-w-0">
+              <h4
+                className={`font-semibold truncate capitalize ${task.status === "completed" ? "line-through text-gray-500" : "text-gray-900"}`}
+              >
+                {task.title}
+              </h4>
+              <p className="text-xs text-gray-500 capitalize">
+                {assignee} - Priority: {task.priority}
+              </p>
             </div>
+            <button
+              onClick={() => handleToggleStatus(task)}
+              className={`ml-4 px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
+                task.status === "completed"
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+              }`}
+            >
+              {task.status === "completed" ? "Done" : "Mark Complete"}
+            </button>
+          </div>
         ) : (
           <p className="text-gray-500">No tasks scheduled for this day.</p>
         )}
@@ -286,7 +312,7 @@ const CalendarView: React.FC = () => {
   // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
   const blankDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
-   if (isLoading) {
+  if (isLoading) {
     return <CalendarSkeletonLoader />;
   }
 

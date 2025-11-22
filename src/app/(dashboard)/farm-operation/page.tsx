@@ -1,15 +1,15 @@
-// Example: app/farm-operation/page.tsx or app/farm-operation/[subRole]/page.tsx
 'use client';
 
 import React, { useMemo } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Calendar, Grid, ClipboardList, Leaf} from 'lucide-react';
+import { Calendar, Grid, ClipboardList, Leaf, Users } from 'lucide-react';
 
 // Import all your tab components
 import InventoryManagement from '@/components/farm-operation/InventoryManagement';
 import CropLivestockRecords from '@/components/farm-operation/CropLivestockRecords';
 import CalendarView from '@/components/farm-operation/CalenderView';
 import TaskPlanner from '@/components/farm-operation/TaskPlanner';
+import StaffManagement from '@/components/farm-operation/StaffManagement';
 // Ensure you have an EquipmentUsage component
 
 
@@ -19,6 +19,7 @@ const tabsConfig = [
     { label: 'Calendar View', icon: Calendar, key: 'calendar' },
     { label: 'Inventory Management', icon: Grid, key: 'inventory' },
     { label: 'Crop & Livestock Records', icon: Leaf, key: 'records' },
+    { label: 'Staff Management', icon: Users, key: 'staff' },
     
 ];
 
@@ -48,6 +49,8 @@ export default function FarmOperationsPage() {
                 return <InventoryManagement />;
             case 'records':
                 return <CropLivestockRecords />;
+            case 'staff':
+                return <StaffManagement />;
            
             default:
                 return <TaskPlanner />;
