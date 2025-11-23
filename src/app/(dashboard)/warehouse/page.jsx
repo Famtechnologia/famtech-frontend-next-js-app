@@ -10,12 +10,12 @@ import {
   deleteWarehouse 
 } from "@/lib/services/warehouse";
 
-// --- 1. Custom Toast Component (No external library needed) ---
+
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
-    }, 3000); // Auto close after 3 seconds
+    }, 3000); 
     return () => clearTimeout(timer);
   }, [onClose]);
 
@@ -42,7 +42,7 @@ const Warehouse = () => {
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Toast State
+  
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
@@ -85,11 +85,9 @@ const Warehouse = () => {
       setIsSubmitting(true);
       
       if (selectedWarehouse) {
-        // ✅ FINAL FIX: Prioritize the clean 'id' field (the UUID)
+        
         const warehouseId = selectedWarehouse.id || selectedWarehouse._id;
 
-        // Debugging: Console log the final ID being sent
-        console.log("FINAL ID being sent for update/delete:", warehouseId);
 
         if (!warehouseId) {
           throw new Error("Warehouse ID is missing. Cannot update.");
@@ -107,7 +105,7 @@ const Warehouse = () => {
       fetchWarehouses(); // Refresh list
     } catch (error) {
       console.error("Error saving warehouse:", error);
-      // Display backend error message if available
+      
       const errorMsg = error.response?.data?.msg || error.response?.data?.message || "Failed to save warehouse.";
       showToast(errorMsg, "error");
     } finally {
@@ -116,7 +114,7 @@ const Warehouse = () => {
   };
 
   const handleDelete = async (id) => {
-    // We keep confirm() for safety, but replace the success/error alert with Toast
+    
     if (!window.confirm("Are you sure you want to delete this warehouse?")) return;
 
     try {
@@ -137,7 +135,7 @@ const Warehouse = () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans relative">
       
-      {/* 3. Render Toast Notification */}
+      
       {toast.show && (
         <Toast 
           message={toast.message} 

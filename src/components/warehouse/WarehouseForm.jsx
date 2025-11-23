@@ -23,7 +23,7 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
     if (warehouse) {
       setFormData({
         name: warehouse.name || "",
-        manager: warehouse.manager || "", // 2. Map existing manager if editing
+        manager: warehouse.manager || "", 
         location: warehouse.location || "",
         capacity: warehouse.capacity?.toString() || "",
         products: warehouse.products || []
@@ -75,7 +75,7 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
     const dataToSubmit = {
       name: formData.name.trim(),
-      manager: formData.manager.trim(), // 4. Include manager in submission
+      manager: formData.manager.trim(), 
       location: formData.location.trim(),
       capacity: parseInt(formData.capacity),
       products: formData.products
@@ -212,7 +212,7 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
             {/* Capacity Field */}
             <div className="space-y-1">
-              <label htmlFor="capacity" className={labelClass}>Capacity (units) *</label>
+              <label htmlFor="capacity" className={labelClass}>Capacity *</label>
               <input
                 id="capacity"
                 name="capacity"

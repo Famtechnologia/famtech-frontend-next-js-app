@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Warehouse, MapPin, Package, Trash2, Edit, Loader2 } from "lucide-react";
+import {  MapPin, Package, Trash2, Edit, Loader2 } from "lucide-react";
 
-// --- Custom Confirmation Modal Component (Remains the same) ---
+
 const ConfirmDeleteModal = ({ warehouseName, onConfirm, onCancel, isLoading }) => {
     return (
         <div 
@@ -50,7 +50,7 @@ const ConfirmDeleteModal = ({ warehouseName, onConfirm, onCancel, isLoading }) =
 
 // --- WarehouseCard Component ---
 
-// CHANGE 1: Added onViewDetails to the destructured props
+
 const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -82,12 +82,12 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
         onEdit(warehouse);
     };
     
-    // NEW HANDLER: Function to handle the "View Details" click
+    
     const handleViewDetailsClick = () => {
         if (onViewDetails) {
             onViewDetails(warehouse);
         } else {
-            // Fallback to onEdit if no separate view handler is provided
+           
             onEdit(warehouse);
         }
     };
@@ -99,7 +99,7 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
     return (
         <div className="bg-white p-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col h-full">
             
-            {/* Confirmation Modal Render */}
+            
             {isConfirmOpen && (
                 <ConfirmDeleteModal
                     warehouseName={warehouse.name}
@@ -141,9 +141,9 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
                     </div>
                 </div>
 
-                {/* Info Section (Remains the same) */}
+                {/* Info Section  */}
                 <div className="space-y-2.5">
-                    {/* ... other info ... */}
+                    
                     <div className="flex items-center gap-2.5 text-sm text-gray-600">
                         <MapPin className="h-5 w-5 text-gray-500" />
                         <span className="truncate text-lg">{warehouse.location}</span>
@@ -174,10 +174,10 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
                 </div>
             </div>
 
-            {/* Footer / Action Button */}
+            
             <div className="p-4 border-t border-gray-100 mt-auto">
                 <button
-                    // CHANGE 2: Call the new handler
+                
                     onClick={handleViewDetailsClick} 
                     className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
