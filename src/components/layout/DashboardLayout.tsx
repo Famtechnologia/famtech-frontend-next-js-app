@@ -15,6 +15,7 @@ import {
   HelpCircle,
   LogOut,
   Menu,
+  BarrelIcon,
   X,
   Search,
   Bell,
@@ -28,6 +29,7 @@ import {
   CheckCircle,
   Calendar,
   StoreIcon,
+  HouseIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -186,6 +188,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "Smart Advisory",
           expandable: false,
           href: `/smart-advisory`,
+        },
+        {
+          name: "Warehouse",
+          icon: BarrelIcon,
+          key: "warehouse",
+          expandable: false,
+          href: `/warehouse`,
         },
         {
           name: "Mapping & Geo Tools",
