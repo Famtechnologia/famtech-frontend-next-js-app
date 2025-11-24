@@ -1,4 +1,4 @@
-import apiClient from "../api/farmoperation"; 
+import apiClient from "../api/apiClient"; 
 
 
 const API_BASE_URL = `/api/warehouse`; 

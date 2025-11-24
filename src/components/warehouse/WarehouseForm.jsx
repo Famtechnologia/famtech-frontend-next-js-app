@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { X, Plus } from "lucide-react";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
-  // 1. ADDED 'manager' to initial state
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "",
-    manager: "", 
     location: "",
     capacity: "",
     products: []
@@ -23,7 +24,6 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
     if (warehouse) {
       setFormData({
         name: warehouse.name || "",
-        manager: warehouse.manager || "", 
         location: warehouse.location || "",
         capacity: warehouse.capacity?.toString() || "",
         products: warehouse.products || []
@@ -31,7 +31,6 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
     } else {
       setFormData({
         name: "",
-        manager: "",
         location: "",
         capacity: "",
         products: []
@@ -43,24 +42,15 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Warehouse name is required";
-    }
-
-    // 3. ADDED Validation for Manager
-    if (!formData.manager.trim()) {
-      newErrors.manager = "Manager name is required";
-    }
-
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
-    }
-
+    if (!formData.name.trim()) newErrors.name = "Warehouse name is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
     if (!formData.capacity) {
       newErrors.capacity = "Capacity is required";
     } else if (isNaN(formData.capacity) || parseInt(formData.capacity) <= 0) {
       newErrors.capacity = "Capacity must be a positive number";
     }
+
+    if (!user?._id) newErrors.manager = "User ID (manager) missing — please log in again.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -68,17 +58,14 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const dataToSubmit = {
       name: formData.name.trim(),
-      manager: formData.manager.trim(), 
       location: formData.location.trim(),
       capacity: parseInt(formData.capacity),
-      products: formData.products
+      products: formData.products,
+      manager: user?._id || ""
     };
 
     await onSubmit(dataToSubmit);
@@ -86,54 +73,32 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ""
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
-    setProductForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setProductForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const addProduct = () => {
-    if (!productForm.name.trim() || !productForm.quantity) {
-      return;
-    }
-
+    if (!productForm.name.trim() || !productForm.quantity) return;
     const newProduct = {
       name: productForm.name.trim(),
       quantity: parseInt(productForm.quantity),
       unit: productForm.unit.trim() || "units",
       description: productForm.description.trim()
     };
-
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       products: [...prev.products, newProduct]
     }));
-
-    setProductForm({
-      name: "",
-      quantity: "",
-      unit: "",
-      description: ""
-    });
+    setProductForm({ name: "", quantity: "", unit: "", description: "" });
   };
 
   const removeProduct = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       products: prev.products.filter((_, i) => i !== index)
     }));
@@ -147,7 +112,7 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
   const labelClass = "block text-sm font-medium text-green-800 mb-1";
 
-  if (!isOpen) return null; 
+  if (!isOpen) return null;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full mx-auto max-h-[90vh] flex flex-col">
@@ -159,10 +124,7 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
       <div className="overflow-y-auto flex-1 pr-2">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Warehouse Details */}
           <div className="space-y-4">
-            
-            {/* Name Field */}
             <div className="space-y-1">
               <label htmlFor="name" className={labelClass}>Warehouse Name *</label>
               <input
@@ -173,28 +135,9 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                 placeholder="Enter warehouse name"
                 className={inputClass(errors.name)}
               />
-              {errors.name && (
-                <p className="text-sm text-red-500 mt-1">{errors.name}</p>
-              )}
+              {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
             </div>
 
-            {/* 5. ADDED Manager Input Field */}
-            <div className="space-y-1">
-              <label htmlFor="manager" className={labelClass}>Manager Name *</label>
-              <input
-                id="manager"
-                name="manager"
-                value={formData.manager}
-                onChange={handleChange}
-                placeholder="Enter manager's name"
-                className={inputClass(errors.manager)}
-              />
-              {errors.manager && (
-                <p className="text-sm text-red-500 mt-1">{errors.manager}</p>
-              )}
-            </div>
-
-            {/* Location Field */}
             <div className="space-y-1">
               <label htmlFor="location" className={labelClass}>Location *</label>
               <input
@@ -205,12 +148,9 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                 placeholder="e.g., Lagos, Nigeria"
                 className={inputClass(errors.location)}
               />
-              {errors.location && (
-                <p className="text-sm text-red-500 mt-1">{errors.location}</p>
-              )}
+              {errors.location && <p className="text-sm text-red-500 mt-1">{errors.location}</p>}
             </div>
 
-            {/* Capacity Field */}
             <div className="space-y-1">
               <label htmlFor="capacity" className={labelClass}>Capacity *</label>
               <input
@@ -222,21 +162,20 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                 placeholder="Enter storage capacity"
                 className={inputClass(errors.capacity)}
               />
-              {errors.capacity && (
-                <p className="text-sm text-red-500 mt-1">{errors.capacity}</p>
-              )}
+              {errors.capacity && <p className="text-sm text-red-500 mt-1">{errors.capacity}</p>}
             </div>
           </div>
 
-          {/* Products Section */}
           <div className="space-y-4">
             <div className="border-t border-gray-200 pt-4">
               <h3 className="text-lg font-semibold text-green-800 mb-3">Products</h3>
-              
               {formData.products.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {formData.products.map((product, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg"
+                    >
                       <div className="flex-1">
                         <p className="font-medium text-green-900">{product.name}</p>
                         <p className="text-sm text-green-700">

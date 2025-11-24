@@ -165,12 +165,7 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
                         </span>
                     </div>
                     
-                    <div className="flex items-center gap-2.5 text-sm text-gray-600">
-                        <div className="h-4 w-4 flex items-center justify-center">
-                            <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                        </div>
-                        <span className="text-lg">Manager: <span className="font-medium text-gray-900">{warehouse.manager}</span></span>
-                    </div>
+                  
                 </div>
             </div>
 

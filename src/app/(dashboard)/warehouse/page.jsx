@@ -9,34 +9,23 @@ import {
   updateWarehouse, 
   deleteWarehouse 
 } from "@/lib/services/warehouse";
-
-
-// --- Define a Placeholder for getting User ID ---
-// ⚠️ You must replace this placeholder hook/function with your actual authentication logic
-const useCurrentUserId = () => {
-    // This should return the ID string of the logged-in user (the 'manager' ID)
-    // Example: const { user } = useAuth(); return user?.id || null;
-    // For now, returning a hardcoded dummy ID to prevent crashes, but replace this!
-    return 'your_logged_in_farmer_id_here'; 
-};
-// --- End Placeholder ---
-
+import { useAuth } from "@/lib/hooks/useAuth";
 
 const Toast = ({ message, type, onClose }) => {
-// ... (Toast component remains the same)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 3000); 
+    const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
 
   const isError = type === "error";
-
   return (
-    <div className={`fixed top-4 right-4 z-[60] flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 animate-in slide-in-from-right-5 ${
-      isError ? "bg-red-50 border-red-200 text-red-800" : "bg-green-50 border-green-200 text-green-800"
-    }`}>
+    <div
+      className={`fixed top-4 right-4 z-[60] flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 animate-in slide-in-from-right-5 ${
+        isError
+          ? "bg-red-50 border-red-200 text-red-800"
+          : "bg-green-50 border-green-200 text-green-800"
+      }`}
+    >
       {isError ? <AlertCircle className="h-5 w-5" /> : <CheckCircle className="h-5 w-5" />}
       <p className="font-medium text-sm">{message}</p>
       <button onClick={onClose} className="ml-2 opacity-70 hover:opacity-100">
@@ -46,52 +35,24 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
-// --- Main Warehouse Component ---
 const Warehouse = () => {
-  // ✅ ADDED: Retrieve the current user ID using the placeholder hook
-  const currentUserId = useCurrentUserId();
-
+  const { user, loading: authLoading } = useAuth();
   const [warehouses, setWarehouses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
-  // ✅ CORRECTED: useEffect now depends on currentUserId
-  useEffect(() => {
-    // Only fetch if the user ID is available
-    if (currentUserId) {
-      fetchWarehouses();
-    } else {
-      // If ID is not available (e.g., still loading), set loading to false 
-      // or handle unauthenticated state appropriately
-      setIsLoading(false);
-    }
-  }, [currentUserId]); // 🎯 CRITICAL: Re-fetch when the user ID loads
-
-  const showToast = (message, type = "success") => {
+  const showToast = (message, type = "success") =>
     setToast({ show: true, message, type });
-  };
-
-  const closeToast = () => {
-    setToast(prev => ({ ...prev, show: false }));
-  };
+  const closeToast = () => setToast((prev) => ({ ...prev, show: false }));
 
   const fetchWarehouses = async () => {
-    // The check is still important, but the useEffect dependency helps ensure ID is present
-    if (!currentUserId) { 
-      console.warn("User ID not available. Skipping warehouse fetch.");
-      setIsLoading(false);
-      return;
-    }
-    
+    if (!user?._id) return;
     try {
       setIsLoading(true);
-      // ✅ Using the scoped service function
-      const data = await getAllWarehouses(currentUserId); 
+      const data = await getAllWarehouses(user._id);
       setWarehouses(data);
     } catch (error) {
       console.error("Error fetching warehouses:", error);
@@ -100,6 +61,12 @@ const Warehouse = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user?._id && !authLoading) {
+      fetchWarehouses();
+    }
+  }, [user?._id, authLoading]);
 
   const handleCreateNew = () => {
     setSelectedWarehouse(null);
@@ -112,41 +79,27 @@ const Warehouse = () => {
   };
 
   const handleFormSubmit = async (formData) => {
-    // ... (logic remains the same) ...
     try {
       setIsSubmitting(true);
-      
+
       if (selectedWarehouse) {
-        
-        const warehouseId = selectedWarehouse.id || selectedWarehouse._id; // Prioritizes UUID 'id'
-
-
-        if (!warehouseId) {
-          throw new Error("Warehouse ID is missing. Cannot update.");
-        }
-
-        // NOTE: If you are creating a new warehouse, you might need to
-        // manually include the 'manager' (currentUserId) in the formData 
-        // if the backend doesn't automatically pull it from the JWT token.
-        // E.g., const dataForUpdate = {...formData, manager: currentUserId};
-        // However, we'll assume the token handles this for now.
-
+        const warehouseId = selectedWarehouse.id || selectedWarehouse._id;
         await updateWarehouse(warehouseId, formData);
-        showToast("Warehouse updated successfully!", "success");
+        showToast("Warehouse updated successfully!");
       } else {
-        // If creating, ensure the manager/owner ID is included in the payload
-        const dataForCreation = { ...formData, manager: currentUserId };
-        await createWarehouse(dataForCreation);
-        showToast("Warehouse created successfully!", "success");
+        await createWarehouse({ ...formData, manager: user._id });
+        showToast("Warehouse created successfully!");
       }
-      
+
       setIsFormOpen(false);
       setSelectedWarehouse(null);
-      fetchWarehouses(); // Refresh list
+      fetchWarehouses();
     } catch (error) {
       console.error("Error saving warehouse:", error);
-      
-      const errorMsg = error.response?.data?.msg || error.response?.data?.message || "Failed to save warehouse.";
+      const errorMsg =
+        error.response?.data?.msg ||
+        error.response?.data?.message ||
+        "Failed to save warehouse.";
       showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
@@ -154,12 +107,10 @@ const Warehouse = () => {
   };
 
   const handleDelete = async (id) => {
-    // ... (logic remains the same) ...
     if (!window.confirm("Are you sure you want to delete this warehouse?")) return;
-
     try {
       await deleteWarehouse(id);
-      showToast("Warehouse deleted successfully", "success");
+      showToast("Warehouse deleted successfully");
       fetchWarehouses();
     } catch (error) {
       console.error("Error deleting warehouse:", error);
@@ -172,23 +123,21 @@ const Warehouse = () => {
     setSelectedWarehouse(null);
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="h-10 w-10 text-green-600 animate-spin mb-4" />
+        <p className="text-gray-500">Checking authentication...</p>
+      </div>
+    );
+  }
+
   return (
-    // ... (JSX render block remains the same, except for the fix to handleFormSubmit) ...
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans relative">
-      
-      
-      {toast.show && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={closeToast} 
-        />
-      )}
+      {toast.show && <Toast {...toast} onClose={closeToast} />}
 
       <div className="container p-0 mx-0 md:mx-auto md:px-4 md:py-8 max-w-7xl">
-        {/* Header Section */}
         <div className="mb-8">
-          {/* ... (Header content) ... */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
@@ -198,17 +147,16 @@ const Warehouse = () => {
                 Manage your inventory locations and stock levels.
               </p>
             </div>
-            <button 
+            <button
               onClick={handleCreateNew}
               className="inline-flex items-center justify-center md:w-30 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              <Plus className=" h-5 w-5 md:mr-2" />
+              <Plus className="h-5 w-5 md:mr-2" />
               New
             </button>
           </div>
         </div>
 
-        {/* Content Section */}
         <div className="mb-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
@@ -222,14 +170,14 @@ const Warehouse = () => {
               </div>
               <h3 className="text-lg font-medium text-gray-900">No warehouses found</h3>
               <p className="text-gray-500 mb-6 max-w-sm mx-auto mt-2">
-                Get started by creating your first warehouse to track inventory and locations.
+                Get started by creating your first warehouse.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {warehouses.map((warehouse) => (
                 <WarehouseCard
-                  key={warehouse.id || warehouse._id} // Fixed key to use 'id' as primary if available
+                  key={warehouse._id}
                   warehouse={warehouse}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
@@ -240,7 +188,6 @@ const Warehouse = () => {
         </div>
       </div>
 
-      {/* Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <WarehouseForm
