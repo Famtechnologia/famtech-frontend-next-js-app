@@ -1,4 +1,5 @@
 import apiClient from "../api/apiClient";
+import axios from "axios";
 
 export interface StaffType {
   name?: string;
@@ -6,6 +7,7 @@ export interface StaffType {
   email?: string;
   isVerified?: string;
   farmId?: string;
+  _id?: string;
 }
 
 export const getStaffs = async (id: string): Promise<StaffType[]> => {
@@ -14,53 +16,69 @@ export const getStaffs = async (id: string): Promise<StaffType[]> => {
 };
 
 export const getStaffById = async (id: string): Promise<StaffType> => {
-  const response = await apiClient.get(`/api/staff/${id}`);
+  const response = await apiClient.get(`/api/staff/attendee/${id}`);
   return response.data.data;
 };
 
-// Create a new task
-export const createStaff = async (
-  taskData: StaffType
-): Promise<StaffType> => {
+// Create a new staff
+export const createStaff = async (taskData: StaffType): Promise<StaffType> => {
   const response = await apiClient.post("/api/staff/signup", taskData);
   return response.data;
 };
 
-// Update an existing task
+// Update staff
 export const updateStaff = async (
-  id: string,
   taskData: Partial<StaffType>
 ): Promise<StaffType> => {
   const response = await apiClient.put(`/api/staff/update`, taskData);
   return response.data;
 };
 
-// Delete a task
+// Change a staff password
+export const changeStaffPassword = async (
+  taskData: Partial<{
+    id: string;
+    newPassword: string;
+    confirmPassword: string;
+    oldPassword: string;
+  }>
+): Promise<StaffType> => {
+  const response = await apiClient.put(`/api/staff/change-password`, taskData);
+  return response.data;
+};
+
+// Delete a staff
 export const deleteStaff = async (id: string): Promise<{ message: string }> => {
   const response = await apiClient.delete(`/api/staff/delete/${id}`);
   return response.data.data;
 };
 
-// // ----------------------------
-// // 🔔 Notification Types & API
-// // ----------------------------
-// export interface Notification {
-//   timeline: {dueDate: Date; dueTime: string;};
-//   notification: string;
-//   title: string;
-//   id: string;
-//   message: string;
-//   taskId: string;
-//   read: boolean;
-//   timestamp: string;
-// }
-
-// // Fetch notifications for a specific user 
-// export const getNotifications = async (
-//   userId: string
-// ): Promise<Notification[]> => {
-//   const response = await apiClient.get(
-//     `/api/task-planner/notification/${userId}`
-//   );
-//   return response.data;
-// };
+export const loginStaff = async (
+  email: string,
+  password: string
+): Promise<{
+  success: boolean;
+  message: string;
+  token: string;
+}> => {
+  try {
+    const { data } = await apiClient.post<{
+      success: boolean;
+      message: string;
+      token: string;
+    }>("/api/staff/login", {
+      email,
+      password,
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Login failed";
+      throw new Error(message);
+    }
+    throw new Error("An unknown error occurred during login.");
+  }
+};

@@ -204,8 +204,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 {staff.name}
               </option>
             ))}
-            <option value="Crop task">Crop task</option>
-            <option value="Livestock task">Livestock task</option>
           </select>
         </div>
         <div>

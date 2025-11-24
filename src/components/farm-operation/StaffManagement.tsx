@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
-import Image from "next/image";
 import { useProfile } from "@/lib/hooks/useProfile";
 import {
   createStaff,
@@ -34,6 +33,7 @@ const StaffManagement = () => {
     name: "",
     email: "",
     phone: "",
+    _id: "",
   });
 
   const { profile } = useProfile();
@@ -83,7 +83,7 @@ const StaffManagement = () => {
 
     try {
       if (edit) {
-        await updateStaff(selectedId, { ...formData });
+        await updateStaff(formData);
         fetchStaffData();
         setShowAddStaffModal(false);
         // Reset form
@@ -91,8 +91,9 @@ const StaffManagement = () => {
           name: "",
           email: "",
           phone: "",
+          _id: "",
         });
-        setSelectedId("")
+        setSelectedId("");
 
         return;
       }
@@ -104,6 +105,7 @@ const StaffManagement = () => {
         name: "",
         email: "",
         phone: "",
+        _id: "",
       });
     } catch (error) {
       console.error("Failed to add staff:", error);
@@ -130,6 +132,7 @@ const StaffManagement = () => {
       name: person.name as string,
       email: person.email as string,
       phone: person.phone as string,
+      _id: person._id as string,
     });
     setSelectedId(person.email as string);
   };
@@ -172,7 +175,7 @@ const StaffManagement = () => {
       </div>
 
       {/* --- STAFF MEMBERS GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredStaff.length > 0 ? (
           filteredStaff.map((person) => (
             <Card
@@ -205,24 +208,6 @@ const StaffManagement = () => {
                     {person.phone}
                   </span>
                 </p>
-                {/* <p className="flex justify-between text-sm">
-                  <span className="text-gray-500">Country:</span>
-                  <span className="font-semibold text-gray-800">
-                    {person?.country}
-                  </span>
-                </p>
-                <p className="flex justify-between text-sm">
-                  <span className="text-gray-500">State:</span>
-                  <span className="font-semibold text-gray-800">
-                    {person?.state}
-                  </span>
-                </p>
-                <p className="flex justify-between text-sm">
-                  <span className="text-gray-500">LGA:</span>
-                  <span className="font-semibold text-gray-800">
-                    {person?.lga}
-                  </span>
-                </p> */}
               </div>
               {/* Actions */}
               <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
@@ -296,7 +281,6 @@ const StaffManagement = () => {
               value={formData.email}
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-              disabled={edit}
             />
           </div>
           <div>
