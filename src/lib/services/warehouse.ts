@@ -47,8 +47,13 @@ export const createWarehouse = async (
 };
 
 
-export const getAllWarehouses = async (): Promise<Warehouse[]> => {
-    const response = await apiClient.get(API_BASE_URL);
+export const getAllWarehouses = async (userId: string): Promise<Warehouse[]> => {
+    if (!userId) {
+        throw new Error("User ID is required to fetch user-specific warehouses.");
+    }
+    
+    // 🎯 Using the confirmed endpoint: /api/warehouse/manager/:id
+    const response = await apiClient.get(`${API_BASE_URL}/manager/${userId}`); 
     return response.data;
 };
 
