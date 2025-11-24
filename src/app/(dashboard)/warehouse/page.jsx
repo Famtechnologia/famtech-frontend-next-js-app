@@ -107,7 +107,6 @@ const Warehouse = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this warehouse?")) return;
     try {
       await deleteWarehouse(id);
       showToast("Warehouse deleted successfully");
