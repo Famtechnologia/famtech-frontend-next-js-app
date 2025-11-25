@@ -1,21 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useAuth } from "@/lib/hooks/useAuth";
-import { useProfileStore } from "@/lib/store/farmStore";
 import {
   LayoutDashboard,
   Tractor,
   Brain,
-  Map,
-  CreditCard,
-  ShoppingCart,
-  FileText,
   Settings,
-  HelpCircle,
   LogOut,
   Menu,
-  BarrelIcon,
   X,
   Search,
   Bell,
@@ -28,11 +20,10 @@ import {
   Clock,
   CheckCircle,
   Calendar,
-  StoreIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// import { useLogout } from "@/lib/api/auth";
+import { useAssignee } from "@/lib/hooks/Assignee";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
 // --- Interface Definitions for clarity ---
@@ -40,7 +31,6 @@ import { getNotifications, Notification } from "@/lib/services/taskplanner";
 interface NavChild {
   name: string;
   href: string;
-  // 💡 ADDED: Flag to mark individual sub-items as coming soon
   comingSoon?: boolean;
 }
 
@@ -55,20 +45,12 @@ interface NavItem {
   comingSoon?: boolean;
 }
 
-interface ProfileOwner {
-  firstName?: string;
-}
-interface Profile {
-  owner?: ProfileOwner;
-}
-
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title?: string;
 }
-// --- End Interface Definitions ---
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function AssigneeLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["dashboard"]);
@@ -76,27 +58,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  // NEW STATE for collapsed sidebar flyout preview
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
 
-  const { user, logout } = useAuth();
+  const { user, logout } = useAssignee();
   const pathname = usePathname();
-  // const { handleLogout } = useLogout();
 
-  const { profile, setId } = useProfileStore() as {
-    profile?: Profile;
-    loading: boolean;
-    error: unknown;
-    setId: (id: string) => void;
-  };
-
-  useEffect(() => {
-    if (user?.farmProfile) {
-      setId(user?.farmProfile);
-    }
-  }, [user?.farmProfile, setId]);
-  
   // Close flyout when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -144,158 +111,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const getNavItems = (): NavItem[] => {
-    const role = user?.role || "";
-    const subRole = user?.role || "";
-
-    if (role === "farmer") {
-      return [
-        {
-          name: "Dashboard",
-          href: `/dashboard`,
-          icon: LayoutDashboard,
-          key: "dashboard",
-          expandable: false,
-        },
-        {
-          name: "Farm Operations",
-          icon: Tractor,
-          key: "farm-operations",
-          expandable: true,
-          // Note: If you want to mark the entire section as coming soon, you'd add comingSoon: true here.
-          children: [
-            // Use query parameters to designate the active tab view
-            { name: "Task Planner", href: `/farm-operation?tab=planner` },
-             { name: "Calendar View", href: `/farm-operation?tab=calendar` },
-            {
-              name: "Crop and Livestock Records",
-              href: `/farm-operation?tab=records`,
-            },
-             {
-              name: "Staff Management",
-              href: `/farm-operation?tab=staff`,
-            },
-           
-            
-          ],
-        },
-         {
-          name: "Inventory Management",
-          href: `/inventory`,
-          icon: StoreIcon,
-          key: "inventory",
-          expandable: false,
-        },
-        {
-          name: "Smart Advisory",
-          icon: Brain,
-          key: "Smart Advisory",
-          expandable: false,
-          href: `/smart-advisory`,
-        },
-        {
-          name: "Warehouse",
-          icon: BarrelIcon,
-          key: "warehouse",
-          expandable: false,
-          href: `/warehouse`,
-        },
-        {
-          name: "Mapping & Geo Tools",
-          icon: Map,
-          key: "mapping",
-          expandable: false,
-          href: `/dashboard/farmer/${subRole}/mapping`,
-          comingSoon: true,
-        },
-        {
-          name: "Financials - SmartNet",
-          icon: CreditCard,
-          key: "financials",
-          expandable: true,
-          comingSoon: true,
-          children: [
-            { name: "Overview", href: "#" },
-            { name: "Income", href: "#" },
-            { name: "Expenses", href: "#" },
-            { name: "Reports", href: "#" },
-          ],
-        },
-        {
-          name: "Marketplace - Famora",
-          icon: ShoppingCart,
-          key: "marketplace",
-          expandable: true,
-          comingSoon: true,
-          children: [
-            { name: "Buy", href: "#" },
-            { name: "Sell", href: "#" },
-            { name: "My Orders", href: "#" },
-          ],
-        },
-        {
-          name: "Equipment Sync",
-          icon: Settings,
-          key: "equipment-sync",
-          expandable: false,
-          href: `/equipment-sync`,
-          comingSoon: true,
-        },
-        {
-          name: "Reports",
-          icon: FileText,
-          key: "reports",
-          expandable: true,
-          comingSoon: true,
-          children: [
-            { name: "Production", href: "#" },
-            { name: "Financial", href: "#" },
-            { name: "Analytics", href: "#" },
-          ],
-        },
-        {
-          name: "Settings",
-          icon: Settings,
-          key: "settings",
-          expandable: true,
-          children: [
-            { name: "Profile", href: `/settings/profile` },
-            { name: "Farm Settings", href: `/settings/farm-setting` },
-            {
-              name: "Notifications",
-              href: `/dashboard/farmer/${subRole}/settings/notifications`,
-              // 🚀 TARGET: SETTINGS SUB-ITEM COMING SOON
-              comingSoon: true,
-            },
-          ],
-        },
-        {
-          name: "Help & Support",
-          icon: HelpCircle,
-          key: "help",
-          expandable: true,
-          children: [
-            {
-              name: "Documentation",
-              href: `/dashboard/farmer/${subRole}/help/docs`,
-              // 🚀 TARGET: HELP SUB-ITEM COMING SOON
-              comingSoon: true,
-            },
-            { name: "Contact Support", href: `/help/contact-support` },
-            {
-              name: "Training",
-              href: `/dashboard/farmer/${subRole}/help/training`,
-              // 🚀 TARGET: HELP SUB-ITEM COMING SOON
-              comingSoon: true,
-            },
-            { name: "FAQ", href: `/help/faq` },
-           // { name: "Request", href: `/help/request` },
-           // { name: "Resources", href: `/help/support` },
-          ],
-        },
-      ];
-    }
-
-    return [];
+    return [
+      {
+        name: "Dashboard",
+        href: `/staffs/dashboard`,
+        icon: LayoutDashboard,
+        key: "dashboard",
+        expandable: false,
+      },
+      {
+        name: "Tasks",
+        icon: Tractor,
+        key: "tasks",
+        expandable: false,
+        href: `/staffs/tasks`,
+      },
+      {
+        name: "Smart Insight",
+        icon: Brain,
+        key: "Smart Insight",
+        expandable: false,
+        href: `/staffs/smart-insight`,
+      },
+      {
+        name: "Settings",
+        icon: Settings,
+        key: "settings",
+        expandable: false,
+        href: `/staffs/settings`,
+      },
+    ];
   };
 
   const navItems = getNavItems();
@@ -321,11 +166,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const activeParentItem = navItems.find((item) => item.key === hoveredMenuKey);
 
-  // Reference for closing the dropdown when clicking outside
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // --- Data Fetching Logic ---
-  // Fetch notifications ONLY when the component mounts or the user changes
   const fetchNotifications = useCallback(async () => {
     const userId = user?._id;
     if (!userId) return;
@@ -611,7 +453,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Bottom Profile/Logout */}
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-t border-gray-200 p-4">
             <div
               className={`flex items-center ${
                 sidebarCollapsed ? "justify-center" : "space-x-3"
@@ -623,7 +465,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {!sidebarCollapsed && (
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500 capitalize">
-                    {profile?.owner?.firstName}
+                    {user?.name?.split(" ")[0]}
                   </p>
                 </div>
               )}
@@ -658,7 +500,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {activeParentItem.name}
             </h3>
             {activeParentItem.children.map((child) => {
-              // 🚀 UPDATED LOGIC: Check both parent and child comingSoon status
               const isChildComingSoon =
                 activeParentItem.comingSoon ||
                 child.comingSoon ||
@@ -855,7 +696,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         title="Feature Coming Soon"
       >
         <p className="text-center text-gray-600 text-base">
-          We’re working hard to bring this feature to you soon 🚀
+          We&apos;re working hard to bring this feature to you soon 🚀
         </p>
       </Modal>
     </div>

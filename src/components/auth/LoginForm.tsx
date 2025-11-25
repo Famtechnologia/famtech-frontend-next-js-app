@@ -8,14 +8,20 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { login } from "@/lib/api/auth";
 import { toast } from "react-hot-toast";
 import Cookies from "js-cookie";
+import { loginStaff } from "@/lib/services/staff";
 
 interface LoginForm {
   email: string;
   password: string;
+  role: string;
 }
 
 const Login: React.FC = () => {
-  const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
+  const [form, setForm] = useState<LoginForm>({
+    email: "",
+    password: "",
+    role: "",
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -28,8 +34,21 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log(form)
 
     try {
+      if (form.role === "assignee") {
+        const res = await loginStaff(form.email, form.password);
+        const { token, message } = res;
+
+        useAuthStore.getState().setToken(token);
+        Cookies.set("famtech-auth", token, { expires: 3 });
+
+        toast.success(message || "Assignee Login successful!");
+
+        router.push("/staffs/dashboard");
+        return;
+      }
       const res = await login(form.email, form.password);
       const { token, message } = res;
 
@@ -99,6 +118,19 @@ const Login: React.FC = () => {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </div>
           </div>
+          <select
+            className="w-full p-3 border-gray-600 border rounded-xl"
+            value={form.role}
+            onChange={(e) => {
+              setForm({ ...form, role: e.target.value });
+            }}
+          >
+            <option value="" hidden>
+              Select Role
+            </option>
+            <option value="farmer">Farmer</option>
+            <option value="assignee">Assignee</option>
+          </select>
 
           <a
             href="/forgot-password"

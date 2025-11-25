@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Search,
@@ -20,6 +20,8 @@ import {
 } from "../../lib/services/taskplanner";
 import { useAuth } from "@/lib/hooks/useAuth";
 import TaskSkeleton from "@/components/layout/skeleton/farm-operation/TaskPlanner";
+import { StaffType, getStaffs } from "@/lib/services/staff";
+import { useProfile } from "@/lib/hooks/useProfile";
 
 interface Task {
   id: string;
@@ -82,6 +84,25 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onDelete,
   isSaving, // Destructured
 }) => {
+  
+  const [staff, setStaff] = useState<StaffType[]>([]);
+
+  const { profile } = useProfile();
+
+  const fetchStaffData = useCallback(async () => {
+    if (!profile) return;
+    try {
+      const data = await getStaffs(profile.id);
+      setStaff(data);
+    } catch (error) {
+      console.error("Failed to fetch staff data:", error);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    fetchStaffData();
+  }, [fetchStaffData]);
+
   return (
     <form onSubmit={onSave} className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -170,15 +191,20 @@ const TaskForm: React.FC<TaskFormProps> = ({
           >
             Assigned To
           </label>
-          <input
-            type="text"
+          <select
             id="assignee"
             value={assignee}
             onChange={(e) => setAssignee(e.target.value)}
-            required
             disabled={isSaving}
             className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
-          />
+          >
+            <option hidden>Select an assignee</option>
+            {staff?.map((staff) => (
+              <option key={staff.email} value={staff.email}>
+                {staff.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label
@@ -309,7 +335,7 @@ const App: React.FC = () => {
         const formattedDateForDisplay = dateObject
           ? dateObject.toLocaleDateString("en-US", {
               day: "2-digit",
-              month: "2-digit", 
+              month: "2-digit",
               year: "numeric",
             })
           : "N/A";
