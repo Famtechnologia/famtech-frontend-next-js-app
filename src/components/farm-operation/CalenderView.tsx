@@ -10,7 +10,7 @@ import Modal from "../ui/Modal";
 import { getTasks, updateTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { getStaffById, StaffType } from "@/lib/services/staff";
+import { getStaffById} from "@/lib/services/staff";
 
 // ----------------------------------------------------------------------
 // 1. INTERFACES AND TYPES

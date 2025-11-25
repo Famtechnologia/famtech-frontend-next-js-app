@@ -23,9 +23,9 @@ const marketData: MarketItem[] = [
 
 const Overview = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredData, setFilteredData] = useState<MarketItem[]>(marketData);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setFilteredData] = useState<MarketItem[]>(marketData);
+  const [, setLoading] = useState(false);
+  const [, setError] = useState<string | null>(null);
 
   const fetchMarketData = useCallback(async () => {
       setLoading(true);

@@ -28,7 +28,7 @@ const StaffManagement = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [selectedId, setSelectedId] = useState("");
+  const [, setSelectedId] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
