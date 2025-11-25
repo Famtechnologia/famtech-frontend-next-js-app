@@ -181,15 +181,6 @@ const DashboardTasks = () => {
       <div className="text-sm text-gray-600">Ready to plan your day.</div>
     );
 
-    buttonContent = (
-      <Link
-        href="/farm-operation?tab=planner"
-        className="text-white text-base font-medium bg-green-600 hover:bg-green-700 rounded-lg flex items-center justify-center py-2 transition duration-150"
-      >
-        <PlusCircle className="w-4 h-4 mr-2" />
-        Create New Task
-      </Link>
-    );
   }
 
   return (
@@ -214,9 +205,6 @@ const DashboardTasks = () => {
         <div className="pt-4 border-t border-gray-100 mt-4 space-y-2">
           {/* Summary (Completed count or "Ready to plan...") */}
           {summaryContent}
-
-          {/* Dynamic Button (View All or Create New) */}
-          {buttonContent}
         </div>
       </div>
     </Card>
