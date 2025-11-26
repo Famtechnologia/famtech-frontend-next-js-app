@@ -8,7 +8,7 @@ import {
   Loader2,
   ListChecks,
   AlertTriangle,
-  PlusCircle,
+
 } from "lucide-react";
 import { getTasks, updateTask, Task } from "@/lib/services/taskplanner";
 import useSWR from "swr";
@@ -157,14 +157,14 @@ const DashboardTasks = () => {
       </div>
     );
 
-    buttonContent = (
+    
       <Link
         href="/farm-operation?tab=planner"
         className="text-green-600 text-base font-medium hover:text-green-700 flex items-center"
       >
         View all tasks →
       </Link>
-    );
+    
   } else {
     // --- Zero-State Content ---
     taskListContent = (

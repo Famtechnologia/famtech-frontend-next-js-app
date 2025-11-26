@@ -9,7 +9,7 @@ import {
   Trash2,
   SquarePen,
   Loader2,
-  CheckCircle,
+  
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -29,7 +29,7 @@ const StaffManagement = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [selectedId, setSelectedId] = useState("");
+  const [, setSelectedId] = useState("");
   const [selectedEmail, setSelectedEmail] = useState("");
   const [formData, setFormData] = useState({
     name: "",
