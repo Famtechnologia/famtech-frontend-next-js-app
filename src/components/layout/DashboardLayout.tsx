@@ -707,7 +707,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               >
                 <Menu size={24} />
               </button>
-              <div className="flex items-center space-x-4">
+           {/*   <div className="flex items-center space-x-4">
                 <div className="relative">
                   <Search
                     size={18}
@@ -720,7 +720,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm w-34 md:w-64"
                   />
                 </div>
-              </div>
+              </div>*/}
             </div>
             <header className="bg-white p-4 sticky top-0 z-[20]">
               <div className="flex justify-end">
