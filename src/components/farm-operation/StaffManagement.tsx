@@ -9,6 +9,7 @@ import {
   Trash2,
   SquarePen,
   Loader2,
+  CheckCircle,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -28,13 +29,16 @@ const StaffManagement = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+  const [selectedEmail, setSelectedEmail] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     _id: "",
   });
+  const [staffCreate, setStaffCreate] = useState(false);
+  const [staffDelete, setStaffDelete] = useState(false);
 
   const { profile } = useProfile();
 
@@ -86,13 +90,6 @@ const StaffManagement = () => {
         await updateStaff(formData);
         fetchStaffData();
         setShowAddStaffModal(false);
-        // Reset form
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          _id: "",
-        });
         setSelectedId("");
 
         return;
@@ -100,13 +97,7 @@ const StaffManagement = () => {
       await createStaff({ ...formData, farmId: profile.id });
       fetchStaffData();
       setShowAddStaffModal(false);
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        _id: "",
-      });
+      setStaffCreate(true);
     } catch (error) {
       console.error("Failed to add staff:", error);
       setFormError("An unexpected error occurred. Please try again.");
@@ -115,10 +106,13 @@ const StaffManagement = () => {
     }
   };
 
-  const handleDeleteStaff = async (id: string) => {
+  const handleDeleteStaff = async () => {
     try {
-      await deleteStaff(id);
+      await deleteStaff(selectedEmail);
       fetchStaffData();
+      setStaffDelete(false);
+      setSelectedId("");
+      setSelectedEmail("");
     } catch (error) {
       console.error("Failed to delete staff:", error);
     }
@@ -135,6 +129,19 @@ const StaffManagement = () => {
       _id: person._id as string,
     });
     setSelectedId(person.email as string);
+  };
+
+  const handleCreateStaffModalClose = () => {
+    setShowAddStaffModal(false);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      _id: "",
+    });
+    setSelectedId("");
+    setEdit(false);
+    setStaffCreate(false);
   };
 
   return (
@@ -212,7 +219,12 @@ const StaffManagement = () => {
               {/* Actions */}
               <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
                 <button
-                  onClick={() => handleDeleteStaff(person.email as string)}
+                  onClick={() => {
+                    setStaffDelete(true);
+                    setSelectedId(person._id as string);
+                    setSelectedEmail(person.email as string);
+                  }}
+                  disabled={isLoading}
                   className="flex items-center text-sm font-medium text-red-600 hover:text-red-800 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
@@ -327,6 +339,76 @@ const StaffManagement = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* --- Staff Creation Successful --- */}
+      <Modal
+        show={staffCreate}
+        onClose={handleCreateStaffModalClose}
+        title="Staff member added successfully!"
+      >
+        <div>
+          <h4 className="py-4 text-lg font-semibold text-gray-800">
+            Login Credentials
+          </h4>
+          <div>
+            <p className="flex justify-between items-center">
+              <span className="font-semibold text-base text-gray-500">
+                Email:
+              </span>{" "}
+              <span className="font-semibold text-base text-gray-800">
+                {formData.email}
+              </span>
+            </p>
+            <p className="flex justify-between items-center">
+              <span className="font-semibold text-base text-gray-500">
+                Password:
+              </span>{" "}
+              <span className="font-semibold text-base text-gray-800">
+                12345678
+              </span>
+            </p>
+          </div>
+        </div>
+        {/* Action Buttons */}
+        <div className="pt-6 mt-8 border-t border-gray-100 flex justify-end">
+          <button
+            onClick={handleCreateStaffModalClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+
+      {/* --- Staff Deletion Successful --- */}
+      <Modal
+        show={staffDelete}
+        onClose={() => setStaffDelete(false)}
+        title="Delete Staff"
+      >
+        <p className="mb-3 text-lg flex items-start">
+          Are you sure you want to delete this staff member?
+        </p>
+        <p className="mb-3 text-sm text-gray-500 flex items-start">
+          This action cannot be undone.
+        </p>
+
+        {/* Action Buttons */}
+        <div className="pt-6 mt-8 border-t border-gray-100 flex justify-end gap-4">
+          <button
+            onClick={() => setStaffDelete(false)}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Close
+          </button>
+          <button
+            onClick={() => handleDeleteStaff()}
+            className="px-8 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 focus:ring-4 focus:ring-gray-100 transition-all duration-200 shadow-lg shadow-gray-200"
+          >
+            Delete
+          </button>
+        </div>
       </Modal>
     </div>
   );
