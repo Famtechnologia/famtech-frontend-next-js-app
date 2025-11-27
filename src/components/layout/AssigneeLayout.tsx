@@ -126,13 +126,13 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
         expandable: false,
         href: `/staffs/tasks`,
       },
-      {
-        name: "Smart Insight",
-        icon: Brain,
-        key: "Smart Insight",
-        expandable: false,
-        href: `/staffs/smart-insight`,
-      },
+      // {
+      //   name: "Smart Insight",
+      //   icon: Brain,
+      //   key: "Smart Insight",
+      //   expandable: false,
+      //   href: `/staffs/smart-insight`,
+      // },
       {
         name: "Settings",
         icon: Settings,

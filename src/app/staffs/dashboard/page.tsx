@@ -4,7 +4,7 @@ import WelcomeHeader from "./components/WelcomeHeader";
 import DashboardSkeleton from "@/components/skeleton/DashboardSkeleton";
 import WeatherForecast from "./components/WeatherCard";
 import Tasks from "./components/tasksCard";
-import SmartAdvisory from "./components/SmartAdvisoryCard";
+// import SmartAdvisory from "./components/SmartAdvisoryCard";
 
 export default function FarmerAdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function FarmerAdminDashboard() {
       >
         <WeatherForecast />
         <Tasks />
-        <SmartAdvisory />
+        {/* <SmartAdvisory /> */}
       </div>
     </div>
   );
