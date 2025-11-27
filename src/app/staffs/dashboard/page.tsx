@@ -28,9 +28,9 @@ export default function FarmerAdminDashboard() {
           gridTemplateColumns: "repeat(auto-fit, minmax(250px, 3fr))",
         }}
       >
-        <WeatherForecast />
+        
         <Tasks />
-        <SmartAdvisory />
+        
       </div>
     </div>
   );
