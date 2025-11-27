@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   Tractor,
-  Brain,
   Settings,
   LogOut,
   Menu,
@@ -61,7 +60,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
 
-  const { user, logout } = useAssignee();
+  const { user } = useAssignee();
   const pathname = usePathname();
 
   // Close flyout when clicking outside

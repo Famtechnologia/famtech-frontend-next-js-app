@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect} from "react";
 //import { useAuth } from "@/lib/hooks/useAuth";
 //import apiClient from "@/lib/api/apiClient";
 //import { useProfileStore } from "@/lib/store/farmStore";
