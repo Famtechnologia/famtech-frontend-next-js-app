@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import toast from "react-hot-toast";
 import Card from "@/components/ui/Card"; // Assuming Card is imported correctly
 import { useDashboardData } from "@/lib/hooks/useDashboard";
 import { updateDashboard, DashboardUpdatePayload } from "@/lib/services/dashboard";
@@ -71,11 +72,11 @@ export default function DashboardEditor({ farmId, onClose, initialWidgets }: Das
             // 🔑 CRITICAL: Force SWR to refetch and update the dashboard view immediately
             mutateDashboard(); 
             
-            alert("Dashboard layout saved successfully!");
+            toast.success("Dashboard layout saved successfully!");
             onClose(); // Close the editor
 
         } catch (error) {
-            alert("Failed to save dashboard. Please try again.");
+            toast.error("Failed to save dashboard. Please try again.");
             console.error("Save error:", error);
         } finally {
             setIsSaving(false);

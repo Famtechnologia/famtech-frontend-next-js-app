@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import Card from "@/components/ui/Card"; 
-import { useAuthStore } from "@/lib/store/authStore";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { generateAnalytics, AnalyticsPayload } from "@/lib/services/analytics";
 import { generateReport, ReportPayload } from "@/lib/services/report"; 
 import { useAnalyticsHistory } from "@/lib/hooks/useAnalytics"; 
 import { useReports } from "@/lib/hooks/useReports"; 
 
 const AnalyticsGenerator: React.FC = () => {
-  const user = useAuthStore((s) => s.user);
-  const farmId = user?.farmId || "507f1f77bcf86cd799439011";
+  const { user } = useAuth();
+  const farmId = user?.farmProfile || "";
   
   const { mutate: mutateHistory } = useAnalyticsHistory();
   
@@ -160,8 +160,8 @@ const AnalyticsGenerator: React.FC = () => {
 // Report Generation Form Component (Task 1B) - NEW
 // ----------------------------------------------------
 const ReportGenerator: React.FC = () => {
-  const user = useAuthStore((s) => s.user);
-  const farmId = user?.farmId || "507f1f77bcf86cd799439011"; 
+  const { user } = useAuth();
+  const farmId = user?.farmProfile || "";
   const { mutate: mutateReports } = useReports(); 
 
   const [formData, setFormData] = useState<Omit<ReportPayload, 'farmId'>>({

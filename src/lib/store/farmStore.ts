@@ -5,7 +5,7 @@ import { getProfile } from "@/lib/api/profile";
 import { useAuthStore } from "@/lib/store/authStore";
 
 interface ProfileState {
-  profile: unknown | null;
+  profile: Record<string, any> | null;
   loading: boolean;
   error: string | null;
   id: string | null;

@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { getReports } from "../services/report";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 // Reports fetcher
 const reportsFetcher = async (key: string, params?: any) => {
@@ -9,10 +9,11 @@ const reportsFetcher = async (key: string, params?: any) => {
 
 // SWR for Reports
 export const useReports = (params?: any) => {
-  const userId = useAuthStore((s) => s.user?.id);
-  const key = userId ? [`/reports`, userId, params] : null;
+  const { user } = useAuth();
+  const farmId = user?.farmProfile;
+  const key = farmId ? [`/reports`, farmId, params] : null;
   const { data, error, isLoading, mutate } = useSWR(key, () =>
-    reportsFetcher(userId!, params)
+    reportsFetcher(farmId!, { ...params, farmId })
   );
 
   return {

@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { getAnalyticsHistory, getAnalyticsById } from "../services/analytics";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 // Fetcher for history
 const historyFetcher = async (key: string, params?: any) => {
@@ -9,10 +9,11 @@ const historyFetcher = async (key: string, params?: any) => {
 
 // SWR for Analytics History
 export const useAnalyticsHistory = (params?: any) => {
-  const userId = useAuthStore((s) => s.user?.id);
-  const key = userId ? [`/analytics/history`, userId, params] : null;
+  const { user } = useAuth();
+  const farmId = user?.farmProfile;
+  const key = farmId ? [`/analytics/history`, farmId, params] : null;
   const { data, error, isLoading, mutate } = useSWR(key, () =>
-    historyFetcher(userId!, params)
+    historyFetcher(farmId!, { ...params, farmId })
   );
 
   return {

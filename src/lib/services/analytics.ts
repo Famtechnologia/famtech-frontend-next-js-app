@@ -38,3 +38,17 @@ export const getAnalyticsById = async (id: string) => {
   const response = await analytics.get(`${API_BASE_URL}/${id}`);
   return response.data;
 };
+
+// Download analytics result (binary or export)
+export const downloadAnalytics = async (id: string) => {
+  const response = await analytics.get(`${API_BASE_URL}/reports/${id}/download`, {
+    responseType: "blob",
+  });
+  return { data: response.data, headers: response.headers };
+};
+
+// Delete analytics record
+export const deleteAnalytics = async (id: string) => {
+  const response = await analytics.delete(`${API_BASE_URL}/reports/${id}`);
+  return response.data;
+};
