@@ -133,6 +133,12 @@ export interface ResetPasswordPayload {
   confirmPassword: string;
 }
 
+// --- New Interface for API Error Item ---
+interface ApiErrorItem {
+  field?: string;
+  message: string;
+}
+
 export const forgotPassword = async (
   email: string,
 ) => {
@@ -154,12 +160,10 @@ export const forgotPassword = async (
 };
 
 export const resetPassword = async (
-  // 💡 Updated signature to match the order used in the frontend call
   token: string,
   newPassword: string,
-  confirmPassword: string // 💡 Added confirmPassword here
+  confirmPassword: string 
 ) => {
-  // 💡 Construct the payload to match expected req.body fields
   const payload: ResetPasswordPayload = {
     token,
     newPassword,
@@ -174,10 +178,10 @@ export const resetPassword = async (
       const responseData = error.response.data;
       let errorMessage = "Password Reset failed";
 
-      // Improved Error Handling for detailed validation messages
+      // 💡 FIX: Using ApiErrorItem[] instead of any
       if (responseData.errors && Array.isArray(responseData.errors)) {
         errorMessage = responseData.errors
-          .map((error: any) => error.message || error.field || "Unknown error")
+          .map((error: ApiErrorItem) => error.message || error.field || "Unknown error")
           .join(' | ');
       } else if (responseData.message || responseData.error) {
         errorMessage = responseData.message || responseData.error;
