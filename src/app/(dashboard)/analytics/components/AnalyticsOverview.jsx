@@ -81,14 +81,9 @@ export default function OverviewTab() {
     insightsData?.trends?.message ??
     "No trend data available.";
 
-  const formatVal = (v: any) =>
-    v === undefined || v === null
-      ? "-"
-      : typeof v === "number"
-      ? v.toLocaleString()
-      : v;
+  const formatVal = (v) =>
+    v === undefined || v === null ? "-" : typeof v === "number" ? v.toLocaleString() : v;
 
-  // Metrics section (ensures 3 core metrics)
   const metrics = [
     {
       title: "Total Yield",
@@ -116,32 +111,22 @@ export default function OverviewTab() {
     },
   ];
 
-  // Forecast / AI data
   const forecast = {
-    yieldPrediction:
-      ai?.yieldPrediction ?? ai?.yield ?? ai?.predicted_yield ?? "—",
-    revenueProjection:
-      ai?.revenueProjection ?? ai?.revenue ?? ai?.predicted_revenue ?? "—",
-    confidence:
-      ai?.confidence ??
-      ai?.confidence_score ??
-      ai?.data?.confidence ??
-      "—",
+    yieldPrediction: ai?.yieldPrediction ?? ai?.yield ?? ai?.predicted_yield ?? "—",
+    revenueProjection: ai?.revenueProjection ?? ai?.revenue ?? ai?.predicted_revenue ?? "—",
+    confidence: ai?.confidence ?? ai?.confidence_score ?? ai?.data?.confidence ?? "—",
     summary: ai?.summary ?? "No AI summary available.",
     source: ai?.source ?? "n/a",
   };
 
-  // Dummy chart if no trend data (so layout stays consistent)
   const emptyChartValues = [0, 0, 0, 0, 0];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-xl font-semibold text-gray-800">Overview</h2>
         <p className="text-sm text-gray-500">
-          Real-time analytics and predictive insights for your farm’s
-          performance.
+          Real-time analytics and predictive insights for your farm’s performance.
         </p>
       </div>
 
@@ -153,9 +138,7 @@ export default function OverviewTab() {
             className="bg-green-50 border border-green-200 rounded-md p-4 shadow-sm"
           >
             <p className="text-sm text-gray-600">{m.title}</p>
-            <p className="text-2xl font-bold text-green-700 mt-1">
-              {formatVal(m.value)}
-            </p>
+            <p className="text-2xl font-bold text-green-700 mt-1">{formatVal(m.value)}</p>
           </div>
         ))}
       </div>
@@ -189,7 +172,6 @@ export default function OverviewTab() {
           </div>
         </div>
 
-        {/* AI Summary */}
         <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200 text-sm text-gray-700">
           <p>{forecast.summary}</p>
           <p className="text-xs text-gray-500 mt-1">
@@ -201,7 +183,6 @@ export default function OverviewTab() {
           </p>
         </div>
 
-        {/* Chart */}
         <div className="mt-4">
           <PerformanceChart
             title="Recent Yield Trends"
@@ -219,7 +200,7 @@ export default function OverviewTab() {
             Comparison of your farm’s performance against regional averages.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(benchmarks).map(([metric, data]: [string, any]) => (
+            {Object.entries(benchmarks).map(([metric, data]) => (
               <div
                 key={metric}
                 className="p-4 bg-green-50 border border-green-200 rounded-md"
@@ -244,7 +225,7 @@ export default function OverviewTab() {
             Identified operational and financial risks.
           </p>
           <div className="space-y-3">
-            {risks.map((r: any, i: number) => (
+            {risks.map((r, i) => (
               <div
                 key={i}
                 className={`p-4 rounded-md border ${
@@ -282,21 +263,15 @@ export default function OverviewTab() {
         {showInsights && (
           <ul className="list-disc pl-5 mt-3 space-y-2 text-gray-700">
             {recommendations.length > 0 ? (
-              recommendations.map(
-                (
-                  tip: { message: string; type: string; priority: string },
-                  i: number
-                ) => (
-                  <li key={i} className="text-sm">
-                    <strong className="capitalize">{tip.type}</strong> (
-                    {tip.priority}): {tip.message}
-                  </li>
-                )
-              )
+              recommendations.map((tip, i) => (
+                <li key={i} className="text-sm">
+                  <strong className="capitalize">{tip.type}</strong> ({tip.priority}):{" "}
+                  {tip.message}
+                </li>
+              ))
             ) : (
               <li className="text-sm italic text-gray-500">
-                No AI recommendations available yet — generate recent analytics
-                to view insights.
+                No AI recommendations available yet — generate recent analytics to view insights.
               </li>
             )}
           </ul>

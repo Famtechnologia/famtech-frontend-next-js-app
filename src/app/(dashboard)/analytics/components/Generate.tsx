@@ -156,9 +156,7 @@ const AnalyticsGenerator: React.FC = () => {
 };
 
 
-// ----------------------------------------------------
-// Report Generation Form Component (Task 1B) - NEW
-// ----------------------------------------------------
+
 const ReportGenerator: React.FC = () => {
   const { user } = useAuth();
   const farmId = user?.farmProfile || "";
@@ -220,7 +218,7 @@ const ReportGenerator: React.FC = () => {
         text: "Report successfully queued for generation! Check the History tab.",
       });
 
-      // 🔑 CRITICAL: Refresh the Reports list after success
+     
       mutateReports();
     } catch (err: any) {
       const errorText = err.response?.data?.message || "Failed to queue report generation.";
