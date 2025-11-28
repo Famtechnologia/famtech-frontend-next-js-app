@@ -4,18 +4,20 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import Card from "@/components/ui/Card";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useFarmComparison } from "@/lib/hooks/useDashboard";
+import { useFarmComparison } from "@/lib/hooks/useDashboard"; 
+import { CompareParams } from "@/lib/services/dashboard";
 
-const PlaceholderChart = ({ data, metric }) => {
+const PlaceholderChart: React.FC<{ data: any, metric: string }> = ({ data, metric }) => {
   if (!data || data.length === 0) {
     return <div className="text-center py-10 text-gray-500">Select farms and a metric to run comparison.</div>;
   }
-
+  
+  
   return (
     <div className="border border-gray-200 p-6 rounded-md bg-white">
       <h3 className="text-lg font-semibold mb-4">Comparison Chart: {metric} Over Time</h3>
       <ul className="space-y-2 text-sm">
-        {data.map((farmData) => (
+        {data.map((farmData: any) => (
           <li key={farmData.farmId} className="flex justify-between items-center p-2 border-b">
             <span className="font-medium">{farmData.farmName || `Farm ${farmData.farmId}`}</span>
             <span className="text-gray-600">
@@ -33,28 +35,35 @@ const PlaceholderChart = ({ data, metric }) => {
 
 export default function ComparisonTab() {
   const { user } = useAuth();
-
+  
+  // Get primary farm ID from user profile
   const primaryFarmId = user?.farmProfile || "";
-  const userFarms = user?.farmAssets || [];
-
-  const [farm1, setFarm1] = useState("");
-  const [farm2, setFarm2] = useState("");
-
+  
+  // Get all farms from farmAssets (could be empty array or contain multiple farms)
+  const userFarms = (user?.farmAssets as any[]) || [];
+  
+  // State for farm selection dropdowns
+  const [farm1, setFarm1] = useState<string>("");
+  const [farm2, setFarm2] = useState<string>("");
+  
+  // Sync farm1 with primaryFarmId when user data loads
   useEffect(() => {
     if (primaryFarmId && !farm1) {
       setFarm1(primaryFarmId);
     }
   }, [primaryFarmId]);
-
-  const [farmIds, setFarmIds] = useState("");
-
-  const [params, setParams] = useState({
+  
+  // Initialize with empty farmIds - will be updated when user clicks Run
+  const [farmIds, setFarmIds] = useState<string>("");
+  
+  const [params, setParams] = useState<CompareParams>({
     farmIds: "", 
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
     metric: "yield",
   });
-
+  
+  // Update params when farmIds changes
   useEffect(() => {
     setParams(prev => ({ ...prev, farmIds }));
   }, [farmIds]);
@@ -68,25 +77,26 @@ export default function ComparisonTab() {
     { value: "efficiency", label: "Efficiency" },
   ];
 
-  const handleFarmChange = (farmNumber, value) => {
+  const handleFarmChange = (farmNumber: 1 | 2, value: string) => {
     if (farmNumber === 1) {
       setFarm1(value);
     } else {
       setFarm2(value);
     }
-    setFarmIds(""); 
+    setFarmIds(""); // Reset comparison when farms change
   };
 
-  const handleMetricChange = (e) => {
-    const value = e.target.value;
+  const handleMetricChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value as "yield" | "revenue" | "profit" | "efficiency";
     setParams({ ...params, metric: value });
   };
 
-  const handleDateChange = (e) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setParams({ ...params, [e.target.name]: e.target.value });
   };
 
   const handleRunComparison = () => {
+    // Validation: ensure two different farms are selected
     if (!farm1 || !farm2) {
       toast.error("Please select two farms to compare.");
       return;
@@ -95,6 +105,8 @@ export default function ComparisonTab() {
       toast.error("Please select two different farms for comparison.");
       return;
     }
+    
+    // Set farmIds which will trigger the fetch via useEffect
     setFarmIds(`${farm1},${farm2}`);
   };
 
@@ -109,8 +121,11 @@ export default function ComparisonTab() {
 
       <Card title="Comparison Parameters">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Farm 1 Select */}
           <div>
-            <label htmlFor="farm1" className="block text-sm font-medium text-gray-700">Farm 1</label>
+            <label htmlFor="farm1" className="block text-sm font-medium text-gray-700">
+              Farm 1
+            </label>
             <select
               id="farm1"
               value={farm1}
@@ -118,8 +133,12 @@ export default function ComparisonTab() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-2 border"
             >
               <option value="">Select Farm 1</option>
-              {primaryFarmId && <option value={primaryFarmId}>{user?.email || "My Farm"} (Primary)</option>}
-              {userFarms.length > 1 && userFarms.map((farm) => (
+              {primaryFarmId && (
+                <option value={primaryFarmId}>
+                  {user?.email || "My Farm"} (Primary)
+                </option>
+              )}
+              {userFarms.length > 1 && userFarms.map((farm: any) => (
                 <option key={farm._id || farm.id} value={farm._id || farm.id}>
                   {farm.farmName || `Farm ${farm._id || farm.id}`}
                 </option>
@@ -128,8 +147,11 @@ export default function ComparisonTab() {
             <p className="text-xs text-gray-500 mt-1">Farm ID: {farm1 || "not selected"}</p>
           </div>
 
+          {/* Farm 2 Select */}
           <div>
-            <label htmlFor="farm2" className="block text-sm font-medium text-gray-700">Farm 2</label>
+            <label htmlFor="farm2" className="block text-sm font-medium text-gray-700">
+              Farm 2
+            </label>
             <select
               id="farm2"
               value={farm2}
@@ -137,8 +159,12 @@ export default function ComparisonTab() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-2 border"
             >
               <option value="">Select Farm 2</option>
-              {primaryFarmId && <option value={primaryFarmId}>{user?.email || "My Farm"} (Primary)</option>}
-              {userFarms.length > 1 && userFarms.map((farm) => (
+              {primaryFarmId && (
+                <option value={primaryFarmId}>
+                  {user?.email || "My Farm"} (Primary)
+                </option>
+              )}
+              {userFarms.length > 1 && userFarms.map((farm: any) => (
                 <option key={farm._id || farm.id} value={farm._id || farm.id}>
                   {farm.farmName || `Farm ${farm._id || farm.id}`}
                 </option>
@@ -147,8 +173,11 @@ export default function ComparisonTab() {
             <p className="text-xs text-gray-500 mt-1">Farm ID: {farm2 || "not selected"}</p>
           </div>
 
+          {/* Metric Select */}
           <div>
-            <label htmlFor="metric" className="block text-sm font-medium text-gray-700">Metric</label>
+            <label htmlFor="metric" className="block text-sm font-medium text-gray-700">
+              Metric
+            </label>
             <select
               id="metric"
               value={params.metric}
@@ -156,11 +185,14 @@ export default function ComparisonTab() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-2 border"
             >
               {metrics.map(m => (
-                <option key={m.value} value={m.value}>{m.label}</option>
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
               ))}
             </select>
           </div>
-
+          
+          {/* Run Button (placed here for layout) */}
           <div className="flex items-end pt-2">
             <button
               onClick={handleRunComparison}
@@ -176,15 +208,19 @@ export default function ComparisonTab() {
           </div>
         </div>
 
+        {/* Farm IDs Display (for debugging/info) */}
         {farm1 && farm2 && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
             📊 Comparing farms: <span className="font-mono">{farm1}</span> vs <span className="font-mono">{farm2}</span>
           </div>
         )}
 
+        {/* Date Range */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Start Date</label>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+              Start Date
+            </label>
             <input
               type="date"
               id="startDate"
@@ -196,7 +232,9 @@ export default function ComparisonTab() {
             />
           </div>
           <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">End Date</label>
+            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+              End Date
+            </label>
             <input
               type="date"
               id="endDate"
@@ -209,30 +247,33 @@ export default function ComparisonTab() {
           </div>
         </div>
 
+        {/* Info Message */}
         {!primaryFarmId && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
             ⚠️ No farm found. Please complete your farm profile first.
           </div>
         )}
-
+        
         {primaryFarmId && userFarms.length < 2 && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
             ℹ️ You currently have only 1 farm. Add more farms to compare them.
           </div>
         )}
+
       </Card>
 
+      {/* Comparison Results */}
       <Card title="Comparison Results" className="min-h-72">
         {error && <div className="text-red-600 p-4">Error fetching comparison data: {error.message}</div>}
         {farmIds && !isLoading && !error && (
-          <PlaceholderChart data={comparisonData?.comparisonData} metric={params.metric} />
+            <PlaceholderChart data={comparisonData?.comparisonData} metric={params.metric} />
         )}
         {!farmIds && !isLoading && !error && (
-          <p className="text-gray-500 italic text-center py-10">
-            Select two different farms and click "Run Comparison".
-          </p>
+            <p className="text-gray-500 italic text-center py-10">
+                Select two different farms and click "Run Comparison".
+            </p>
         )}
       </Card>
     </div>
   );
-}
+} 

@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   Tractor,
-  Brain,
   Settings,
   LogOut,
   Menu,

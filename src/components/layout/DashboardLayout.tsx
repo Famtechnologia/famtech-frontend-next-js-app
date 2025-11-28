@@ -248,7 +248,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           comingSoon: false,
           children: [
             { name: "Production", href: "#" },
-            { name: "Financial", href: "#" },
+            { name: "Financial", href: "##" },
             { name: "Analytics", href: "/analytics" },
           ],
         },
