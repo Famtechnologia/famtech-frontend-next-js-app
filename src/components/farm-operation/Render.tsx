@@ -158,7 +158,7 @@ export const renderFormFields = (
             {/* --- 1. Common Fields for ALL Categories --- */}
             {/* ---------------------------------- */}
 
-            <InputField label="Item Name" name="name" value={data.name} onChange={handleChange} required placeholder="e.g., High-Yield Maize, Shovel" />
+            <InputField label="Item Name" name="name" value={data.name} onChange={handleChange} required placeholder="" />
             <InputField label={quantityLabel} name="quantity" type="number" value={data.quantity} onChange={handleChange} required placeholder="e.g., 250" />
             
             {/* REORDER LEVEL MOVED HERE to be a Common Field for ALL Categories */}

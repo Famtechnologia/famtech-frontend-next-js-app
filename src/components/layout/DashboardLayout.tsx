@@ -245,11 +245,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           icon: FileText,
           key: "reports",
           expandable: true,
-          comingSoon: true,
+          comingSoon: false,
           children: [
             { name: "Production", href: "#" },
             { name: "Financial", href: "#" },
-            { name: "Analytics", href: "#" },
+            { name: "Analytics", href: "/analytics" },
           ],
         },
         {
