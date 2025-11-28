@@ -7,17 +7,41 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useFarmComparison } from "@/lib/hooks/useDashboard"; 
 import { CompareParams } from "@/lib/services/dashboard";
 
-const PlaceholderChart: React.FC<{ data: any, metric: string }> = ({ data, metric }) => {
+// --- Custom Types for Type Safety ---
+
+interface FarmAsset {
+  _id: string;
+  id?: string;
+  farmName: string;
+  // Add other necessary farm fields here
+}
+
+interface AuthUser {
+  id: string;
+  email: string;
+  farmProfile: string; // Primary farm ID
+  farmAssets: FarmAsset[];
+}
+
+interface ComparisonMetric {
+  farmId: string;
+  farmName?: string;
+  averageValue: number | string;
+  // Add time series data structure if available
+}
+
+// --- Component Definitions ---
+
+const PlaceholderChart: React.FC<{ data: ComparisonMetric[] | undefined, metric: string }> = ({ data, metric }) => {
   if (!data || data.length === 0) {
     return <div className="text-center py-10 text-gray-500">Select farms and a metric to run comparison.</div>;
   }
-  
   
   return (
     <div className="border border-gray-200 p-6 rounded-md bg-white">
       <h3 className="text-lg font-semibold mb-4">Comparison Chart: {metric} Over Time</h3>
       <ul className="space-y-2 text-sm">
-        {data.map((farmData: any) => (
+        {data.map((farmData: ComparisonMetric) => (
           <li key={farmData.farmId} className="flex justify-between items-center p-2 border-b">
             <span className="font-medium">{farmData.farmName || `Farm ${farmData.farmId}`}</span>
             <span className="text-gray-600">
@@ -34,24 +58,26 @@ const PlaceholderChart: React.FC<{ data: any, metric: string }> = ({ data, metri
 };
 
 export default function ComparisonTab() {
-  const { user } = useAuth();
+  // Cast user to the defined AuthUser interface for type safety
+  const { user } = useAuth() as { user: AuthUser | null };
   
   // Get primary farm ID from user profile
   const primaryFarmId = user?.farmProfile || "";
   
-  // Get all farms from farmAssets (could be empty array or contain multiple farms)
-  const userFarms = (user?.farmAssets as any[]) || [];
+  // Cast user?.farmAssets to FarmAsset[]
+  const userFarms = (user?.farmAssets || []) as FarmAsset[];
   
   // State for farm selection dropdowns
   const [farm1, setFarm1] = useState<string>("");
   const [farm2, setFarm2] = useState<string>("");
   
-  // Sync farm1 with primaryFarmId when user data loads
+  // Sync farm1 with primaryFarmId when user data loads and farm1 is not set
+  // FIX: Add farm1 to dependencies to satisfy exhaustive-deps warning
   useEffect(() => {
     if (primaryFarmId && !farm1) {
       setFarm1(primaryFarmId);
     }
-  }, [primaryFarmId]);
+  }, [primaryFarmId, farm1]); 
   
   // Initialize with empty farmIds - will be updated when user clicks Run
   const [farmIds, setFarmIds] = useState<string>("");
@@ -68,6 +94,7 @@ export default function ComparisonTab() {
     setParams(prev => ({ ...prev, farmIds }));
   }, [farmIds]);
 
+  // Assuming useFarmComparison returns { comparisonData: ComparisonMetric[] } on success
   const { data: comparisonData, isLoading, error } = useFarmComparison(farmIds ? params : undefined);
 
   const metrics = [
@@ -138,7 +165,8 @@ export default function ComparisonTab() {
                   {user?.email || "My Farm"} (Primary)
                 </option>
               )}
-              {userFarms.length > 1 && userFarms.map((farm: any) => (
+              {/* Iterating over userFarms (now FarmAsset[]) */}
+              {userFarms.length >= 1 && userFarms.map((farm: FarmAsset) => (
                 <option key={farm._id || farm.id} value={farm._id || farm.id}>
                   {farm.farmName || `Farm ${farm._id || farm.id}`}
                 </option>
@@ -164,7 +192,8 @@ export default function ComparisonTab() {
                   {user?.email || "My Farm"} (Primary)
                 </option>
               )}
-              {userFarms.length > 1 && userFarms.map((farm: any) => (
+              {/* Iterating over userFarms (now FarmAsset[]) */}
+              {userFarms.length >= 1 && userFarms.map((farm: FarmAsset) => (
                 <option key={farm._id || farm.id} value={farm._id || farm.id}>
                   {farm.farmName || `Farm ${farm._id || farm.id}`}
                 </option>
@@ -256,6 +285,7 @@ export default function ComparisonTab() {
         
         {primaryFarmId && userFarms.length < 2 && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+            {/* FIX: Escaped apostrophe */}
             ℹ️ You currently have only 1 farm. Add more farms to compare them.
           </div>
         )}
@@ -266,14 +296,14 @@ export default function ComparisonTab() {
       <Card title="Comparison Results" className="min-h-72">
         {error && <div className="text-red-600 p-4">Error fetching comparison data: {error.message}</div>}
         {farmIds && !isLoading && !error && (
-            <PlaceholderChart data={comparisonData?.comparisonData} metric={params.metric} />
+            <PlaceholderChart data={comparisonData?.comparisonData as ComparisonMetric[]} metric={params.metric} />
         )}
         {!farmIds && !isLoading && !error && (
             <p className="text-gray-500 italic text-center py-10">
-                Select two different farms and click "Run Comparison".
+                Select two different farms and click &#34;Run Comparison&#34;.
             </p>
         )}
       </Card>
     </div>
   );
-} 
+}

@@ -9,7 +9,7 @@ export interface DashboardUpdatePayload {
     type: string;
     title: string;
     position: { x: number; y: number; width: number; height: number };
-    config?: Record<string, any>;
+    config?: Record<string, unknown>;
   }[];
 }
 

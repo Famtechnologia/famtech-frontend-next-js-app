@@ -126,7 +126,6 @@ const DashboardTasks = () => {
 
   // --- Dynamic Content based on task count ---
   let taskListContent;
-  let buttonContent;
   let summaryContent;
 
   if (hasTasks) {

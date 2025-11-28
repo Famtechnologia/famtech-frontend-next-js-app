@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ChartOptions, // 💡 FIX 1: Import the ChartOptions type
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
@@ -38,7 +39,8 @@ export default function PerformanceChart({ labels = [], values = [], title = "Pe
     ],
   };
 
-  const options: any = {
+  // 💡 FIX 2: Apply the correct ChartOptions type
+  const options: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
