@@ -9,7 +9,6 @@ import {
   Trash2,
   SquarePen,
   Loader2,
-  
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -21,6 +20,7 @@ import {
   deleteStaff,
   updateStaff,
 } from "@/lib/services/staff";
+import { AxiosError } from "axios";
 
 const StaffManagement = () => {
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
@@ -98,9 +98,17 @@ const StaffManagement = () => {
       fetchStaffData();
       setShowAddStaffModal(false);
       setStaffCreate(true);
-    } catch (error) {
-      console.error("Failed to add staff:", error);
-      setFormError("An unexpected error occurred. Please try again.");
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof AxiosError && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      console.error("Failed to add staff:", errorMessage);
+      setFormError(errorMessage);
     } finally {
       setIsLoading(false);
     }
