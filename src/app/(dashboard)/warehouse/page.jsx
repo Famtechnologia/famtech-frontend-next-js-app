@@ -4,6 +4,7 @@ import { Plus, Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
 import WarehouseCard from "@/components/warehouse/WarehouseCard";
 import WarehouseForm from "@/components/warehouse/WarehouseForm";
 import WarehouseDetails from "@/components/warehouse/WarehouseDetails";
+
 import { 
   getAllWarehouses, 
   createWarehouse, 
@@ -11,6 +12,7 @@ import {
   deleteWarehouse 
 } from "@/lib/services/warehouse";
 import { useAuth } from "@/lib/hooks/useAuth";
+import {useProfile} from "@/lib/hooks/useProfile";
 
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => {
@@ -38,6 +40,7 @@ const Toast = ({ message, type, onClose }) => {
 
 const Warehouse = () => {
   const { user, loading: authLoading } = useAuth();
+  const {profile} = useProfile()
   const [warehouses, setWarehouses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -50,10 +53,10 @@ const Warehouse = () => {
   const closeToast = () => setToast((prev) => ({ ...prev, show: false }));
 
   const fetchWarehouses = async () => {
-    if (!user?._id) return;
+    if (!profile?.id) return;
     try {
       setIsLoading(true);
-      const data = await getAllWarehouses(user._id);
+      const data = await getAllWarehouses(profile.id);
       setWarehouses(data);
     } catch (error) {
       console.error("Error fetching warehouses:", error);
@@ -64,10 +67,10 @@ const Warehouse = () => {
   };
 
   useEffect(() => {
-    if (user?._id && !authLoading) {
+    if (profile?.id && !authLoading) {
       fetchWarehouses();
     }
-  }, [user?._id, authLoading]);
+  }, [profile?.id, authLoading]);
 
   const handleCreateNew = () => {
     setSelectedWarehouse(null);
@@ -96,7 +99,7 @@ const Warehouse = () => {
         await updateWarehouse(warehouseId, formData);
         showToast("Warehouse updated successfully!");
       } else {
-        await createWarehouse({ ...formData, manager: user._id });
+        await createWarehouse({ ...formData, manager: profile.id });
         showToast("Warehouse created successfully!");
       }
 

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Camera, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useProfile } from "@/lib/hooks/useProfile";
 
 import {
   updateCropRecord,
@@ -39,6 +40,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
   onRecordAdded,
 }) => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [formData, setFormData] = useState<CropFormData>({
     cropName: "",
     variety: "",
@@ -127,7 +129,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
     data.append("area[unit]", formData.areaUnit);
     data.append("seedQuantity[value]", formData.seedQuantityValue.toString()); // FIX: Ensure userId is not undefined
     data.append("seedQuantity[unit]", formData.seedQuantityUnit);
-    data.append("userId", user?._id || "");
+    data.append("userId", profile?.id || "");
 
     data.append("note", formData.note);
 
@@ -447,6 +449,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
   onClose,
   onRecordUpdated,
 }) => {
+  const { profile } = useProfile();
   const { user } = useAuth();
   // State for form data (non-file fields)
   const [formData, setFormData] = useState({
@@ -577,7 +580,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
     data.append("area[unit]", formData.areaUnit);
     data.append("seedQuantity[value]", formData.seedQuantityValue.toString());
     data.append("seedQuantity[unit]", formData.seedQuantityUnit);
-    data.append("userId", user?._id || "");
+    data.append("userId", profile?.id || "");
     data.append("note", formData.note);
 
     // Append any new image files to the same FormData object

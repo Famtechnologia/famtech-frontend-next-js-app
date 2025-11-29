@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Plus } from "lucide-react";
-import { useAuth } from "@/lib/hooks/useAuth";
 
 const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
-  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -50,8 +48,6 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
       newErrors.capacity = "Capacity must be a positive number";
     }
 
-    if (!user?._id) newErrors.manager = "User ID (manager) missing — please log in again.";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -65,7 +61,6 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
       location: formData.location.trim(),
       capacity: parseInt(formData.capacity),
       products: formData.products,
-      manager: user?._id || ""
     };
 
     await onSubmit(dataToSubmit);

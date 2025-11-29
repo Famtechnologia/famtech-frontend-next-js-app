@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/lib/store/authStore";
 
-<<<<<<< HEAD
 export const API_URL = "http://localhost:4000";
 //  export const API_URL = "https://api-famtech-backend-app.onrender.com";
 

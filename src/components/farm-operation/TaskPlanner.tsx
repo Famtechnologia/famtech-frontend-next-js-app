@@ -84,7 +84,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onDelete,
   isSaving, // Destructured
 }) => {
-  
   const [staff, setStaff] = useState<StaffType[]>([]);
 
   const { profile } = useProfile();
@@ -294,6 +293,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
 const App: React.FC = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -325,7 +325,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = (await getTasks(user?._id as string)) as ApiTaskWithId[];
+      const data = (await getTasks(profile?.id as string)) as ApiTaskWithId[];
 
       const mappedTasks: Task[] = data.map((task) => {
         const dateObject = task.timeline?.dueDate
@@ -365,7 +365,7 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?._id]);
+  }, [profile?.id]);
 
   useEffect(() => {
     fetchTasks();
@@ -387,7 +387,7 @@ const App: React.FC = () => {
       note: formNotes,
       taskType: taskTypeForApi,
       assignee: formAssignee,
-      userId: user?._id,
+      userId: profile?.id,
       entity_id: "sample_entity_id",
     };
 
