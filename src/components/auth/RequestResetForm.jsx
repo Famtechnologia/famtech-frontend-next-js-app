@@ -20,7 +20,14 @@ export default function RequestResetForm() {
     setIsSuccess(false);
 
     try {
-      await forgotPassword(email);
+      const res = await forgotPassword(email);
+      if (!res) {
+        setIsSuccess(false);
+        setMessage("Failed to send reset link. Please try again.");
+        console.log(res)
+        return;
+      }
+      console.log(res);
       setIsSuccess(true);
       setMessage("Reset link sent! Check your email for further instructions.");
     } catch (err) { // Removed ': any' from the 'err' argument

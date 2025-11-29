@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Eye,
+  
   Search,
   CheckCircle,
   RefreshCcw,
   Sprout,
   PawPrint,
   Settings,
-  Trash2,
   SquarePen,
 } from "lucide-react";
 import { getFarmProfile, ProfileType } from "@/lib/services/farm";
@@ -46,7 +45,7 @@ export default function TasksPage() {
   const [farmProfile, setFarmProfile] = React.useState<ProfileType | null>(
     null
   );
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [, setSelectedTask] = useState<Task | null>(null);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
 
   const { user } = useAssignee();

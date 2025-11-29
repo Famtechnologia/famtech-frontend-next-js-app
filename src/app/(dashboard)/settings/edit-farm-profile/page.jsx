@@ -175,8 +175,8 @@ export default function ModernFarmRegistration() {
         <div className="space-y-8 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                First Name
+              <label className="block text-sm md:text-base font-semibold text-gray-700">
+                First Name<span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -199,8 +199,8 @@ export default function ModernFarmRegistration() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                Last Name
+              <label className="block text-sm md:text-base font-semibold text-gray-700">
+                Last Name<span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -224,8 +224,8 @@ export default function ModernFarmRegistration() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Phone Number
+            <label className="block text-sm md:text-base font-semibold text-gray-700">
+              Phone Number<span className="text-red-500">*</span>
             </label>
             <input
               type="tel"
@@ -250,8 +250,8 @@ export default function ModernFarmRegistration() {
 
         <div className="space-y-8 ">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Farm Name
+            <label className="block text-sm md:text-base font-semibold text-gray-700">
+              Farm Name<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -275,7 +275,7 @@ export default function ModernFarmRegistration() {
 
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              Farm Type
+              Farm Type<span className="text-red-500">*</span>
             </label>
             <select
               className="w-full px-5 py-4 border-2 border-gray-200 bg-gray-50 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 hover:bg-white hover:border-gray-300 transition-all duration-200"
@@ -294,8 +294,8 @@ export default function ModernFarmRegistration() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
-                Farm Size
+              <label className="block text-sm md:text-base font-semibold text-gray-700">
+                Farm Size<span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -320,7 +320,7 @@ export default function ModernFarmRegistration() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">
+              <label className="block text-sm md:text-base font-semibold text-gray-700">
                 Unit
               </label>
               <select
@@ -338,7 +338,7 @@ export default function ModernFarmRegistration() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
+            <label className="block text-sm md:text-base font-semibold text-gray-700">
               Established Year(optional)
               <span className="text-gray-400 text-xs ml-1"></span>
             </label>
@@ -369,8 +369,8 @@ export default function ModernFarmRegistration() {
           <div className="p-2 mt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="group">
-                <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
-                  Country
+                <label className="block text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide">
+                  Country<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -418,8 +418,8 @@ export default function ModernFarmRegistration() {
               </div>
 
               <div className="group">
-                <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
-                  State
+                <label className="block text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide">
+                  State<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -474,8 +474,8 @@ export default function ModernFarmRegistration() {
               </div>
 
               <div className="group">
-                <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
-                  City/Town
+                <label className="block text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide">
+                  City/Town<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -500,7 +500,7 @@ export default function ModernFarmRegistration() {
             </div>
 
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+              <label className="block text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide">
                 Street Address(optional)
               </label>
               <input
@@ -638,7 +638,7 @@ export default function ModernFarmRegistration() {
         <div className="space-y-8 w-full mt-8">
           <div className="p-0  md:p-0 space-y-8">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-              <label className=" text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <label className=" text-sm md:text-base font-semibold text-gray-800 mb-4 flex items-center">
                 <svg
                   className="w-5 h-5 text-blue-600 mr-2"
                   fill="none"
@@ -652,7 +652,7 @@ export default function ModernFarmRegistration() {
                     d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
                   />
                 </svg>
-                Farming Methods
+                Farming Methods<span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {farmingMethodOptions.map((method) => (
@@ -707,7 +707,7 @@ export default function ModernFarmRegistration() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="group">
-                <label className=" text-sm font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
+                <label className=" text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
                   <svg
                     className="w-4 h-4 text-gray-600 mr-2"
                     fill="none"
@@ -721,7 +721,7 @@ export default function ModernFarmRegistration() {
                       d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                     />
                   </svg>
-                  Currency
+                  Currency<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -755,7 +755,7 @@ export default function ModernFarmRegistration() {
               </div>
 
               <div className="group">
-                <label className=" text-sm font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
+                <label className=" text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
                   <svg
                     className="w-4 h-4 text-gray-600 mr-2"
                     fill="none"
@@ -769,7 +769,7 @@ export default function ModernFarmRegistration() {
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  Seasonal Pattern
+                  Seasonal Pattern<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -816,7 +816,7 @@ export default function ModernFarmRegistration() {
               </div>
 
               <div className="group">
-                <label className=" text-sm font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
+                <label className="text-sm md:text-base font-semibold text-gray-800 mb-3 tracking-wide flex items-center">
                   <svg
                     className="w-4 h-4 text-gray-600 mr-2"
                     fill="none"
@@ -830,7 +830,7 @@ export default function ModernFarmRegistration() {
                       d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                     />
                   </svg>
-                  Language
+                  Language<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select

@@ -15,6 +15,7 @@ import {
   HelpCircle,
   LogOut,
   Menu,
+  BarrelIcon,
   X,
   Search,
   Bell,
@@ -27,6 +28,7 @@ import {
   Clock,
   CheckCircle,
   Calendar,
+  StoreIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -163,20 +165,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           children: [
             // Use query parameters to designate the active tab view
             { name: "Task Planner", href: `/farm-operation?tab=planner` },
+             { name: "Calendar View", href: `/farm-operation?tab=calendar` },
             {
               name: "Crop and Livestock Records",
               href: `/farm-operation?tab=records`,
             },
-            { name: "Calendar View", href: `/farm-operation?tab=calendar` },
-            {
-              name: "Inventory Management",
-              href: `/farm-operation?tab=inventory`,
-            },
-            {
+             {
               name: "Staff Management",
               href: `/farm-operation?tab=staff`,
             },
+           
+            
           ],
+        },
+         {
+          name: "Inventory Management",
+          href: `/inventory`,
+          icon: StoreIcon,
+          key: "inventory",
+          expandable: false,
         },
         {
           name: "Smart Advisory",
@@ -184,6 +191,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "Smart Advisory",
           expandable: false,
           href: `/smart-advisory`,
+        },
+        {
+          name: "Warehouse",
+          icon: BarrelIcon,
+          key: "warehouse",
+          expandable: false,
+          href: `/warehouse`,
         },
         {
           name: "Mapping & Geo Tools",
@@ -213,10 +227,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           expandable: true,
           comingSoon: true,
           children: [
-            // { name: "Market Overview", href: "/marketplace/market-overview" },
-            // { name: "Buy", href: "#" },
-            // { name: "Sell", href: "#" },
-            // { name: "My Orders", href: "#" },
+            { name: "Buy", href: "#" },
+            { name: "Sell", href: "#" },
+            { name: "My Orders", href: "#" },
           ],
         },
         {
@@ -275,6 +288,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               comingSoon: true,
             },
             { name: "FAQ", href: `/help/faq` },
+           // { name: "Request", href: `/help/request` },
+           // { name: "Resources", href: `/help/support` },
           ],
         },
       ];
@@ -596,7 +611,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Bottom Profile/Logout */}
-          <div className="border-t border-gray-200 p-4">
+          <div className="border-t border-gray-200 pt-4">
             <div
               className={`flex items-center ${
                 sidebarCollapsed ? "justify-center" : "space-x-3"
@@ -692,7 +707,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               >
                 <Menu size={24} />
               </button>
-              <div className="flex items-center space-x-4">
+           {/*   <div className="flex items-center space-x-4">
                 <div className="relative">
                   <Search
                     size={18}
@@ -705,7 +720,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm w-34 md:w-64"
                   />
                 </div>
-              </div>
+              </div>*/}
             </div>
             <header className="bg-white p-4 sticky top-0 z-[20]">
               <div className="flex justify-end">
