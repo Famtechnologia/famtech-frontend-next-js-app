@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Camera, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
 
 import {
@@ -39,7 +38,6 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
   onClose,
   onRecordAdded,
 }) => {
-  const { user } = useAuth();
   const { profile } = useProfile();
   const [formData, setFormData] = useState<CropFormData>({
     cropName: "",
@@ -450,7 +448,6 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
   onRecordUpdated,
 }) => {
   const { profile } = useProfile();
-  const { user } = useAuth();
   // State for form data (non-file fields)
   const [formData, setFormData] = useState({
     cropName: record.cropName || "",

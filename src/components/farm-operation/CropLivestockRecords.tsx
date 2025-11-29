@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Modal from "../ui/Modal";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
 
 import { ListFilter, Plus, Search, FolderOpen, Trash2 } from "lucide-react";
@@ -241,10 +240,8 @@ const CropLivestockRecords: React.FC = () => {
   const [error, setError] = useState<Error | null>(null);
 
   // Extract user ID once
-  const { user } = useAuth();
   const { profile } = useProfile();
 
-  // FIX: Wrap fetchCropData in useCallback
   const fetchCropData = useCallback(async () => {
     if (!profile?.id) {
       setLoading(false);
@@ -276,7 +273,6 @@ const CropLivestockRecords: React.FC = () => {
     }
   }, [profile?.id]); // Dependency is userId
 
-  // FIX: Wrap fetchLivestockData in useCallback
   const fetchLivestockData = useCallback(async () => {
     if (!profile?.id) {
       setLoading(false);
@@ -309,7 +305,6 @@ const CropLivestockRecords: React.FC = () => {
     }
   }, [profile?.id]); // Dependency is userId
 
-  // The useEffect now correctly depends on activeRecordTab, fetchCropData, and fetchLivestockData
   useEffect(() => {
     if (activeRecordTab === "Crops") {
       fetchCropData();

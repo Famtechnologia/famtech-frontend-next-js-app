@@ -9,10 +9,7 @@ import {
   createLivestockRecord,
   LivestockRecord,
 } from "../../lib/services/croplivestock";
-import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
-
-// Define the shape of the component's state
 
 interface LivestockFormData {
   specie: string;
@@ -34,7 +31,6 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
   onClose,
   onRecordAdded,
 }) => {
-  const { user } = useAuth();
   const { profile } = useProfile();
   const [formData, setFormData] = useState<LivestockFormData>({
     specie: "",
@@ -384,7 +380,6 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
   onClose,
   onRecordUpdated,
 }) => {
-  const { user } = useAuth();
   const {profile} = useProfile()
   const [formData, setFormData] = useState<UpdateLivestockPayload>({
     specie: record.specie || "",

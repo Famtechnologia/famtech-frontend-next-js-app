@@ -18,7 +18,6 @@ import {
   deleteTask,
   Task as ApiTask,
 } from "../../lib/services/taskplanner";
-import { useAuth } from "@/lib/hooks/useAuth";
 import TaskSkeleton from "@/components/layout/skeleton/farm-operation/TaskPlanner";
 import { StaffType, getStaffs } from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
@@ -292,7 +291,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
 };
 
 const App: React.FC = () => {
-  const { user } = useAuth();
   const { profile } = useProfile();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);

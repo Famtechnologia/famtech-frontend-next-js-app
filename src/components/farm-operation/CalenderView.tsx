@@ -9,7 +9,7 @@ import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
 import { getTasks, updateTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
-import { useAuth } from "@/lib/hooks/useAuth";
+
 import { getStaffById} from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
 
@@ -222,7 +222,6 @@ const CalendarView: React.FC = () => {
     "December",
   ];
 
-  const { user } = useAuth();
   const { profile } = useProfile();
 
   const fetchCalendar = useCallback(async () => {

@@ -37,7 +37,6 @@ import {
   updateInventoryItem,
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
-import { useAuth } from "@/lib/hooks/useAuth";
 import InventorySkeleton from "@/components/layout/skeleton/farm-operation/Inventory";
 import { useProfile } from "@/lib/hooks/useProfile";
 
@@ -70,10 +69,7 @@ type NullableSetter<T> = Dispatch<SetStateAction<T | null>>;
 
 const InventoryManagement = () => {
   const { profile } = useProfile();
-  const { user } = useAuth();
-  console.log(user);
-  const requiredUserId = user?._id || "";
-  // State declarations
+
   const [activeInventoryTab, setActiveInventoryTab] = useState<string>("seeds");
   const [showAddItemModal, setShowAddItemModal] = useState<boolean>(false);
   const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
@@ -116,7 +112,7 @@ const InventoryManagement = () => {
 
     model: undefined,
     // FIX 1: Use the retrieved user ID.
-    userId: user?._id || "",
+    userId: profile?.id || "",
   };
 
   const getInitialFormData = (
@@ -125,7 +121,7 @@ const InventoryManagement = () => {
     ...initialFormData,
     category: category as OptionalUserIdNewInventoryItemData["category"],
     // FIX 2: Ensure userId is set here too.
-    userId: requiredUserId,
+    userId: profile?.id || "",
   });
 
   const [formData, setFormData] =
@@ -134,7 +130,7 @@ const InventoryManagement = () => {
     useState<UpdateInventoryItemData | null>(null);
 
   const fetchInventoryItems = useCallback(async () => {
-    if (!user?._id) {
+    if (!profile?.id) {
       setIsLoading(false);
       setError("Cannot fetch inventory: User ID is missing. Please log in.");
       return;
@@ -144,7 +140,7 @@ const InventoryManagement = () => {
     setError(null); // Clear previous fetch error
     try {
       // FIX 4: Pass the required userId argument to getInventoryItems
-      const items = await getInventoryItems(user?._id || "");
+      const items = await getInventoryItems(profile?.id || "");
       setInventoryItems(items);
     } catch (err) {
       console.error("Failed to fetch inventory:", err);
@@ -152,7 +148,7 @@ const InventoryManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?._id]);
+  }, [profile?.id]);
 
   useEffect(() => {
     fetchInventoryItems();
