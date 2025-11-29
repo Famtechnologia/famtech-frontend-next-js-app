@@ -147,7 +147,7 @@ export default function ComparisonTab() {
       </div>
 
       <Card title="Comparison Parameters">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Farm 1 Select */}
           <div>
             <label htmlFor="farm1" className="block text-sm font-medium text-gray-700">
@@ -220,21 +220,6 @@ export default function ComparisonTab() {
               ))}
             </select>
           </div>
-          
-          {/* Run Button (placed here for layout) */}
-          <div className="flex items-end pt-2">
-            <button
-              onClick={handleRunComparison}
-              disabled={isLoading || !farm1 || !farm2 || farm1 === farm2}
-              className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition ${
-                isLoading || !farm1 || !farm2 || farm1 === farm2
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              }`}
-            >
-              {isLoading ? "Comparing..." : "Run Comparison"}
-            </button>
-          </div>
         </div>
 
         {/* Farm IDs Display (for debugging/info) */}
@@ -275,6 +260,22 @@ export default function ComparisonTab() {
             />
           </div>
         </div>
+
+
+        {/* Run Button (placed here for layout) */}
+          <div className="flex items-end pt-2">
+            <button
+              onClick={handleRunComparison}
+              disabled={isLoading || !farm1 || !farm2 || farm1 === farm2}
+              className={`w-40 py-2 px-4 border border-transparent mt-3 rounded-md shadow-sm text-sm font-medium text-white transition ${
+                isLoading || !farm1 || !farm2 || farm1 === farm2
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              }`}
+            >
+              {isLoading ? "Comparing..." : "Run Comparison"}
+            </button>
+          </div>
 
         {/* Info Message */}
         {!primaryFarmId && (
