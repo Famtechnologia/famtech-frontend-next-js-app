@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Plus, Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
 import WarehouseCard from "@/components/warehouse/WarehouseCard";
 import WarehouseForm from "@/components/warehouse/WarehouseForm";
+import WarehouseDetails from "@/components/warehouse/WarehouseDetails";
 import { 
   getAllWarehouses, 
   createWarehouse, 
@@ -41,11 +42,11 @@ const Warehouse = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
+  const [viewMode, setViewMode] = useState(null); // "view" or "edit"
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
-  const showToast = (message, type = "success") =>
-    setToast({ show: true, message, type });
+  const showToast = (message, type = "success") => setToast({ show: true, message, type });
   const closeToast = () => setToast((prev) => ({ ...prev, show: false }));
 
   const fetchWarehouses = async () => {
@@ -70,11 +71,19 @@ const Warehouse = () => {
 
   const handleCreateNew = () => {
     setSelectedWarehouse(null);
+    setViewMode("edit");
     setIsFormOpen(true);
   };
 
   const handleEdit = (warehouse) => {
     setSelectedWarehouse(warehouse);
+    setViewMode("edit");
+    setIsFormOpen(true);
+  };
+
+  const handleView = (warehouse) => {
+    setSelectedWarehouse(warehouse);
+    setViewMode("view");
     setIsFormOpen(true);
   };
 
@@ -120,6 +129,7 @@ const Warehouse = () => {
   const handleFormClose = () => {
     setIsFormOpen(false);
     setSelectedWarehouse(null);
+    setViewMode(null);
   };
 
   if (authLoading) {
@@ -179,6 +189,7 @@ const Warehouse = () => {
                   key={warehouse._id}
                   warehouse={warehouse}
                   onEdit={handleEdit}
+                  onView={handleView}
                   onDelete={handleDelete}
                 />
               ))}
@@ -189,13 +200,20 @@ const Warehouse = () => {
 
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
-          <WarehouseForm
-            isOpen={isFormOpen}
-            onClose={handleFormClose}
-            onSubmit={handleFormSubmit}
-            warehouse={selectedWarehouse}
-            isLoading={isSubmitting}
-          />
+          {viewMode === "edit" ? (
+            <WarehouseForm
+              isOpen={isFormOpen}
+              onClose={handleFormClose}
+              onSubmit={handleFormSubmit}
+              warehouse={selectedWarehouse}
+              isLoading={isSubmitting}
+            />
+          ) : (
+            <WarehouseDetails
+              warehouse={selectedWarehouse}
+              onClose={handleFormClose}
+            />
+          )}
         </div>
       )}
     </div>

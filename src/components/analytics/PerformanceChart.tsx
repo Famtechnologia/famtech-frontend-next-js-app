@@ -1,21 +1,63 @@
-// app/(dashboard)/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import React from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  ChartOptions, // 💡 FIX 1: Import the ChartOptions type
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
-export default function Page() {
-  useEffect(() => {
-    // You can run client-side logic here if needed
-    console.log("Dashboard Home mounted");
-  }, []);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+
+interface PerformanceChartProps {
+  labels?: string[];
+  values?: number[];
+  title?: string;
+}
+
+export default function PerformanceChart({ labels = [], values = [], title = "Performance" }: PerformanceChartProps) {
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: title,
+        data: values,
+        fill: true,
+        backgroundColor: 'rgba(16,163,74,0.08)',
+        borderColor: 'rgba(16,163,74,1)',
+        tension: 0.3,
+        pointRadius: 2,
+      },
+    ],
+  };
+
+  // 💡 FIX 2: Apply the correct ChartOptions type
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      title: { display: !!title, text: title },
+      tooltip: { mode: 'index', intersect: false },
+    },
+    interaction: { mode: 'nearest', axis: 'x', intersect: false },
+    scales: {
+      x: { display: true, grid: { display: false } },
+      y: { display: true, grid: { color: '#f3f4f6' } },
+    },
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-      <p className="text-gray-600 mt-2">
-        Welcome to your dashboard! Here you can see an overview of your farms,
-        crops, and livestock.
-      </p>
+    <div style={{ height: 220 }} className="w-full">
+      <Line options={options} data={data} />
     </div>
   );
 }

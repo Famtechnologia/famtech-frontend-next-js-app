@@ -1,11 +1,14 @@
-// src/lib/store/profileStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getProfile } from "@/lib/api/profile";
 import { useAuthStore } from "@/lib/store/authStore";
 
+interface Profile {
+  [key: string]: unknown;
+}
+
 interface ProfileState {
-  profile: unknown | null;
+  profile: Profile | null;
   loading: boolean;
   error: string | null;
   id: string | null;
@@ -33,14 +36,12 @@ export const useProfileStore = create<ProfileState>()(
           }
 
           const profileData = await getProfile(token, id);
-          console.log(profileData?.data);
           const farm = Array.isArray(profileData?.data)
             ? profileData.data[0]
             : undefined;
 
           if (farm) {
-            console.log("on");
-            set({ profile: farm });
+            set({ profile: farm as Profile });
           } else {
             set({ error: "Profile not found" });
           }
@@ -53,8 +54,8 @@ export const useProfileStore = create<ProfileState>()(
       },
     }),
     {
-      name: "profile-storage", // localStorage key
-      partialize: (state) => ({ profile: state.profile }), // only persist profile
+      name: "profile-storage",
+      partialize: (state) => ({ profile: state.profile }),
     }
   )
 );

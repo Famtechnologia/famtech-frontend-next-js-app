@@ -126,7 +126,6 @@ const DashboardTasks = () => {
 
   // --- Dynamic Content based on task count ---
   let taskListContent;
-  let buttonContent;
   let summaryContent;
 
   if (hasTasks) {
@@ -172,7 +171,7 @@ const DashboardTasks = () => {
         <p className="font-medium text-gray-700">
           You&apos;re all caught up! 🥂
         </p>
-        <p>No tasks found. Let&apos;s cultivate a plan.</p>
+        <p>No tasks found. </p>
       </div>
     );
 

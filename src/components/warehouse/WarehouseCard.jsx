@@ -1,14 +1,14 @@
 import { useState } from "react";
-import {  MapPin, Package, Trash2, Edit, Loader2 } from "lucide-react";
+import { MapPin, Package, Trash2, Edit, Loader2 } from "lucide-react";
 
 
 const ConfirmDeleteModal = ({ warehouseName, onConfirm, onCancel, isLoading }) => {
     return (
-        <div 
+        <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={onCancel}
         >
-            <div 
+            <div
                 className="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 space-y-5 animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -51,7 +51,7 @@ const ConfirmDeleteModal = ({ warehouseName, onConfirm, onCancel, isLoading }) =
 // --- WarehouseCard Component ---
 
 
-const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
+const WarehouseCard = ({ warehouse, onEdit, onView, onDelete }) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -63,9 +63,9 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
     const handleDeleteConfirm = async () => {
         setIsDeleting(true);
         setIsConfirmOpen(false);
-        
+
         try {
-            await onDelete(warehouse.id); 
+            await onDelete(warehouse.id);
         } catch (error) {
             console.error("Error deleting warehouse:", error);
         } finally {
@@ -81,16 +81,9 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
         e.stopPropagation();
         onEdit(warehouse);
     };
-    
-    
-    const handleViewDetailsClick = () => {
-        if (onViewDetails) {
-            onViewDetails(warehouse);
-        } else {
-           
-            onEdit(warehouse);
-        }
-    };
+
+
+   
 
 
     const productCount = warehouse.products?.length || 0;
@@ -98,8 +91,8 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
 
     return (
         <div className="bg-white p-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col h-full">
-            
-            
+
+
             {isConfirmOpen && (
                 <ConfirmDeleteModal
                     warehouseName={warehouse.name}
@@ -113,14 +106,14 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
                 {/* Header Section */}
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                       
+
                         <div>
                             <h3 className="font-semibold text-gray-900 text-2xl leading-tight">
                                 {warehouse.name}
                             </h3>
                         </div>
                     </div>
-                    
+
                     {/* Action Icons */}
                     <div className="flex gap-1">
                         <button
@@ -143,41 +136,41 @@ const WarehouseCard = ({ warehouse, onEdit, onDelete, onViewDetails }) => {
 
                 {/* Info Section  */}
                 <div className="space-y-2.5">
-                    
+
                     <div className="flex items-center gap-2.5 text-sm text-gray-600">
                         <MapPin className="h-5 w-5 text-gray-500" />
                         <span className="truncate text-lg">{warehouse.location}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2.5 text-sm text-gray-600">
                         <Package className="h-5 w-5 text-gray-500" />
                         <span className="text-lg">Capacity: <span className="font-medium  text-gray-900">{warehouse.capacity}</span></span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2.5 text-sm text-gray-600">
                         <div className="h-4 w-4 flex items-center justify-center">
                             <div className="w-3 h-3 rounded-full bg-gray-500"></div>
                         </div>
                         <span className="text-lg">
-                            Products: <span className="font-medium text-gray-900">{productCount}</span> 
-                            <span className="text-gray-400 mx-1">|</span> 
+                            Products: <span className="font-medium text-gray-900">{productCount}</span>
+                            <span className="text-gray-400 mx-1">|</span>
                             Total Qty: <span className="font-medium text-gray-900">{totalQuantity}</span>
                         </span>
                     </div>
-                    
-                  
+
+
                 </div>
             </div>
 
-            
+
             <div className="p-4 border-t border-gray-100 mt-auto">
                 <button
-                
-                    onClick={handleViewDetailsClick} 
+                    onClick={() => onView(warehouse)}
                     className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                     View Details
                 </button>
+
             </div>
         </div>
     );
