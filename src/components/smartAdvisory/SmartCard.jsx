@@ -38,7 +38,7 @@ export const SmartCard = ({
       <div className="p-4">
         {/* Health Status Badge */}
         <div className={`flex items-center justify-between`}>
-          <h3 className="font-semibold text-gray-800 text-xl md:text-2xl capitalize">
+          <h3 className="font-semibold text-gray-800 text-xl md:text-xl capitalize">
             {name}
           </h3>
           <span

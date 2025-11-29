@@ -1,6 +1,6 @@
 // ChatWithOfficerPage.tsx
 import React, { useState } from 'react';
-import OfficerList from './chatwithofficer/OfficerList';
+//import OfficerList from './chatwithofficer/OfficerList';
 import DefaultChatView from './chatwithofficer/DefaultChatView';
 import OfficerProfile from './chatwithofficer/OfficerProfile1';
 import ChatWindow from './chatwithofficer/ChatWindow';
@@ -11,7 +11,7 @@ const ChatWithOfficerPage: React.FC = () => {
   const [activeScreen, setActiveScreen] = useState<'default' | 'chat' | 'profile'>('default');
   const [selectedOfficer, setSelectedOfficer] = useState<Officer | null>(null);
   
-  const officers: Officer[] = [
+{/*}  const officers: Officer[] = [
     {
       id: 1,
       name: 'Grace Adebayo',
@@ -86,12 +86,12 @@ const ChatWithOfficerPage: React.FC = () => {
       }
     
     },
-  ];
+  ]; */}
 
-  const handleViewProfileClick = (officer: Officer) => {
+ {/* const handleViewProfileClick = (officer: Officer) => {
     setSelectedOfficer(officer);
     setActiveScreen('profile');
-  };
+  };*/}
 
   const handleStartChatClick = (officer: Officer) => {
     setSelectedOfficer(officer);
@@ -128,17 +128,17 @@ const ChatWithOfficerPage: React.FC = () => {
       </div>
       <div className="lg:flex space-x-2  lg:h-full pt-6">
         {/* Left section: Conversation/Default View (3/5 width) */}
-        <div className="w-full lg:w-3/5 rounded-lg flex items-center justify-center">
+        <div className="w-full  rounded-lg flex items-center justify-center">
           {renderContent()}
         </div>
 
-        {/* Right section: Officer List (2/5 width) */}
+        {/* Right section: Officer List (2/5 width)
         <OfficerList 
           officers={officers} 
           onViewProfile={handleViewProfileClick} 
           onStartChat={handleStartChatClick} 
           
-        />
+        /> */}
       </div>
     </>
   );

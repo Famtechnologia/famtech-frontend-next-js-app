@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { getAdvice, createAdvice } from "@/lib/services/advisory";
 
-import { useAuth } from "@/lib/hooks/useAuth";
+
+import { useAuthStore } from "@/lib/store/authStore";
+import FormSkeleton from "../layout/skeleton/smart-advisory/Generate";
 
 export const GenerateAdvice = ({
   location,
@@ -19,7 +21,7 @@ export const GenerateAdvice = ({
     formState: { errors, isSubmitting },
   } = useForm<{ type: string; produce: string; level: string }>();
 
-  const { user } = useAuth();
+  const {user} = useAuthStore()
 
   const [loading, setLoading] = useState(false);
  const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -56,7 +58,7 @@ export const GenerateAdvice = ({
         context
       );
 
-      const userId = user?._id || "";
+      const userId = user?.id || "";
 
       await createAdvice(
         data?.type,
@@ -65,7 +67,7 @@ export const GenerateAdvice = ({
         userId,
         JSON.stringify(advice) // Stringify the advice object
       );
-
+    
       toast.success("Your advice is ready!");
       setShowFarmingType(false);
     } catch (err: unknown) {
@@ -86,7 +88,7 @@ export const GenerateAdvice = ({
     }, [])
 
     if (isLoading) {
-      // return <FormSkeleton />;
+      return <FormSkeleton />;
     } 
 
   return (
@@ -102,12 +104,9 @@ export const GenerateAdvice = ({
           Lets help you to manage our farm - from seed to harvest
         </p>
       </div>
-
+      
       <div className="mb-4 mt-4">
-        <label
-          htmlFor="type"
-          className="text-gray-700 mb-2 font-medium text-base md:text-lg"
-        >
+        <label htmlFor="type" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
           Choose Farm Type
         </label>
         {/* type */}
@@ -116,7 +115,7 @@ export const GenerateAdvice = ({
           {...register("type", { required: "Crop Type is required" })} // Fix: 'type' is a valid property in SignupFormInputs
           className="w-full p-3 mt-1 border-gray-400 border rounded-xl text-gray-500 text-sm"
         >
-          <option value="" hidden>
+          <option value="" hidden >
             Select Crop Type
           </option>
           {["Crop farming", "livestock farming", "Mixed (both)"]?.map(
@@ -133,10 +132,7 @@ export const GenerateAdvice = ({
       </div>
 
       <div className="mb-4">
-        <label
-          htmlFor="produce"
-          className="text-gray-700 mb-2 font-medium text-base md:text-lg"
-        >
+        <label htmlFor="produce" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
           Farm Produce
         </label>
         {/* produce */}
@@ -153,10 +149,7 @@ export const GenerateAdvice = ({
       </div>
 
       <div className="mb-4">
-        <label
-          htmlFor="level"
-          className="text-gray-700 mb-2 font-medium text-base md:text-lg"
-        >
+        <label htmlFor="level" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
           Level
         </label>
         {/* level */}

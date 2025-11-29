@@ -92,7 +92,7 @@ const StartChatPage: React.FC = () => {
       <div className="mt-8 mb-4 pt-8 border-t border-gray-200 text-center">
         <h3 className="text-2xl font-semibold text-gray-800 mb-2">How can I assist you today?</h3>
         <p className="text-gray-600 mb-6">Start a conversation, upload a photo, or leave a voice message, your farm deserves the best support.</p>
-        <Link href="https://wa.me/2349127483717" className="px-8 py-3  bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors duration-200">
+        <Link href="/help/chat" className="px-8 py-3  bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors duration-200">
           Connect with Officer
         </Link>
       </div>

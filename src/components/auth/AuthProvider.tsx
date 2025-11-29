@@ -10,7 +10,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setLoading, token } = useAuthStore();
+  const { setLoading} = useAuthStore();
   const setToken = useAuthStore((state) => state.setToken);
   const cookie = Cookies.get("famtech-auth");
   const router = useRouter();
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "/verify-code",
           "/verify-email",
         ];
-        if (publicRoutes.includes(pathname)) {
+        if (user && publicRoutes.includes(pathname)) {
           if (!user?.farmProfile) {
             router.push("/complete-farm-profile");
             return;
@@ -43,9 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     setLoading(false);
-  }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile]);
-
-  console.log(token);
-
+  }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile, user]);
+  
   return <>{children}</>;
 }

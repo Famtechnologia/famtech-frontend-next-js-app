@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { User, MapPin, Phone, Wheat, Ruler, Mail } from "lucide-react"; // Added Lock and Mail icons
-import axios, { AxiosError } from "axios";
+import { User, MapPin, Phone, Wheat, Ruler, Mail } from "lucide-react";
 import Link from "next/link"; // Import Link for navigation
 import SettingsSkeletonLoader from "@/components/layout/skeleton/settings/Profile";
 import { useAuth } from "@/lib/hooks/useAuth";
-import apiClient from "@/lib/api/apiClient";
+import { useProfile } from "@/lib/hooks/useProfile";
 // --- TYPE DEFINITIONS FOR FARM PROFILE ---
 interface Owner {
   firstName: string;
@@ -47,62 +46,31 @@ const Settings: React.FC = () => {
 
   const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const { profile } = useProfile();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apiClient.get(`/api/get-profile/${user?._id}`);
+    setFarmProfile(profile as FarmProfileData | null);
+  }, [profile]);
 
-        const profileData = response.data?.data?.farmProfile as FarmProfileData;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // ⏳ 1.5 seconds (you can adjust this)
 
-        if (profileData) {
-          setFarmProfile(profileData);
-          setError(null);
-        } else {
-          setError("Profile data is available but empty.");
-        }
-      } catch (err: unknown) {
-        console.error("Failed to fetch farm profile:", err);
-
-        let errorMessage = "Failed to load profile due to an unknown error.";
-
-        if (axios.isAxiosError(err)) {
-          const axiosError = err as AxiosError;
-          const status = axiosError.response?.status;
-
-          if (status === 401) {
-            errorMessage = "Authentication failed. Please log in again.";
-          } else if (status === 404) {
-            errorMessage = "Farm profile not found. Please create a profile.";
-          } else if (status !== undefined) {
-            errorMessage = `Server error (Status: ${status}). Failed to load profile.`;
-          }
-        }
-
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [user?._id]);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (isLoading) {
     // Display the skeleton while data is being fetched
     return <SettingsSkeletonLoader />;
   }
 
-  if (error || !farmProfile) {
-    return (
-      <div className="md:p-8 text-center text-xl text-red-600">
-        {error || "No profile data to display."}
-      </div>
-    );
+  if (!farmProfile) {
+    console.log("No profile data to display.")
   }
 
-  const { farmType, farmSize, farmSizeUnit, owner, location } = farmProfile;
+  const { farmType, farmSize, farmSizeUnit, owner, location } = farmProfile || {};
 
   // Use user store data for account details
   const userEmail = user?.email || "N/A";

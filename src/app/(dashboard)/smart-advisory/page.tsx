@@ -2,23 +2,22 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useAuthStore } from "@/lib/store/authStore";
-import axios, { AxiosError } from "axios";
-import { API_URL } from "../../../../config";
+//import axios, { AxiosError } from "axios";
+//import apiClient from "@/lib/api/apiClient";
+//import { useAuth } from "@/lib/hooks/useAuth";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
 import { BrainCircuit, HeartPulse, Telescope } from "lucide-react";
 import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 import { Explore } from "@/components/smartAdvisory/Explore";
 import SmartAdvisory from '@/components/layout/skeleton/smart-advisory/SmartAdvisory'
+import { useProfile } from "@/lib/hooks/useProfile";
+
 const tabsConfig = [
   { label: "Farm Advice", icon: Telescope, key: "farm advice" },
   { label: "Farm Health", icon: HeartPulse, key: "health" },
   { label: "Smart Insight", icon: BrainCircuit, key: "chat" },
 ];
-
-const GET_PROFILE_ENDPOINT = "/api/get-profile";
-const GET_PROFILE_URL = `${API_URL}${GET_PROFILE_ENDPOINT}`;
 
 interface Owner {
   firstName: string;
@@ -56,9 +55,8 @@ export default function Page() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const {profile} = useProfile()
 
-  // Get the current tab from the URL query, defaulting to 'farm advice' (the first tab's key)
-  // 💡 CORRECTION MADE HERE
   const activeTabKey = searchParams.get("tab") || "farm advice";
 
   // Function to handle tab clicks (updates the URL query)
@@ -69,45 +67,9 @@ export default function Page() {
 
   const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
 
-  const token = useAuthStore((state) => state.token);
-
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get(GET_PROFILE_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // Correctly access the nested data object
-        const profileData = response.data?.data?.farmProfile as FarmProfileData;
-
-        setFarmProfile(profileData);
-      } catch (err: unknown) {
-        console.error("Failed to fetch farm profile:", err);
-
-        // FIX 2: Safely check for AxiosError and access the status property
-        let errorMessage = "Failed to load profile due to an unknown error.";
-
-        if (axios.isAxiosError(err)) {
-          const axiosError = err as AxiosError;
-          const status = axiosError.response?.status; // Safely access status
-
-          if (status === 401) {
-            errorMessage = "Authentication failed. Please log in again.";
-          } else if (status === 404) {
-            errorMessage = "Farm profile not found. Please create a profile.";
-          } else if (status !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            errorMessage = `Server error (Status: ${status}). Failed to load profile.`;
-          }
-        }
-      }
-    };
-
-    fetchProfile();
-  }, [token]);
+    setFarmProfile(profile as FarmProfileData | null);
+  }, [profile]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -146,7 +108,7 @@ export default function Page() {
       <div>
         <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight mb-4">
           Hi <span className="capitalize">{owner?.firstName || "Farmer"}</span>,
-          here&apos;s is your farm health&apos;s today ⛅
+          here&apos;s your farm health update for today ⛅
         </h2>
         <p className="text-gray-500 text-base leading-relaxed mb-4">
           {new Date().toLocaleDateString("en-NG", {

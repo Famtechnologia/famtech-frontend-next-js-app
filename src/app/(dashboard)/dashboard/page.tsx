@@ -95,7 +95,7 @@ export default function FarmerAdminDashboard() {
         >
           <WeatherForecast />
           <Tasks />
-          <Alerts />
+          <SmartAdvisory />
         </div>
 
         {/* Middle Section */}
@@ -110,7 +110,7 @@ export default function FarmerAdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <MarketPrices />
           <FarmDiary />
-          <SmartAdvisory />
+          <Alerts/>
         </div>
       </div>
   );
