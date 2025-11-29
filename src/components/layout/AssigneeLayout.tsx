@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   Tractor,
-  Brain,
   Settings,
   LogOut,
   Menu,
@@ -61,7 +60,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
 
-  const { user, logout } = useAssignee();
+  const { user } = useAssignee();
   const pathname = usePathname();
 
   // Close flyout when clicking outside
@@ -470,8 +469,8 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                 </div>
               )}
             </div>
-            <button
-              onClick={logout}
+            <Link
+              href='/auth/login'
               className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
@@ -479,7 +478,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
             >
               <LogOut size={16} className={sidebarCollapsed ? "" : "mr-2"} />
               {!sidebarCollapsed && "Sign out"}
-            </button>
+            </Link>
           </div>
         </nav>
       </div>
@@ -584,7 +583,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                     {/* 👤 Profile Section (Uses props/state you provided) */}
                     <div className="flex items-center space-x-2">
                       <Link
-                        href="/settings/profile"
+                        href="/staffs/settings"
                         className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
                       >
                         <User size={16} className="text-white" />
