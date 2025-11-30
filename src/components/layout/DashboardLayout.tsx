@@ -17,7 +17,6 @@ import {
   Menu,
   BarrelIcon,
   X,
-  Search,
   Bell,
   ChevronRight,
   ChevronDown,
@@ -245,7 +244,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           icon: FileText,
           key: "reports",
           expandable: true,
-          comingSoon: false,
+          comingSoon: true,
           children: [
             { name: "Production", href: "#" },
             { name: "Financial", href: "##",
