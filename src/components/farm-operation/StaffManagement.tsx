@@ -98,7 +98,7 @@ const StaffManagement = () => {
       fetchStaffData();
       setShowAddStaffModal(false);
       setStaffCreate(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = "An unexpected error occurred. Please try again.";
       if (error instanceof AxiosError && error.response?.data?.message) {
         errorMessage = error.response.data.message;
