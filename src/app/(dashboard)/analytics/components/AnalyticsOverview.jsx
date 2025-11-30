@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Bar } from "react-chartjs-2";
+import "chart.js/auto";
 import toast from "react-hot-toast";
-import Card from "@/components/ui/Card";
-import PerformanceChart from "@/components/analytics/PerformanceChart";
-import { useDashboardData, useInsights } from "@/lib/hooks/useDashboard";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useDashboardData, useInsights } from "@/lib/hooks/useDashboard";
 
-export default function OverviewTab() {
+export default function AnalyticsPage() {
   const { user } = useAuth();
   const farmId = user?.farmProfile;
+  const [period, setPeriod] = useState("quarter");
 
-  // Fetch analytics data
   const {
     data: dashboardData,
     isLoading: isDashboardLoading,
@@ -22,15 +22,14 @@ export default function OverviewTab() {
     data: insightsData,
     isLoading: isInsightsLoading,
     error: insightsError,
-  } = useInsights(farmId || "", { refreshInterval: 60000 });
+    refetch: refetchInsights,
+  } = useInsights(farmId || "", { refreshInterval: 60000, period });
 
-  const [showInsights, setShowInsights] = useState(true);
   const isLoading = isDashboardLoading || isInsightsLoading;
-  const error = dashboardError || insightsError;
 
   useEffect(() => {
     if (dashboardError) toast.error("Failed to load dashboard data.");
-    if (insightsError) toast.error("Failed to load insights.");
+    if (insightsError) toast.error("Failed to load insights data.");
   }, [dashboardError, insightsError]);
 
   if (!user)
@@ -39,252 +38,257 @@ export default function OverviewTab() {
   if (!farmId)
     return (
       <div className="p-6 text-gray-600 italic">
-        Unable to load analytics overview — no active farm selected.
+        Unable to load analytics — no farm selected.
       </div>
     );
 
   if (isLoading)
     return (
-      <div className="p-6 text-gray-600 italic">
-        Loading analytics overview...
-      </div>
+      <div className="p-6 text-gray-600 italic">Loading analytics data...</div>
     );
 
-  if (error)
-    return (
-      <div className="p-6 text-red-600">
-        Failed to load analytics overview. Error:{" "}
-        {error.message || "Unknown error"}
-      </div>
-    );
+  const revenueWidget = dashboardData?.data?.widgets?.find(
+    (w) => w.config?.metric === "totalRevenue"
+  );
+  const yieldWidget = dashboardData?.data?.widgets?.find(
+    (w) => w.config?.metric === "totalYield"
+  );
+  const cropChartWidget = dashboardData?.data?.widgets?.find(
+    (w) => w.type === "chart"
+  );
 
-  // Normalize data
-  const keyMetrics =
-    insightsData?.data?.keyMetrics ??
-    insightsData?.keyMetrics ??
-    dashboardData?.keyMetrics ??
-    dashboardData?.data?.keyMetrics ??
-    {};
+  const revenueValue = revenueWidget?.data?.value ?? 0;
+  const revenueChange = revenueWidget?.data?.change ?? 0;
 
-  const ai = insightsData?.data?.aiInsights ?? insightsData?.aiInsights ?? {};
-  const benchmarks =
-    insightsData?.data?.benchmarks ?? insightsData?.benchmarks ?? {};
-  const risks =
-    insightsData?.data?.riskAssessment ?? insightsData?.riskAssessment ?? [];
-  const recommendations =
-    insightsData?.data?.recommendations ??
-    insightsData?.recommendations ??
-    [];
+  const yieldValue = yieldWidget?.data?.value ?? 0;
+  const yieldChange = yieldWidget?.data?.change ?? 0;
 
-  const trends =
-    insightsData?.data?.trends?.message ??
-    insightsData?.trends?.message ??
-    "No trend data available.";
+  const chartLabels = cropChartWidget?.data?.labels ?? [];
+  const chartValues =
+    cropChartWidget?.data?.datasets?.[0]?.data ?? [];
 
-  const formatVal = (v) =>
-    v === undefined || v === null ? "-" : typeof v === "number" ? v.toLocaleString() : v;
-
-  const metrics = [
-    {
-      title: "Total Yield",
-      value:
-        keyMetrics.totalYield ??
-        keyMetrics.total_yield ??
-        dashboardData?.totalYield ??
-        0,
-    },
-    {
-      title: "Total Revenue",
-      value:
-        keyMetrics.totalRevenue ??
-        keyMetrics.total_revenue ??
-        dashboardData?.totalRevenue ??
-        0,
-    },
-    {
-      title: "Efficiency",
-      value:
-        keyMetrics.successRate ??
-        keyMetrics.success_rate ??
-        keyMetrics.averageYieldPerHectare ??
-        0,
-    },
-  ];
-
-  const forecast = {
-    yieldPrediction: ai?.yieldPrediction ?? ai?.yield ?? ai?.predicted_yield ?? "—",
-    revenueProjection: ai?.revenueProjection ?? ai?.revenue ?? ai?.predicted_revenue ?? "—",
-    confidence: ai?.confidence ?? ai?.confidence_score ?? ai?.data?.confidence ?? "—",
-    summary: ai?.summary ?? "No AI summary available.",
-    source: ai?.source ?? "n/a",
-  };
-
-  const emptyChartValues = [0, 0, 0, 0, 0];
+  const insights = insightsData?.data;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-800">Overview</h2>
-        <p className="text-sm text-gray-500">
-          Real-time analytics and predictive insights for your farm’s performance.
-        </p>
-      </div>
+    <div className="space-y-10 ">
+      {/* ===== Dashboard Section ===== */}
+      <section>
 
-      {/* Metrics Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {metrics.map((m, i) => (
-          <div
-            key={i}
-            className="bg-green-50 border border-green-200 rounded-md p-4 shadow-sm"
-          >
-            <p className="text-sm text-gray-600">{m.title}</p>
-            <p className="text-2xl font-bold text-green-700 mt-1">{formatVal(m.value)}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Predictive Analysis */}
-      <Card title="Predictive Analysis">
-        <p className="text-gray-500 text-sm mb-4">
-          Forecasts based on recent performance trends.
+        <p className="text-lg text-gray-700 mb-6">
+          Real-time analytics for your farm’s performance.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-green-50 rounded-md border border-green-200">
-            <p className="text-sm text-gray-600">Yield Prediction</p>
-            <p className="text-xl font-semibold text-green-700 mt-1">
-              {forecast.yieldPrediction}
+        {/* KPI Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {/* Total Revenue */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-5 shadow-sm">
+            <p className="text-sm text-gray-600">Total Revenue (Monthly)</p>
+            <p className="text-3xl font-bold text-green-700 mt-2">
+              ${revenueValue.toLocaleString()}
+            </p>
+            <p
+              className={`text-sm mt-1 ${revenueChange > 0 ? "text-green-600" : "text-red-600"
+                }`}
+            >
+              {revenueChange > 0 ? "▲" : "▼"} {revenueChange}% from last period
             </p>
           </div>
-          <div className="p-4 bg-green-50 rounded-md border border-green-200">
-            <p className="text-sm text-gray-600">Revenue Projection</p>
-            <p className="text-xl font-semibold text-green-700 mt-1">
-              {forecast.revenueProjection}
+
+          {/* Total Yield */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-5 shadow-sm">
+            <p className="text-sm text-gray-600">Total Yield (Monthly)</p>
+            <p className="text-3xl font-bold text-green-700 mt-2">
+              {yieldValue.toLocaleString()} kg
             </p>
-          </div>
-          <div className="p-4 bg-green-50 rounded-md border border-green-200">
-            <p className="text-sm text-gray-600">Confidence</p>
-            <p className="text-xl font-semibold text-green-700 mt-1">
-              {typeof forecast.confidence === "number"
-                ? `${(forecast.confidence * 100).toFixed(0)}%`
-                : forecast.confidence}
+            <p
+              className={`text-sm mt-1 ${yieldChange > 0 ? "text-green-600" : "text-red-600"
+                }`}
+            >
+              {yieldChange > 0 ? "▲" : "▼"} {yieldChange}% from last period
             </p>
           </div>
         </div>
 
-        <div className="mt-4 p-4 bg-green-50 rounded-md border border-green-200 text-sm text-gray-700">
-          <p>{forecast.summary}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Confidence:{" "}
-            {typeof forecast.confidence === "number"
-              ? `${(forecast.confidence * 100).toFixed(0)}%`
-              : forecast.confidence}{" "}
-            • Source: {forecast.source}
-          </p>
+        {/* Crop Performance Chart */}
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">
+            Crop Performance
+          </h3>
+          <div className="h-72">
+            <Bar
+              data={{
+                labels: chartLabels,
+                datasets: [
+                  {
+                    label: "Yield (kg/ha)",
+                    backgroundColor: "#16a34a",
+                    borderRadius: 6,
+                    data: chartValues,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  x: { grid: { display: false } },
+                  y: {
+                    beginAtZero: true,
+                    grid: { color: "#f0fdf4" },
+                  },
+                },
+              }}
+            />
+          </div>
         </div>
+      </section>
 
-        <div className="mt-4">
-          <PerformanceChart
-            title="Recent Yield Trends"
-            labels={["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"]}
-            values={emptyChartValues}
-          />
-          <p className="text-xs text-gray-400 mt-2">{trends}</p>
+      {/* ===== Insights Section (Updated to Match Backend) ===== */}
+      <section>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">
+              AI Farm Insights
+            </h2>
+            <p className="text-sm text-gray-500">
+              Data-driven insights, recommendations, and risk analysis for your farm.
+            </p>
+          </div>
+
+          {/* Period Dropdown */}
+          <div className="mt-4 sm:mt-0">
+            <label
+              htmlFor="period"
+              className="block text-sm text-gray-600 mb-1"
+            >
+              Select period
+            </label>
+            <select
+              id="period"
+              value={period}
+              onChange={(e) => {
+                setPeriod(e.target.value);
+                refetchInsights();
+              }}
+              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="week">Week</option>
+              <option value="month">Month</option>
+              <option value="quarter">Quarter</option>
+              <option value="year">Year</option>
+            </select>
+          </div>
         </div>
-      </Card>
-
-      {/* Benchmarks */}
-      {benchmarks && Object.keys(benchmarks).length > 0 && (
-        <Card title="Benchmarks">
-          <p className="text-sm text-gray-500 mb-3">
-            Comparison of your farm’s performance against regional averages.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(benchmarks).map(([metric, data]) => (
+        {/* Key Metrics */}
+        {insights?.keyMetrics && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6">
+            {Object.entries(insights.keyMetrics).map(([metric, value]) => (
               <div
                 key={metric}
-                className="p-4 bg-green-50 border border-green-200 rounded-md"
+                className="bg-white border border-green-100 rounded-lg p-3 shadow-sm"
               >
-                <p className="text-sm text-gray-600 capitalize">{metric}</p>
-                <p className="text-base text-gray-700">
-                  Farm: {data.farm ?? 0} | Regional: {data.regional ?? 0}
+                <p className="text-xs text-gray-500 capitalize">
+                  {metric.replace(/([A-Z])/g, " $1")}
                 </p>
-                <p className="text-xs text-gray-500 italic">
-                  Performance: {data.performance ?? "n/a"}
+                <p className="text-lg font-semibold text-green-700">
+                  {typeof value === "number" ? value.toLocaleString() : value}
                 </p>
               </div>
             ))}
           </div>
-        </Card>
-      )}
+        )}
 
-      {/* Risk Assessment */}
-      {Array.isArray(risks) && risks.length > 0 && (
-        <Card title="Risk Assessment">
-          <p className="text-sm text-gray-500 mb-3">
-            Identified operational and financial risks.
+        {/* AI Insights Summary */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+          <h3 className="font-semibold text-gray-800 mb-1">
+            Insight Summary
+          </h3>
+          <p className="text-gray-700 text-sm">
+            {insights?.aiInsights?.summary || "No insights available yet."}
           </p>
-          <div className="space-y-3">
-            {risks.map((r, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded-md border ${
-                  r.level === "high"
-                    ? "border-red-300 bg-red-50"
-                    : r.level === "medium"
-                    ? "border-yellow-300 bg-yellow-50"
-                    : "border-green-300 bg-green-50"
-                }`}
-              >
-                <p className="font-medium text-gray-800 capitalize">
-                  {r.type} risk — {r.level}
-                </p>
-                <p className="text-sm text-gray-600">{r.description}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Intelligent Insights */}
-      <Card title="Intelligent Insights">
-        <div className="flex items-center justify-between">
-          <p className="text-gray-500 text-sm">
-            Actionable recommendations generated by the analytics engine.
+          <p className="text-xs text-gray-500 mt-2">
+            Confidence:{" "}
+            {insights?.aiInsights?.confidence
+              ? `${(insights.aiInsights.confidence * 100).toFixed(0)}%`
+              : "N/A"}
           </p>
-          <button
-            onClick={() => setShowInsights((prev) => !prev)}
-            className="text-green-600 text-sm underline hover:text-green-700"
-          >
-            {showInsights ? "Hide" : "View"} insights
-          </button>
+        </div>
+        
+        {/* Recommendations */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Recommendations
+          </h3>
+          {Array.isArray(insights?.recommendations) &&
+            insights.recommendations.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {insights.recommendations.map((rec, i) => (
+                <div
+                  key={i}
+                  className={`border-l-4 p-4 rounded-md shadow-sm ${rec.priority === "high"
+                      ? "border-red-400 bg-red-50"
+                      : rec.priority === "medium"
+                        ? "border-yellow-400 bg-yellow-50"
+                        : "border-green-400 bg-green-50"
+                    }`}
+                >
+                  <p className="font-semibold text-gray-800 capitalize">
+                    {rec.type}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    Priority: {rec.priority}
+                  </p>
+                  <p className="text-sm text-gray-700 mt-1">{rec.message}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 italic">
+              No recommendations available.
+            </p>
+          )}
         </div>
 
-        {showInsights && (
-          <ul className="list-disc pl-5 mt-3 space-y-2 text-gray-700">
-            {recommendations.length > 0 ? (
-              recommendations.map((tip, i) => (
-                <li key={i} className="text-sm">
-                  <strong className="capitalize">{tip.type}</strong> ({tip.priority}):{" "}
-                  {tip.message}
-                </li>
-              ))
-            ) : (
-              <li className="text-sm italic text-gray-500">
-                No AI recommendations available yet — generate recent analytics to view insights.
-              </li>
-            )}
-          </ul>
-        )}
-      </Card>
+        {/* Risk Assessment */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Risk Assessment
+          </h3>
+          {Array.isArray(insights?.riskAssessment) &&
+            insights.riskAssessment.length > 0 ? (
+            <div className="space-y-3">
+              {insights.riskAssessment.map((risk, i) => (
+                <div
+                  key={i}
+                  className={`border-l-4 p-4 rounded-md ${risk.level === "high"
+                      ? "border-red-400 bg-red-50"
+                      : risk.level === "medium"
+                        ? "border-yellow-400 bg-yellow-50"
+                        : "border-green-400 bg-green-50"
+                    }`}
+                >
+                  <p className="font-semibold text-gray-800 capitalize">
+                    {risk.type} Risk ({risk.level})
+                  </p>
+                  <p className="text-sm text-gray-700">{risk.description}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 italic">
+              No risks identified for this period.
+            </p>
+          )}
+        </div>
+        
+        <p className="text-xs text-gray-400 text-right">
+          Last updated:{" "}
+          {insights?.period?.endDate
+            ? new Date(insights.period.endDate).toLocaleString()
+            : "—"}
+        </p>
+      </section>
 
-      {/* Last updated */}
-      <p className="text-xs text-gray-400 text-right">
-        Last updated:{" "}
-        {dashboardData?.data?.lastUpdated
-          ? new Date(dashboardData.data.lastUpdated).toLocaleString()
-          : new Date().toLocaleTimeString()}
-      </p>
     </div>
   );
 }
