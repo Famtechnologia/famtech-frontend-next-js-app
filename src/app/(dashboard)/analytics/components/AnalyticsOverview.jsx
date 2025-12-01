@@ -145,7 +145,7 @@ export default function AnalyticsPage() {
 
       {/* ===== Insights Section (Updated to Match Backend) ===== */}
       <section>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">
               AI Farm Insights
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
             </p>
           </div>
 
-          {/* Period Dropdown */}
+          {/* Period Dropdown 
           <div className="mt-4 sm:mt-0">
             <label
               htmlFor="period"
@@ -177,8 +177,8 @@ export default function AnalyticsPage() {
               <option value="quarter">Quarter</option>
               <option value="year">Year</option>
             </select>
-          </div>
-        </div>
+          </div>*/}
+        </div> 
         {/* Key Metrics */}
         {insights?.keyMetrics && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6">
