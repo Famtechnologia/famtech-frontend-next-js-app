@@ -36,7 +36,7 @@ export default function AnalyticsPage() {
     <div className="min-h-screen p-0 md:p-6 bg-white">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-4">
-        <h1 className="text-3xl font-bold text-green-600 mb-3 md:mb-0">
+        <h1 className="text-2xl font-bold text-green-600 mb-3 md:mb-0">
           Reports & Analytics
         </h1>
        

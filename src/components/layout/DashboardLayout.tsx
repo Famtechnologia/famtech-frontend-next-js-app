@@ -199,6 +199,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           href: `/warehouse`,
         },
         {
+          name: "Reports",
+          icon: FileText,
+          key: "reports",
+          expandable: true,
+          comingSoon: false,
+          children: [
+            { name: "Production", href: "#" },
+            { name: "Financial", href: "##",
+              comingSoon:true,
+             },
+            { name: "Analytics", href: "/analytics" },
+          ],
+        },
+        {
           name: "Mapping & Geo Tools",
           icon: Map,
           key: "mapping",
@@ -239,20 +253,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           href: `/equipment-sync`,
           comingSoon: true,
         },
-        {
-          name: "Reports",
-          icon: FileText,
-          key: "reports",
-          expandable: true,
-          comingSoon: true,
-          children: [
-            { name: "Production", href: "#" },
-            { name: "Financial", href: "##",
-              comingSoon:true,
-             },
-            { name: "Analytics", href: "/analytics" },
-          ],
-        },
+        
         {
           name: "Settings",
           icon: Settings,
