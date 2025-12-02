@@ -31,21 +31,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "/verify-email",
         ];
 
-        // check if authenticated user is visiting a public route
+        
         if (user && publicRoutes.includes(pathname)) {
-          // Redirect staff/assignee users to their dashboard
+          
           if (user?.role === "assignee" || user?.role === "staff") {
-            router.push("/staff/dashboard");
+            router.push("/staffs/dashboard");
             return;
           }
 
-          // If no farm profile yet, route to completion page
+         
           if (!user?.farmProfile) {
             router.push("/complete-farm-profile");
             return;
           }
 
-          // Otherwise, regular users go to dashboard
+          
           router.push("/dashboard");
           return;
         }
