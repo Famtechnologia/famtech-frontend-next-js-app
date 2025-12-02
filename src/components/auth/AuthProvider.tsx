@@ -30,13 +30,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "/verify-code",
           "/verify-email",
         ];
+
+        // check if authenticated user is visiting a public route
         if (user && publicRoutes.includes(pathname)) {
-          if (!user?.farmProfile) {
-            if (user.role !== "staff") {
-              router.push("/complete-farm-profile");
-              return;
-            }
+          // Redirect staff/assignee users to their dashboard
+          if (user?.role === "assignee" || user?.role === "staff") {
+            router.push("/staff/dashboard");
+            return;
           }
+
+          // If no farm profile yet, route to completion page
+          if (!user?.farmProfile) {
+            router.push("/complete-farm-profile");
+            return;
+          }
+
+          // Otherwise, regular users go to dashboard
           router.push("/dashboard");
           return;
         }
@@ -44,8 +53,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("Failed to parse auth cookie:", error);
       }
     }
+
     setLoading(false);
-  }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile, user]);
+  }, [setToken, setLoading, cookie, router, pathname, user]);
 
   return <>{children}</>;
 }
