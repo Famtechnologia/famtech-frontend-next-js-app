@@ -465,7 +465,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
               )}
             </div>
             <Link
-              href='/auth/login'
+              href='/login'
               className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
