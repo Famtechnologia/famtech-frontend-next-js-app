@@ -10,7 +10,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setLoading} = useAuthStore();
+  const { setLoading } = useAuthStore();
   const setToken = useAuthStore((state) => state.setToken);
   const cookie = Cookies.get("famtech-auth");
   const router = useRouter();
@@ -30,11 +30,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "/verify-code",
           "/verify-email",
         ];
+
+        
         if (user && publicRoutes.includes(pathname)) {
+          
+          if (user?.role === "assignee" || user?.role === "staff") {
+            router.push("/staffs/dashboard");
+            return;
+          }
+
+         
           if (!user?.farmProfile) {
             router.push("/complete-farm-profile");
             return;
           }
+
+          
           router.push("/dashboard");
           return;
         }
@@ -42,8 +53,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("Failed to parse auth cookie:", error);
       }
     }
+
     setLoading(false);
-  }, [setToken, setLoading, cookie, router, pathname, user?.farmProfile, user]);
-  
+  }, [setToken, setLoading, cookie, router, pathname, user]);
+
   return <>{children}</>;
 }

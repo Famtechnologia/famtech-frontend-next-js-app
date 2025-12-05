@@ -1,11 +1,10 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react"; // ADDED useCallback
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Modal from "../ui/Modal";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useProfile } from "@/lib/hooks/useProfile";
 
 import { ListFilter, Plus, Search, FolderOpen, Trash2 } from "lucide-react";
-// Assuming these are correctly imported
 import { AddCropForm, UpdateCropForm } from "./Crops";
 import { AddLivestockForm, UpdateLivestockForm } from "./Livestocks";
 import {
@@ -14,30 +13,20 @@ import {
   deleteCropRecord,
   deleteLivestockRecord,
   RecordImage,
-  // Renaming the imported types to clearly separate them from the component's internal types
   CropRecord as BaseCropRecord,
   LivestockRecord as BaseLivestockRecord,
 } from "@/lib/services/croplivestock";
 import RecordsListSkeletonLoader from "@/components/layout/skeleton/farm-operation/Record";
-// --- Revised Interfaces to resolve Type Mismatches and implement card view logic ---
 
-/**
- * Assumed interface for an image object, matching the service's RecordImage.
- */
-
-// Internal CropRecord for component state, adding 'image' for thumbnail preview
 interface CropRecord extends Omit<BaseCropRecord, "image"> {
   cropImages: RecordImage[];
   image: RecordImage | null;
 }
 
-// Internal LivestockRecord for component state, adding 'image' for thumbnail preview
 interface LivestockRecord extends BaseLivestockRecord {
-  // This derived property is used for the card thumbnail
   image: RecordImage | null;
 }
 
-// Interface for the Record Details component props
 interface RecordDetailsProps {
   record: CropRecord | LivestockRecord | null;
   type: "Crops" | "Livestock";
@@ -58,10 +47,8 @@ const getGrowthPercentageFromStage = (
 ): number => {
   if (!stage) return 0;
 
-  // Normalize and trim the stage name for robust matching
   const normalizedStage = stage.trim().toLowerCase();
 
-  // Define your 5 stages and their percentage steps (20% each)
   if (
     normalizedStage.includes("seeding") ||
     normalizedStage.includes("planting")
@@ -93,17 +80,12 @@ const getGrowthPercentageFromStage = (
   return 0;
 };
 
-// --- RecordDetails Component (FIXED for livestockImages and feedSchedule) ---
-
 const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
   if (!record) return null;
 
-  // Type narrowing
   const isCrop = type === "Crops";
   const crop = record as CropRecord;
   const livestock = record as LivestockRecord;
-
-  // FIX: Read the image array from the correct property (cropImages or livestockImages)
   const images: RecordImage[] = isCrop
     ? crop.cropImages || []
     : livestock.livestockImages || [];
@@ -235,10 +217,6 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
   );
 };
 
-// ----------------------------------------------------------------------
-// CROP LIVESTOCK RECORDS COMPONENT (FIXED Data Fetching with useCallback)
-// ----------------------------------------------------------------------
-
 const CropLivestockRecords: React.FC = () => {
   const [activeRecordTab, setActiveRecordTab] = useState<"Crops" | "Livestock">(
     "Crops"
@@ -262,17 +240,16 @@ const CropLivestockRecords: React.FC = () => {
   const [error, setError] = useState<Error | null>(null);
 
   // Extract user ID once
-  const { user } = useAuth();
+  const { profile } = useProfile();
 
-  // FIX: Wrap fetchCropData in useCallback
   const fetchCropData = useCallback(async () => {
-    if (!user?._id) {
+    if (!profile?.id) {
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const data: BaseCropRecord[] = await getCropRecords(user?._id);
+      const data: BaseCropRecord[] = await getCropRecords(profile?.id);
       // Map the fetched data to the component's internal CropRecord interface
       const mappedData: CropRecord[] = data.map((r) => {
         const images: RecordImage[] = Array.isArray(r.cropImages)
@@ -294,17 +271,18 @@ const CropLivestockRecords: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?._id]); // Dependency is userId
+  }, [profile?.id]); // Dependency is userId
 
-  // FIX: Wrap fetchLivestockData in useCallback
   const fetchLivestockData = useCallback(async () => {
-    if (!user?._id) {
+    if (!profile?.id) {
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const data: BaseLivestockRecord[] = await getLivestockRecords(user?._id);
+      const data: BaseLivestockRecord[] = await getLivestockRecords(
+        profile?.id
+      );
 
       const mappedData: LivestockRecord[] = data.map((r) => {
         const images: RecordImage[] = Array.isArray(r.livestockImages)
@@ -325,9 +303,8 @@ const CropLivestockRecords: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?._id]); // Dependency is userId
+  }, [profile?.id]); // Dependency is userId
 
-  // The useEffect now correctly depends on activeRecordTab, fetchCropData, and fetchLivestockData
   useEffect(() => {
     if (activeRecordTab === "Crops") {
       fetchCropData();

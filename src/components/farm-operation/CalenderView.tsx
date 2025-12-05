@@ -9,25 +9,16 @@ import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
 import { getTasks, updateTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
-import { useAuth } from "@/lib/hooks/useAuth";
+
 import { getStaffById} from "@/lib/services/staff";
+import { useProfile } from "@/lib/hooks/useProfile";
 
-// ----------------------------------------------------------------------
-// 1. INTERFACES AND TYPES
-// ----------------------------------------------------------------------
-
-// Interface for the data needed to display the task modal
 interface SelectedDay {
   day: number;
   tasks: Task[];
   dateString: string; // YYYY-MM-DD format for display
 }
 
-// ----------------------------------------------------------------------
-// 2. DayCell COMPONENT
-// ----------------------------------------------------------------------
-
-// DayCell now accepts an onClick handler
 const DayCell: React.FC<{
   day: number;
   tasks: Task[];
@@ -52,10 +43,6 @@ const DayCell: React.FC<{
   </div>
 );
 
-// ----------------------------------------------------------------------
-// 3. DayTasksModal COMPONENT (For displaying tasks on click)
-// ----------------------------------------------------------------------
-
 const DayTasksModal: React.FC<{
   selectedDay: SelectedDay | null;
   selectedDate: string;
@@ -64,12 +51,12 @@ const DayTasksModal: React.FC<{
 }> = ({ selectedDay, onClose, onTaskUpdate, selectedDate }) => {
   const [task, setTask] = useState<Task | null>(null);
   const [assignee, setAssignee] = useState<string>("");
-  const { user } = useAuth();
+  const { profile } = useProfile()
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const data = await getTasks(user?._id as string);
+        const data = await getTasks(profile?.id as string);
 
         const mappedTasks = data.find(
           (task) =>
@@ -90,7 +77,7 @@ const DayTasksModal: React.FC<{
     if (selectedDate) {
       fetchTasks();
     }
-  }, [selectedDate, user?._id]);
+  }, [profile?.id, selectedDate]);
 
   const getAssignee = async (id: string) => {
     const res = await getStaffById(id);
@@ -143,8 +130,6 @@ const DayTasksModal: React.FC<{
     }
   };
 
-  
-
   return (
     <Modal
       show={!!selectedDay}
@@ -193,10 +178,6 @@ const DayTasksModal: React.FC<{
   );
 };
 
-// ----------------------------------------------------------------------
-// 4. Inactive Add Event Button (Replaced AddEventDialog)
-// ----------------------------------------------------------------------
-
 const InactiveAddEventButton: React.FC = () => {
   // This button does nothing when clicked, as requested.
   return (
@@ -212,10 +193,6 @@ const InactiveAddEventButton: React.FC = () => {
   );
 };
 
-// ----------------------------------------------------------------------
-// 5. Main CalendarView COMPONENT
-// ----------------------------------------------------------------------
-
 const CalendarView: React.FC = () => {
   const today = new Date();
   const [currentYear, setCurrentYear] = useState<number>(today.getFullYear());
@@ -226,7 +203,6 @@ const CalendarView: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // STATE: To manage the selected day for the task modal
   const [selectedDayTasks, setSelectedDayTasks] = useState<SelectedDay | null>(
     null
   );
@@ -246,7 +222,7 @@ const CalendarView: React.FC = () => {
     "December",
   ];
 
-  const { user } = useAuth(); // Get user from auth store
+  const { profile } = useProfile();
 
   const fetchCalendar = useCallback(async () => {
     setIsLoading(true);
@@ -256,7 +232,7 @@ const CalendarView: React.FC = () => {
       const data = await getCalendarData(
         currentYear,
         currentMonth,
-        user?._id || ""
+        profile?.id || ""
       );
       setCalendarData(data);
     } catch (err) {
@@ -265,13 +241,12 @@ const CalendarView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentYear, currentMonth, user]);
+  }, [currentYear, currentMonth, profile?.id]);
 
   useEffect(() => {
     fetchCalendar();
   }, [fetchCalendar]);
 
-  // HANDLER: Opens the modal and sets the tasks for the clicked day
   const handleDayClick = (day: number, tasks: Task[]) => {
     const monthString = String(currentMonth).padStart(2, "0");
     const dayString = String(day).padStart(2, "0");

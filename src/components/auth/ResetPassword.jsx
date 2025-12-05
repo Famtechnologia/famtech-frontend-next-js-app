@@ -11,7 +11,7 @@ export default function ResetPasswordForm({ token }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false); 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -40,6 +40,7 @@ export default function ResetPasswordForm({ token }) {
     e.preventDefault();
     setMessage("");
 
+    // --- Frontend Validation (Bail out early) ---
     if (!passwordValidation.isValid) {
       setMessage("Please ensure your password meets all requirements.");
       setIsSuccess(false);
@@ -55,15 +56,22 @@ export default function ResetPasswordForm({ token }) {
     setIsLoading(true);
 
     try {
-      // Assuming resetPassword function needs the new password and the token
-      const data = await resetPassword(newPassword, token);
+      // 💡 FIX: Updated the API call to pass all three required arguments
+      const data = await resetPassword(token, newPassword, confirmPassword);
+      
       setIsSuccess(true);
       setMessage(data.message || "Password reset successfully! You can now log in with your new password.");
     } catch (err) {
       console.error(err);
       setIsSuccess(false);
-      // Accessing err.message remains the same
-      setMessage(err.message || "Something went wrong. Please try again or request a new reset link.");
+
+      let errorMessage = err.message || "Something went wrong. Please try again or request a new reset link.";
+
+      // 💡 FIX: Improved Server Validation Alignment
+      // The error object thrown by the API wrapper (err) already contains the concatenated message.
+      // We just ensure we capture the message from the thrown Error.
+      
+      setMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +93,7 @@ export default function ResetPasswordForm({ token }) {
         {/* Logo */}
         <div className="h-24 w-24 flex justify-center mx-auto mt-6">
           <Image
-            src="/images/auth/Logo 1.jpg"
+            src="/images/auth/Logo 1.png"
             width={96}
             height={96}
             alt="logo"

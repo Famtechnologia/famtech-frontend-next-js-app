@@ -17,7 +17,11 @@ interface LoginForm {
 }
 
 const Login: React.FC = () => {
-  const [form, setForm] = useState<LoginForm>({ email: "", password: "", role: "" });
+  const [form, setForm] = useState<LoginForm>({
+    email: "",
+    password: "",
+    role: "",
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -29,58 +33,71 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       if (form.role === "assignee") {
         const res = await loginStaff(form.email, form.password);
         const { token, message } = res;
+
         useAuthStore.getState().setToken(token);
         Cookies.set("famtech-auth", token, { expires: 3 });
         toast.success(message || "Assignee Login successful!");
-        router.push("/staffs/dashboard");
+
+        // ⏳ Keep loading true until navigation completes
+        router.replace("/staffs/dashboard");
         return;
+      } else if (form.role === "farmer") {
+        const res = await login(form.email, form.password);
+        const { token, message } = res;
+
+        useAuthStore.getState().setToken(token);
+        Cookies.set("famtech-auth", token, { expires: 3 });
+        toast.success(message || "Login successful!");
+
+        router.replace("/dashboard");
       }
-      const res = await login(form.email, form.password);
-      const { token, message } = res;
-      useAuthStore.getState().setToken(token);
-      Cookies.set("famtech-auth", token, { expires: 3 });
-      toast.success(message || "Login successful!");
-      router.push("/dashboard");
+
+      router.replace("/login");
+      // No setLoading(false) here — it’ll unmount naturally after redirect
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Oops looks like your connection dropped, kindly refresh";
+          : "Oops, looks like your connection dropped. Please refresh.";
       toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+      setLoading(false); // Only remove if login fails
     }
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-[url('/images/auth/agriculture-healthy-food.jpg')] bg-cover bg-center relative"
-    >
-      {/* Overlay */}
+    <div className="min-h-screen flex items-center justify-center bg-[url('/images/auth/agriculture-healthy-food.jpg')] bg-cover bg-center relative">
+      {/* Overlay background */}
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
 
-      <div className="relative z-10 w-full max-w-md p-6 md:p-8 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl text-white">
+      {/* Glassmorphism container */}
+      <div className="relative z-10 w-full max-w-md p-6 md:p-8 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl text-white overflow-hidden">
+        {/* ✅ Logging in overlay */}
         {loading && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-            <p className="text-green-300 font-semibold">Logging in...</p>
+          <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center rounded-2xl">
+            <p className="text-green-300 font-semibold text-lg">
+              Logging in...
+            </p>
           </div>
         )}
 
+        {/* Logo */}
         <div className="h-24 w-40 flex justify-center mx-auto mt-2 mb-4">
           <Image
             src="/images/auth/famtech-logo-two.png"
             width={96}
             height={96}
             alt="logo"
-            className=""
           />
         </div>
 
-        <h2 className="text-3xl font-bold mb-6 text-center text-white">Login</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center text-white">
+          Login
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -127,7 +144,10 @@ const Login: React.FC = () => {
             </option>
           </select>
 
-          <a href="/forgot-password" className="text-red-400 block text-right hover:underline">
+          <a
+            href="/forgot-password"
+            className="text-red-400 block text-right hover:underline"
+          >
             Forgot Password?
           </a>
 

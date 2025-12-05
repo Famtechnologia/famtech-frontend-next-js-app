@@ -1,23 +1,21 @@
 import { useState, useEffect } from "react";
 import { X, Plus } from "lucide-react";
-import { useAuth } from "@/lib/hooks/useAuth";
 
 const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
-  const { user } = useAuth();
-
   const [formData, setFormData] = useState({
     name: "",
     location: "",
     capacity: "",
-    products: []
+    products: [],
   });
 
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState(""); // ✅ backend error state
   const [productForm, setProductForm] = useState({
     name: "",
     quantity: "",
     unit: "",
-    description: ""
+    description: "",
   });
 
   useEffect(() => {
@@ -26,17 +24,18 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
         name: warehouse.name || "",
         location: warehouse.location || "",
         capacity: warehouse.capacity?.toString() || "",
-        products: warehouse.products || []
+        products: warehouse.products || [],
       });
     } else {
       setFormData({
         name: "",
         location: "",
         capacity: "",
-        products: []
+        products: [],
       });
     }
     setErrors({});
+    setApiError("");
   }, [warehouse, isOpen]);
 
   const validateForm = () => {
@@ -50,14 +49,13 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
       newErrors.capacity = "Capacity must be a positive number";
     }
 
-    if (!user?._id) newErrors.manager = "User ID (manager) missing — please log in again.";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError("");
     if (!validateForm()) return;
 
     const dataToSubmit = {
@@ -65,16 +63,25 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
       location: formData.location.trim(),
       capacity: parseInt(formData.capacity),
       products: formData.products,
-      manager: user?._id || ""
     };
 
-    await onSubmit(dataToSubmit);
+    try {
+      await onSubmit(dataToSubmit);
+    } catch (err) {
+      // ✅ handle backend duplicate key / other API errors
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong while saving warehouse.";
+      setApiError(msg);
+    }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (apiError) setApiError("");
   };
 
   const handleProductChange = (e) => {
@@ -88,11 +95,11 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
       name: productForm.name.trim(),
       quantity: parseInt(productForm.quantity),
       unit: productForm.unit.trim() || "units",
-      description: productForm.description.trim()
+      description: productForm.description.trim(),
     };
     setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, newProduct]
+      products: [...prev.products, newProduct],
     }));
     setProductForm({ name: "", quantity: "", unit: "", description: "" });
   };
@@ -100,7 +107,7 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
   const removeProduct = (index) => {
     setFormData((prev) => ({
       ...prev,
-      products: prev.products.filter((_, i) => i !== index)
+      products: prev.products.filter((_, i) => i !== index),
     }));
   };
 
@@ -126,20 +133,31 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-1">
-              <label htmlFor="name" className={labelClass}>Warehouse Name *</label>
+              <label htmlFor="name" className={labelClass}>
+                Warehouse Name *
+              </label>
               <input
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter warehouse name"
-                className={inputClass(errors.name)}
+                className={inputClass(errors.name || apiError)}
               />
-              {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+              )}
+              {apiError && (
+                <p className="text-sm text-red-600 mt-1 font-medium">
+                  {apiError}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="location" className={labelClass}>Location *</label>
+              <label htmlFor="location" className={labelClass}>
+                Location *
+              </label>
               <input
                 id="location"
                 name="location"
@@ -148,11 +166,15 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                 placeholder="e.g., Lagos, Nigeria"
                 className={inputClass(errors.location)}
               />
-              {errors.location && <p className="text-sm text-red-500 mt-1">{errors.location}</p>}
+              {errors.location && (
+                <p className="text-sm text-red-500 mt-1">{errors.location}</p>
+              )}
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="capacity" className={labelClass}>Capacity *</label>
+              <label htmlFor="capacity" className={labelClass}>
+                Capacity *
+              </label>
               <input
                 id="capacity"
                 name="capacity"
@@ -162,13 +184,17 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                 placeholder="Enter storage capacity"
                 className={inputClass(errors.capacity)}
               />
-              {errors.capacity && <p className="text-sm text-red-500 mt-1">{errors.capacity}</p>}
+              {errors.capacity && (
+                <p className="text-sm text-red-500 mt-1">{errors.capacity}</p>
+              )}
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-semibold text-green-800 mb-3">Products</h3>
+              <h3 className="text-lg font-semibold text-green-800 mb-3">
+                Products
+              </h3>
               {formData.products.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {formData.products.map((product, index) => (
@@ -177,7 +203,9 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                       className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg"
                     >
                       <div className="flex-1">
-                        <p className="font-medium text-green-900">{product.name}</p>
+                        <p className="font-medium text-green-900">
+                          {product.name}
+                        </p>
                         <p className="text-sm text-green-700">
                           {product.quantity} {product.unit}
                           {product.description && ` - ${product.description}`}
@@ -226,6 +254,8 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                     onChange={handleProductChange}
                     placeholder="Description (optional)"
                     className={inputClass(false)}
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
                 <button
@@ -255,7 +285,11 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
               disabled={isLoading}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70"
             >
-              {isLoading ? "Saving..." : warehouse ? "Update Warehouse" : "Create Warehouse"}
+              {isLoading
+                ? "Saving..."
+                : warehouse
+                ? "Update Warehouse"
+                : "Create Warehouse"}
             </button>
           </div>
         </form>

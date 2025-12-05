@@ -9,7 +9,6 @@ import {
   Trash2,
   SquarePen,
   Loader2,
-  
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -21,6 +20,7 @@ import {
   deleteStaff,
   updateStaff,
 } from "@/lib/services/staff";
+import { AxiosError } from "axios";
 
 const StaffManagement = () => {
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
@@ -98,9 +98,17 @@ const StaffManagement = () => {
       fetchStaffData();
       setShowAddStaffModal(false);
       setStaffCreate(true);
-    } catch (error) {
-      console.error("Failed to add staff:", error);
-      setFormError("An unexpected error occurred. Please try again.");
+    } catch (error: unknown) {
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof AxiosError && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      console.error("Failed to add staff:", errorMessage);
+      setFormError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -195,7 +203,7 @@ const StaffManagement = () => {
                   <img
                     alt={person.name}
                     className="w-16 h-16 rounded-full"
-                    src={"images/help/contact 1.png"}
+                    src={"images/help/download.png"}
                     width={100}
                     height={100}
                     // priority
@@ -204,7 +212,7 @@ const StaffManagement = () => {
                     <p className="font-semibold text-lg capitalize">
                       {person.name}
                     </p>
-                    <p className="text-sm text-gray-500 lowercase">
+                    <p className="text-sm text-gray-500 lowercase break-all">
                       {person.email}
                     </p>
                   </div>

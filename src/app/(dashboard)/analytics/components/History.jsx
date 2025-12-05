@@ -101,116 +101,24 @@ const AnalyticsHistoryTable = () => {
       </div>
 
       {/* Modal */}
-     {viewing && details && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full mx-4 p-6 overflow-y-auto max-h-[90vh] animate-fade-in">
-      <div className="flex justify-between items-center border-b pb-3 mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <Eye size={20} className="text-green-600" /> Analytics Details
-          </h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Farm: <span className="font-medium">{details.farmId?.farmName || "—"}</span> • Type:{" "}
-            <span className="capitalize">{details.type?.replace("_", " ") || "—"}</span>
-          </p>
-          <p className="text-xs text-gray-400">
-            Period: {new Date(details.period?.startDate).toLocaleDateString()} -{" "}
-            {new Date(details.period?.endDate).toLocaleDateString()} ({details.period?.periodType})
-          </p>
+      {viewing && details && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6 relative overflow-y-auto max-h-[90vh] animate-fade-in">
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <Eye size={20} className="text-green-600" /> Analytics Details
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Farm: <span className="font-medium">{details.farmId?.farmName || "—"}</span> • Type:{" "}
+                  <span className="capitalize">{details.type?.replace("_", " ") || "—"}</span>
+                </p>
+              </div>
+              <button onClick={() => setViewing(false)} className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md text-sm transition">Close</button>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={() => setViewing(false)}
-          className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md text-sm transition"
-        >
-          Close
-        </button>
-      </div>
-
-      {/* Metrics */}
-      <h4 className="font-semibold text-gray-700 mb-2">Metrics Overview</h4>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-        {[
-          ["Total Yield", details.metrics?.totalYield],
-          ["Avg Yield/ha", details.metrics?.averageYieldPerHectare],
-          ["Success Rate", details.metrics?.cropSuccessRate],
-          ["Revenue", details.metrics?.totalRevenue],
-          ["Expenses", details.metrics?.totalExpenses],
-          ["Profit Margin", `${details.metrics?.profitMargin}%`],
-        ].map(([label, value]) => (
-          <div key={label} className="p-3 border rounded-md bg-green-50">
-            <p className="text-xs text-gray-500">{label}</p>
-            <p className="text-lg font-semibold text-green-700">
-              {value ?? "—"}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Weather Impact */}
-      <div className="mb-6">
-        <h4 className="font-semibold text-gray-700 mb-2">Weather Impact</h4>
-        <p className="text-sm text-gray-600">
-          Impact Score: <span className="font-medium text-green-700">
-            {details.metrics?.weatherImpact?.impactScore ?? "—"}
-          </span>
-        </p>
-      </div>
-
-      {/* Resource Utilization */}
-      <h4 className="font-semibold text-gray-700 mb-2">Resource Utilization</h4>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {Object.entries(details.metrics?.resourceUtilization || {}).map(([key, val]) => (
-          <div key={key} className="p-3 border rounded-md bg-blue-50">
-            <p className="text-xs text-gray-500 capitalize">{key}</p>
-            <p className="text-lg font-semibold text-blue-700">
-              {val ?? 0}%
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Trends */}
-      <h4 className="font-semibold text-gray-700 mb-2">Performance Trends</h4>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {Object.entries(details.trends || {}).map(([trend, val]) => (
-          <div key={trend} className="p-3 border rounded-md bg-yellow-50">
-            <p className="text-xs text-gray-500 capitalize">
-              {trend.replace("Trend", "")}
-            </p>
-            <p className="text-sm font-medium text-yellow-700">{val}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Predictions */}
-      <h4 className="font-semibold text-gray-700 mb-2">Predictions & Risks</h4>
-      {details.predictions?.recommendedActions?.length > 0 ? (
-        <ul className="list-disc pl-5 text-sm text-gray-700 mb-3">
-          {details.predictions.recommendedActions.map((a, i) => (
-            <li key={i}>{a}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-gray-500 mb-3 italic">
-          No recommended actions available.
-        </p>
       )}
-
-      {details.predictions?.riskFactors?.length > 0 ? (
-        <ul className="list-disc pl-5 text-sm text-gray-700">
-          {details.predictions.riskFactors.map((r, i) => (
-            <li key={i}>{r}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-gray-500 italic">
-          No risk factors identified.
-        </p>
-      )}
-    </div>
-  </div>
-)}
-
     </Card>
   );
 };
