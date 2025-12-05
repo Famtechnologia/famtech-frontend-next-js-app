@@ -465,7 +465,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
               )}
             </div>
             <Link
-              href='/login'
+              href="/login"
               className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
@@ -557,7 +557,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                 </div>
               </div>
             </div>
-            <header className="bg-white p-4 sticky top-0 z-[20]">
+            <header className="p-4 sticky top-0 z-[20]">
               <div className="flex justify-end">
                 {/* 🎯 Notification Dropdown Container (Relative position for absolute dropdown) */}
                 <div className="relative" ref={dropdownRef}>
@@ -591,7 +591,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                   {/* 📥 Notification Dropdown Content (Only visible if isDropdownOpen is TRUE) */}
                   {isDropdownOpen && (
                     <div className="absolute right-2 md:right-0 mt-3 w-70 md:w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[110] overflow-hidden">
-                      <div className="p-4 border-b">
+                      <div className="p-4 border-b border-gray-100">
                         <h3 className="text-lg font-semibold text-gray-800">
                           Notifications ({unreadCount})
                         </h3>
@@ -610,7 +610,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                           notifications.map((notification) => (
                             <Link
                               key={notification.id}
-                              href={`/farm-operations?task=${notification.id}`}
+                              href={`/farm-operation?tab=planner`}
                               onClick={() => setIsDropdownOpen(false)} // Close on click
                               className={`flex items-start p-4 hover:bg-green-50 transition-colors ${
                                 notification.read
@@ -655,7 +655,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                       </div>
 
                       {notifications.length > 0 && (
-                        <div className="p-2 border-t text-center">
+                        <div className="p-2 border-t text-center border-gray-100">
                           <button className="text-xs text-green-600 hover:text-green-700">
                             Mark all as read
                           </button>
