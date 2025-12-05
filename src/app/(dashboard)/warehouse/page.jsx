@@ -12,11 +12,12 @@ import {
   deleteWarehouse 
 } from "@/lib/services/warehouse";
 import { useAuth } from "@/lib/hooks/useAuth";
-import {useProfile} from "@/lib/hooks/useProfile";
+import { useProfile } from "@/lib/hooks/useProfile";
 
+// ✅ Toast component
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
+    const timer = setTimeout(onClose, 3500);
     return () => clearTimeout(timer);
   }, [onClose]);
 
@@ -40,7 +41,8 @@ const Toast = ({ message, type, onClose }) => {
 
 const Warehouse = () => {
   const { user, loading: authLoading } = useAuth();
-  const {profile} = useProfile()
+  const { profile } = useProfile();
+
   const [warehouses, setWarehouses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,9 +51,13 @@ const Warehouse = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
-  const showToast = (message, type = "success") => setToast({ show: true, message, type });
-  const closeToast = () => setToast((prev) => ({ ...prev, show: false }));
+  // Toast helpers
+  const showToast = (message, type = "success") =>
+    setToast({ show: true, message, type });
+  const closeToast = () =>
+    setToast((prev) => ({ ...prev, show: false }));
 
+  // Fetch warehouses
   const fetchWarehouses = async () => {
     if (!profile?.id) return;
     try {
@@ -72,6 +78,7 @@ const Warehouse = () => {
     }
   }, [profile?.id, authLoading]);
 
+  // Actions
   const handleCreateNew = () => {
     setSelectedWarehouse(null);
     setViewMode("edit");
@@ -90,6 +97,7 @@ const Warehouse = () => {
     setIsFormOpen(true);
   };
 
+  // ✅ Core fix: unified backend error handling
   const handleFormSubmit = async (formData) => {
     try {
       setIsSubmitting(true);
@@ -108,10 +116,16 @@ const Warehouse = () => {
       fetchWarehouses();
     } catch (error) {
       console.error("Error saving warehouse:", error);
+
+      // ✅ Extract detailed backend message
       const errorMsg =
-        error.response?.data?.msg ||
-        error.response?.data?.message ||
-        "Failed to save warehouse.";
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.response?.data?.msg ||
+        (error.message?.includes("11000")
+          ? "Warehouse name already exists."
+          : "Failed to save warehouse.");
+
       showToast(errorMsg, "error");
     } finally {
       setIsSubmitting(false);
@@ -135,6 +149,7 @@ const Warehouse = () => {
     setViewMode(null);
   };
 
+  // Loading screen
   if (authLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -212,10 +227,7 @@ const Warehouse = () => {
               isLoading={isSubmitting}
             />
           ) : (
-            <WarehouseDetails
-              warehouse={selectedWarehouse}
-              onClose={handleFormClose}
-            />
+            <WarehouseDetails warehouse={selectedWarehouse} onClose={handleFormClose} />
           )}
         </div>
       )}
