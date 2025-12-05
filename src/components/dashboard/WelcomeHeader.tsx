@@ -88,7 +88,6 @@ export default function WelcomeHeader() {
 
   // Auto-slide functionality
   useEffect(() => {
-    console.log(profile)
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {

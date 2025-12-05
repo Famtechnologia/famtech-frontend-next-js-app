@@ -1,5 +1,6 @@
 import apiClient from "../api/apiClient";
 import axios from "axios";
+import { Notification } from "./taskplanner";
 
 export interface StaffType {
   name?: string;
@@ -81,4 +82,9 @@ export const loginStaff = async (
     }
     throw new Error("An unknown error occurred during login.");
   }
+};
+
+export const getNotification = async (id: string): Promise<Notification[]> => {
+  const response = await apiClient.get(`/api/staff/notifications/${id}`);
+  return response.data;
 };

@@ -24,7 +24,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAssignee } from "@/lib/hooks/Assignee";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
-import { getNotifications, Notification } from "@/lib/services/taskplanner";
+import { getNotification } from "@/lib/services/staff";
+import { Notification } from "@/lib/services/taskplanner";
 // --- Interface Definitions for clarity ---
 
 interface NavChild {
@@ -167,7 +168,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
 
     setIsLoading(true);
     try {
-      const data = await getNotifications(userId);
+      const data = await getNotification(userId);
       setNotifications(data);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -464,7 +465,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
               )}
             </div>
             <Link
-              href='/auth/login'
+              href='/login'
               className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}

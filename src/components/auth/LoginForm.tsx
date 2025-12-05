@@ -17,7 +17,11 @@ interface LoginForm {
 }
 
 const Login: React.FC = () => {
-  const [form, setForm] = useState<LoginForm>({ email: "", password: "", role: "" });
+  const [form, setForm] = useState<LoginForm>({
+    email: "",
+    password: "",
+    role: "",
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -40,18 +44,20 @@ const Login: React.FC = () => {
         toast.success(message || "Assignee Login successful!");
 
         // ⏳ Keep loading true until navigation completes
-        router.push("/staffs/dashboard");
+        router.replace("/staffs/dashboard");
         return;
+      } else if (form.role === "farmer") {
+        const res = await login(form.email, form.password);
+        const { token, message } = res;
+
+        useAuthStore.getState().setToken(token);
+        Cookies.set("famtech-auth", token, { expires: 3 });
+        toast.success(message || "Login successful!");
+
+        router.replace("/dashboard");
       }
 
-      const res = await login(form.email, form.password);
-      const { token, message } = res;
-
-      useAuthStore.getState().setToken(token);
-      Cookies.set("famtech-auth", token, { expires: 3 });
-      toast.success(message || "Login successful!");
-
-      router.push("/dashboard");
+      router.replace("/login");
       // No setLoading(false) here — it’ll unmount naturally after redirect
     } catch (error: unknown) {
       const errorMessage =
@@ -64,15 +70,12 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-[url('/images/auth/agriculture-healthy-food.jpg')] bg-cover bg-center relative"
-    >
+    <div className="min-h-screen flex items-center justify-center bg-[url('/images/auth/agriculture-healthy-food.jpg')] bg-cover bg-center relative">
       {/* Overlay background */}
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
 
       {/* Glassmorphism container */}
       <div className="relative z-10 w-full max-w-md p-6 md:p-8 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl text-white overflow-hidden">
-        
         {/* ✅ Logging in overlay */}
         {loading && (
           <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center rounded-2xl">
