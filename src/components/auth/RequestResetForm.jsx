@@ -56,7 +56,7 @@ export default function RequestResetForm() {
         {/* Logo */}
         <div className="h-24 w-24 flex justify-center mx-auto mt-6">
           <Image
-            src="/images/auth/Logo 1.jpg"
+            src="/images/auth/Logo 1.png"
             width={96}
             height={96}
             alt="logo"

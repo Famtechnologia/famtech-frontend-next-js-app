@@ -6,7 +6,7 @@ import { getAdvice, createAdvice } from "@/lib/services/advisory";
 
 
 import { useAuthStore } from "@/lib/store/authStore";
-import FormSkeleton from "../layout/skeleton/smart-advisory/Generate";
+import FormSkeleton from "../skeleton/smart-advisory/Generate";
 
 export const GenerateAdvice = ({
   location,

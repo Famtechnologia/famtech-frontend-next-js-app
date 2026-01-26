@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-import PlanAndBillingSkeletonLoader from "@/components/layout/skeleton/settings/Billing";
+import PlanAndBillingSkeletonLoader from "@/components/skeleton/settings/Billing";
 // Define a type for the pricing plan
 interface Plan {
   id: string;

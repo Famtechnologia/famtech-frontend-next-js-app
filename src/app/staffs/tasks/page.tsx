@@ -20,7 +20,7 @@ import {
   updateTask,
   Task as ApiTask,
 } from "@/lib/services/taskplanner";
-import TaskSkeleton from "@/components/layout/skeleton/farm-operation/TaskPlanner";
+import TaskSkeleton from "@/components/skeleton/farm-operation/TaskPlanner";
 import Modal from "@/components/ui/Modal";
 
 interface Task {

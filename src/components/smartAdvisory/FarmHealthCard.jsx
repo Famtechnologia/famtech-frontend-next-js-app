@@ -5,7 +5,7 @@ import { getCropRecords, getLivestockRecords } from "@/lib/services/croplivestoc
 import { useAuthStore } from "@/lib/store/authStore";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
-import FarmCardSkeleton from "@/components/layout/skeleton/smart-advisory/FarmCardSkeleton"; 
+import FarmCardSkeleton from "@/components/skeleton/smart-advisory/FarmCardSkeleton"; 
 export default function FarmHealthCard({ location }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

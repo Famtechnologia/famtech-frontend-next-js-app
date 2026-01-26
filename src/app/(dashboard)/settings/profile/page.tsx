@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { User, MapPin, Phone, Wheat, Ruler, Mail } from "lucide-react";
 import Link from "next/link"; // Import Link for navigation
-import SettingsSkeletonLoader from "@/components/layout/skeleton/settings/Profile";
+import SettingsSkeletonLoader from "@/components/skeleton/settings/Profile";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
 // --- TYPE DEFINITIONS FOR FARM PROFILE ---

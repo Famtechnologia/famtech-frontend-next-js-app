@@ -16,7 +16,9 @@ import {
   CropRecord as BaseCropRecord,
   LivestockRecord as BaseLivestockRecord,
 } from "@/lib/services/croplivestock";
-import RecordsListSkeletonLoader from "@/components/layout/skeleton/farm-operation/Record";
+import RecordsListSkeletonLoader from "@/components/skeleton/farm-operation/Record";
+import AddYieldForm from "@/components/farm-operation/AddYieldForm";
+
 
 interface CropRecord extends Omit<BaseCropRecord, "image"> {
   cropImages: RecordImage[];
@@ -238,6 +240,8 @@ const CropLivestockRecords: React.FC = () => {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
+  const [selectedYieldCrop, setSelectedYieldCrop] = useState<CropRecord | null>(null);
 
   // Extract user ID once
   const { profile } = useProfile();
@@ -500,30 +504,46 @@ const CropLivestockRecords: React.FC = () => {
                         const growthPercentage = getGrowthPercentageFromStage(
                           cropRecord.currentGrowthStage
                         );
-                        return (
-                          <div className="mt-4">
-                            <p className="text-sm text-gray-600 mb-1">
-                              Growth:{" "}
-                              <span className="text-black font-semibold">
-                                {cropRecord.currentGrowthStage}
-                              </span>
-                            </p>
-                            <div className="flex items-center">
-                              <div className="w-full h-2 bg-gray-200 rounded-full">
-                                {/* Progress Bar width based on the calculated percentage */}
-                                <div
-                                  className="h-2 bg-green-500 rounded-full"
-                                  style={{ width: `${growthPercentage}%` }}
-                                ></div>
-                              </div>
-                              {/* Percentage text based on the calculated percentage */}
-                              <span className="text-gray-800 text-xs ml-2">
-                                {growthPercentage}%
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })()}
+        return (
+          <>
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-1">
+                Growth:{" "}
+                <span className="text-black font-semibold">
+                  {cropRecord.currentGrowthStage}
+                </span>
+              </p>
+              <div className="flex items-center">
+                <div className="w-full h-2 bg-gray-200 rounded-full">
+                  {/* Progress Bar width based on the calculated percentage */}
+                  <div
+                    className="h-2 bg-green-500 rounded-full"
+                    style={{ width: `${growthPercentage}%` }}
+                  ></div>
+                </div>
+                {/* Percentage text based on the calculated percentage */}
+                <span className="text-gray-800 text-xs ml-2">
+                  {growthPercentage}%
+                </span>
+              </div>
+            </div>
+            <div className="mt-4">
+              {growthPercentage >= 100 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedYieldCrop(cropRecord);
+                    setIsYieldModalOpen(true);
+                  }}
+                  className="mt-3 w-full bg-white text-green-700 border border-green-600 py-2 rounded-md font-medium hover:bg-green-600"
+                >
+                   Add Crop Yield
+                </button>
+              )}
+            </div>
+          </>
+        );
+      })()}
                       <div className="mt-4 text-sm text-gray-600">
                         <p>
                           Planted:{" "}
@@ -687,6 +707,23 @@ const CropLivestockRecords: React.FC = () => {
           </div>
         </div>
       </Modal>
+      <Modal
+  show={isYieldModalOpen}
+  onClose={() => setIsYieldModalOpen(false)}
+  title={`Add Yield`}
+>
+  {selectedYieldCrop && (
+    <AddYieldForm
+      cropName={selectedYieldCrop.cropName}
+      onSave={(yieldValue, unit) => {
+        console.log("Yield:", yieldValue, unit);
+        // later you’ll hook this up to your backend call
+      }}
+      onClose={() => setIsYieldModalOpen(false)}
+    />
+  )}
+</Modal>
+
     </div>
   );
 };
