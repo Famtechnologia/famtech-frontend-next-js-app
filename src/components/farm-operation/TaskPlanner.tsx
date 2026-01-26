@@ -18,7 +18,7 @@ import {
   deleteTask,
   Task as ApiTask,
 } from "../../lib/services/taskplanner";
-import TaskSkeleton from "@/components/layout/skeleton/farm-operation/TaskPlanner";
+import TaskSkeleton from "@/components/skeleton/farm-operation/TaskPlanner";
 import { StaffType, getStaffs } from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
 

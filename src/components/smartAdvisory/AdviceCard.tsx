@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Card from "../ui/Card";
 import { ClipboardList, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import AdviceCardSkeleton from "../layout/skeleton/smart-advisory/AdviceCard"; // 👈 import skeleton
+import AdviceCardSkeleton from "../skeleton/smart-advisory/AdviceCard"; // 👈 import skeleton
 
 interface AdviceCardProps {
   farmType: string;

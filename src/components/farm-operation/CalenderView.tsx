@@ -8,7 +8,7 @@ import { getCalendarData, CalendarData } from "@/lib/services/calender";
 import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
 import { getTasks, updateTask, Task } from "../../lib/services/taskplanner";
-import CalendarSkeletonLoader from "@/components/layout/skeleton/farm-operation/CalenderSkeleton";
+import CalendarSkeletonLoader from "@/components/skeleton/farm-operation/CalenderSkeleton";
 
 import { getStaffById} from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";

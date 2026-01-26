@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getUserAdvice } from "@/lib/services/advisory";
-import Id from '@/components/layout/skeleton/smart-advisory/Id'
+import Id from '@/components/skeleton/smart-advisory/Id'
 import { useAuth } from "@/lib/hooks/useAuth";
 // --- Type Definitions ---
 interface Task {

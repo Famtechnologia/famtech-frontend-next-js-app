@@ -16,7 +16,7 @@ import {
   Signal
 } from "lucide-react";
 import Link from 'next/link'
-import EquipmentSyncSkeletonLoader from "@/components/layout/skeleton/EquipmentSync";
+import EquipmentSyncSkeletonLoader from "@/components/skeleton/skeleton/EquipmentSync";
 type EquipmentType = "Tractor" | "Drone" | "Soil Sensor" | "Irrigation System";
 type SyncMethod = "Bluetooth" | "QR Code" | "Manual";
 

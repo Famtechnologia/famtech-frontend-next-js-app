@@ -10,7 +10,7 @@ import FarmHealthCard from "@/components/smartAdvisory/FarmHealthCard";
 import { BrainCircuit, HeartPulse, Telescope } from "lucide-react";
 import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 import { Explore } from "@/components/smartAdvisory/Explore";
-import SmartAdvisory from '@/components/layout/skeleton/smart-advisory/SmartAdvisory'
+import SmartAdvisory from '@/components/skeleton/smart-advisory/SmartAdvisory'
 import { useProfile } from "@/lib/hooks/useProfile";
 
 const tabsConfig = [

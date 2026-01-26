@@ -11,7 +11,7 @@ import {
 import Link from 'next/link';
 
 // Assuming this path is correct for your skeleton component
-import SettingsNavigationSkeleton from '@/components/layout/skeleton/settings/FarmSetting'; 
+import SettingsNavigationSkeleton from '@/components/skeleton/settings/FarmSetting'; 
 
 
 const settingsSections = [

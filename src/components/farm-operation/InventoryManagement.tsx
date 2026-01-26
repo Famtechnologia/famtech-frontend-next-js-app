@@ -37,7 +37,7 @@ import {
   updateInventoryItem,
 } from "@/lib/services/inventory";
 import { renderFormFields } from "./Render";
-import InventorySkeleton from "@/components/layout/skeleton/farm-operation/Inventory";
+import InventorySkeleton from "@/components/skeleton/farm-operation/Inventory";
 import { useProfile } from "@/lib/hooks/useProfile";
 
 type ToolData = Record<string, unknown> | null | undefined;
