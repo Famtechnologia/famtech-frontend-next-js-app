@@ -1,15 +1,16 @@
-'use client';
+"use client";
 import { useState, useEffect } from "react";
 import { Plus, Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
 import WarehouseCard from "@/components/warehouse/WarehouseCard";
 import WarehouseForm from "@/components/warehouse/WarehouseForm";
 import WarehouseDetails from "@/components/warehouse/WarehouseDetails";
+import WarehouseCardSkeleton from "@/components/skeleton/warehouse/WarehouseCardSkeleton";
 
-import { 
-  getAllWarehouses, 
-  createWarehouse, 
-  updateWarehouse, 
-  deleteWarehouse 
+import {
+  getAllWarehouses,
+  createWarehouse,
+  updateWarehouse,
+  deleteWarehouse,
 } from "@/lib/services/warehouse";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
@@ -30,7 +31,11 @@ const Toast = ({ message, type, onClose }) => {
           : "bg-green-50 border-green-200 text-green-800"
       }`}
     >
-      {isError ? <AlertCircle className="h-5 w-5" /> : <CheckCircle className="h-5 w-5" />}
+      {isError ? (
+        <AlertCircle className="h-5 w-5" />
+      ) : (
+        <CheckCircle className="h-5 w-5" />
+      )}
       <p className="font-medium text-sm">{message}</p>
       <button onClick={onClose} className="ml-2 opacity-70 hover:opacity-100">
         <X className="h-4 w-4" />
@@ -49,13 +54,16 @@ const Warehouse = () => {
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [viewMode, setViewMode] = useState(null); // "view" or "edit"
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   // Toast helpers
   const showToast = (message, type = "success") =>
     setToast({ show: true, message, type });
-  const closeToast = () =>
-    setToast((prev) => ({ ...prev, show: false }));
+  const closeToast = () => setToast((prev) => ({ ...prev, show: false }));
 
   // Fetch warehouses
   const fetchWarehouses = async () => {
@@ -185,17 +193,28 @@ const Warehouse = () => {
         </div>
 
         <div className="mb-6">
-          {isLoading ? (
+          {/*{isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader2 className="h-10 w-10 text-green-600 animate-spin mb-4" />
               <p className="text-gray-500">Loading warehouses...</p>
+            </div> */}
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: warehouses.length || 6 }).map(
+                (_, index) => (
+                  <WarehouseCardSkeleton key={index} />
+                ),
+              )}
             </div>
           ) : warehouses.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300 shadow-sm">
               <div className="bg-green-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Plus className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">No warehouses found</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                No warehouses found
+              </h3>
               <p className="text-gray-500 mb-6 max-w-sm mx-auto mt-2">
                 Get started by creating your first warehouse.
               </p>
@@ -227,7 +246,10 @@ const Warehouse = () => {
               isLoading={isSubmitting}
             />
           ) : (
-            <WarehouseDetails warehouse={selectedWarehouse} onClose={handleFormClose} />
+            <WarehouseDetails
+              warehouse={selectedWarehouse}
+              onClose={handleFormClose}
+            />
           )}
         </div>
       )}
