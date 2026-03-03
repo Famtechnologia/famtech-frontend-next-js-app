@@ -3,12 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useSocket } from '@/lib/hooks/useSocket';
-
-interface Officer {
-  id?: string;
-  name: string;
-  photo: string;
-}
+import type { Officer } from './OfficerProfile1';
 
 interface ChatWindowProps {
   officer: Officer;
@@ -33,7 +28,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   userName = 'Farmer',
   userPhoto = '/images/help/officer 1.png'
 }) => {
-  const roomId = `officer-${officer.id || officer.name}`;
+  const roomId = `officer-${officer.id ?? officer.name}`;
   const { socket, isConnected, messages, sendMessage, error } = useSocket(roomId);
   const [inputValue, setInputValue] = useState('');
   const [displayMessages, setDisplayMessages] = useState<Message[]>([]);
