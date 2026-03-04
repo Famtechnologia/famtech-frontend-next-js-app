@@ -1,7 +1,8 @@
 import { io, Socket } from "socket.io-client";
+import { API_URL } from "../api/apiClient";
 
 export const initSocket = (id: string) => {
-  const socket = io("http://localhost:4000/user", {
+  const socket = io(`${API_URL}/user`, {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
