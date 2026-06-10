@@ -18,6 +18,7 @@ export const useAuth = () => {
     createdAt: Date;
     updatedAt: Date;
     farmProfile: string;
+    profileImage?: string;
   } | null>(null);
   
 

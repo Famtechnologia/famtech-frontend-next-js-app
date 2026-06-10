@@ -20,6 +20,7 @@ import {
   Bell,
   ChevronRight,
   ChevronDown,
+  User,
   LucideIcon,
   Clock,
   CheckCircle,
@@ -71,6 +72,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isLoading, setIsLoading] = useState(false);
   // NEW STATE for collapsed sidebar flyout preview
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const flyoutRef = useRef<HTMLDivElement>(null);
 
   const { user, logout } = useAuth();
@@ -649,7 +651,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Bottom Profile/Logout */}
           <div className={`border-t border-gray-200 pt-4 mt-4 ${sidebarCollapsed ? "px-1.5" : "px-4"}`}>
             <button
-              onClick={logout}
+              onClick={() => setShowLogoutConfirm(true)}
               className={`flex items-center w-full ${
                 sidebarCollapsed ? "px-2" : "px-3"
               } py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
@@ -763,6 +765,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                       )}
                     </button>
+
+                    {/* 👤 Profile Section */}
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        href="/settings/profile"
+                        className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center overflow-hidden border border-green-600/10 hover:scale-105 transition-transform"
+                      >
+                        {user?.profileImage ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={user.profileImage}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User size={16} className="text-white" />
+                        )}
+                      </Link>
+
+                      <ChevronDown size={16} className="text-gray-500" />
+                    </div>
                   </div>
 
                   {/* 📥 Notification Dropdown Content (Only visible if isDropdownOpen is TRUE) */}
@@ -869,6 +892,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <p className="text-center text-gray-600 text-base">
           We’re working hard to bring this feature to you soon 🚀
         </p>
+      </Modal>
+
+      {/* Logout confirmation modal */}
+      <Modal
+        show={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirm Sign Out"
+      >
+        <div className="space-y-6">
+          <p className="text-gray-650 text-base leading-relaxed">
+            Are you sure you want to sign out of your Famtech account? You will need to log in again to access your dashboard.
+          </p>
+          <div className="flex items-center justify-end space-x-3">
+            <button
+              onClick={() => setShowLogoutConfirm(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setShowLogoutConfirm(false);
+                logout();
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-750 rounded-lg transition-colors cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
