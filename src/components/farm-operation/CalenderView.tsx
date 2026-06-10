@@ -19,6 +19,20 @@ interface SelectedDay {
   dateString: string; // YYYY-MM-DD format for display
 }
 
+// Task-type categories: drive the filters, the day-dot colors, and the legend
+const CATEGORY = {
+  crop: { label: "Crop Tasks", dot: "bg-green-500" },
+  livestock: { label: "Livestock Tasks", dot: "bg-purple-500" },
+  general: { label: "General Tasks", dot: "bg-blue-500" },
+} as const;
+type Category = keyof typeof CATEGORY;
+const getCategory = (taskType?: string): Category => {
+  const t = (taskType || "").toLowerCase();
+  if (t.includes("crop")) return "crop";
+  if (t.includes("livestock")) return "livestock";
+  return "general";
+};
+
 const DayCell: React.FC<{
   day: number;
   tasks: Task[];
@@ -33,8 +47,8 @@ const DayCell: React.FC<{
       {tasks.map((task) => (
         <div
           key={task.id}
-          className={`h-2 w-2 rounded-full ${
-            task.status === "completed" ? "bg-green-500" : "bg-orange-500"
+          className={`h-2 w-2 rounded-full ${CATEGORY[getCategory(task.taskType)].dot} ${
+            task.status === "completed" ? "opacity-40" : ""
           }`}
           title={`${task.title} - ${task.status}`}
         ></div>
@@ -360,6 +374,13 @@ const CalendarView: React.FC = () => {
     null
   );
   const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
+  const [enabled, setEnabled] = useState<Record<Category, boolean>>({
+    crop: true,
+    livestock: true,
+    general: true,
+  });
+  const toggleCategory = (c: Category) =>
+    setEnabled((p) => ({ ...p, [c]: !p[c] }));
 
   const monthNames = [
     "January",
@@ -507,24 +528,21 @@ const CalendarView: React.FC = () => {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             FILTER EVENTS
           </h3>
-          <div className="space-y-2">
-            {[
-              "Crop Tasks",
-              "Livestock Tasks",
-              "Equipment",
-              "General Tasks",
-            ].map((type) => (
-              <div
-                key={type}
-                className="flex items-center space-x-2 p-2 rounded-xl text-sm font-medium text-gray-600"
+          <div className="space-y-1">
+            {(Object.keys(CATEGORY) as Category[]).map((cat) => (
+              <label
+                key={cat}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50"
               >
                 <input
                   type="checkbox"
-                  className="rounded-sm text-green-600"
-                  defaultChecked
+                  checked={enabled[cat]}
+                  onChange={() => toggleCategory(cat)}
+                  className="rounded text-green-600 focus:ring-green-500"
                 />
-                <span>{type}</span>
-              </div>
+                <span className={`h-2.5 w-2.5 rounded-full ${CATEGORY[cat].dot}`} />
+                <span>{CATEGORY[cat].label}</span>
+              </label>
             ))}
           </div>
         </div>
@@ -536,11 +554,10 @@ const CalendarView: React.FC = () => {
           </h3>
           <div className="space-y-3">
             {[
-              { label: "Seeding", color: "bg-green-500", icon: "Bean" },
-              { label: "Fertilizer", color: "bg-blue-500", icon: "Wrench" },
-              { label: "Harvesting", color: "bg-yellow-500", icon: "Apple" },
-              { label: "Livestock", color: "bg-purple-500", icon: "Cow" },
-              { label: "Equipment", color: "bg-red-500" },
+              { label: "Crop Tasks", color: "bg-green-500" },
+              { label: "Livestock Tasks", color: "bg-purple-500" },
+              { label: "General Tasks", color: "bg-blue-500" },
+              { label: "Completed (faded)", color: "bg-gray-300" },
             ].map((item) => (
               <div
                 key={item.label}
@@ -622,7 +639,9 @@ const CalendarView: React.FC = () => {
               // current month days
               for (let d = 1; d <= daysInCurrentMonth; d++) {
                 const dayData = calendarData?.days?.find((dd) => dd.day === d);
-                const tasksForDay = dayData?.tasks || [];
+                const tasksForDay = (dayData?.tasks || []).filter(
+                  (t) => enabled[getCategory(t.taskType)]
+                );
                 cells.push(
                   <DayCell
                     key={`curr-${d}`}

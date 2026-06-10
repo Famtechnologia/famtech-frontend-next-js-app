@@ -21,8 +21,6 @@ import {
   ChevronRight,
   ChevronDown,
   User,
-  PanelLeftClose,
-  PanelLeftOpen,
   LucideIcon,
   Clock,
   CheckCircle,
@@ -413,11 +411,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         } fixed inset-y-0 left-0 z-150 ${
           // z-50 is the max index for the main sidebar
           sidebarCollapsed ? "w-16" : "w-64"
-        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 overflow-y-scroll scrollbar-hide`}
+        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 flex flex-col relative`}
         onMouseLeave={
           sidebarCollapsed ? () => setHoveredMenuKey(null) : undefined
         }
       >
+        {/* Standalone Collapse Button */}
+        <button
+          onClick={toggleSidebarCollapse}
+          className="absolute right-[-12px] top-6 z-[200] hidden md:flex items-center justify-center w-6 h-6 bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer"
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {sidebarCollapsed ? (
+            <ChevronRight size={14} />
+          ) : (
+            <ChevronRight size={14} className="rotate-180 transition-transform duration-300" />
+          )}
+        </button>
         {/* Logo */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
           <div
@@ -438,29 +448,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-4 ">
+        <nav className={`flex-1 ${sidebarCollapsed ? "px-1.5" : "px-4"} py-4 overflow-y-auto scrollbar-hide`}>
           <div className="space-y-2">
-            {/* Collapse Button */}
-            <div className="hidden md:block">
-              <button
-                onClick={toggleSidebarCollapse}
-                className={`w-full flex items-center justify-end px-3 py-3 rounded-lg text-sm font-medium transition-colors hover:cursor-pointer`}
-                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                <div
-                  className={`flex items-center ${
-                    sidebarCollapsed ? "justify-center" : ""
-                  }`}
-                >
-                  {sidebarCollapsed ? (
-                    <PanelLeftOpen size={18} />
-                  ) : (
-                    <PanelLeftClose size={18} className="mr-3" />
-                  )}
-                </div>
-              </button>
-            </div>
-
             {/* Nav Items */}
             {navItems.map((item, index) => {
               const Icon = item.icon;
@@ -535,7 +524,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               ? () => setShowComingSoon(true)
                               : undefined // Clicks on collapsed icon now managed by outer div
                         }
-                        className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors border-l-4 ${
+                        className={`w-full flex items-center justify-between ${
+                          sidebarCollapsed ? "px-2" : "px-3"
+                        } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 ${
                           itemIsActive
                             ? "bg-green-50 text-green-700 font-semibold border-green-600"
                             : item.comingSoon
@@ -643,7 +634,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       title={sidebarCollapsed ? item.name : undefined}
                     >
                       <div
-                        className={`flex items-center min-w-0 px-3 py-3 ${sidebarCollapsed ? "justify-center" : ""}`}
+                        className={`flex items-center min-w-0 ${
+                          sidebarCollapsed ? "px-2 py-3 justify-center" : "px-3 py-3"
+                        }`}
                       >
                         <Icon
                           size={18}
@@ -664,7 +657,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Bottom Profile/Logout */}
-          <div className="border-t border-gray-200 pt-4 mt-4">
+          <div className={`border-t border-gray-200 pt-4 mt-4 ${sidebarCollapsed ? "px-1.5" : "px-4"}`}>
             <div
               className={`flex items-center ${
                 sidebarCollapsed ? "justify-center" : "space-x-3"
@@ -683,7 +676,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <button
               onClick={logout}
-              className={`flex items-center w-full px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
+              className={`flex items-center w-full ${
+                sidebarCollapsed ? "px-2" : "px-3"
+              } py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
               title={sidebarCollapsed ? "Sign out" : undefined}
