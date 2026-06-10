@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
 import DashboardStats from "@/components/dashboard/DashboardStats";
+import ProductionChart from "@/components/dashboard/ProductionChart";
+import CropDistribution from "@/components/dashboard/CropDistribution";
+import RecentActivity from "@/components/dashboard/RecentActivity";
 import DashboardSkeleton from "@/components/skeleton/DashboardSkeleton";
 import WeatherForecast from "@/app/(dashboard)/weather/components/WeatherCard";
 import Tasks from "@/components/tasks/tasksCard";
@@ -89,6 +92,19 @@ export default function FarmerAdminDashboard() {
 
         {/* KPI stat cards */}
         <DashboardStats />
+
+        {/* Analytics: production chart + crop distribution */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <ProductionChart />
+          </div>
+          <div className="lg:col-span-1">
+            <CropDistribution />
+          </div>
+        </div>
+
+        {/* Recent activity table */}
+        <RecentActivity />
 
         {/* Top Section */}
         <div
