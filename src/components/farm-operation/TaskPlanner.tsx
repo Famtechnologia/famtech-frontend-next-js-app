@@ -533,9 +533,9 @@ const App: React.FC = () => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "text-red-600 bg-red-100";
+        return "text-red-600 bg-red-50";
       case "medium":
-        return "text-yellow-600 bg-yellow-100";
+        return "text-amber-600 bg-amber-50";
       default:
         return "text-gray-600 bg-gray-100";
     }
@@ -583,9 +583,9 @@ const App: React.FC = () => {
         </div>
 
         <div className="space-y-6 md:space-y-0 md:flex md:space-x-6 ">
-          <div className="w-full md:w-64 space-y-6 p-4 bg-white rounded-xl shadow-xl">
+          <div className="w-full md:w-64 space-y-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
             <div>
-              <h3 className="text-lg font-semibold text-gray-500 uppercase mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
                 FILTER TASKS
               </h3>
               <div className="space-y-2">
@@ -593,7 +593,7 @@ const App: React.FC = () => {
                   <button
                     key={filter}
                     onClick={() => setActiveFilter(filter)}
-                    className={`w-full text-left p-2 rounded-xl text-base font-medium transition-colors duration-200 ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                       activeFilter === filter
                         ? "bg-green-100 text-green-700 font-semibold"
                         : "text-gray-600 hover:bg-gray-200"
@@ -605,7 +605,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-500 uppercase mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
                 TASK TYPES
               </h3>
               <div className="space-y-2">
@@ -621,7 +621,7 @@ const App: React.FC = () => {
                     <button
                       key={type}
                       onClick={() => setActiveFilter(type)}
-                      className={`w-full text-left flex items-center justify-between p-2 rounded-xl text-base font-medium transition-colors duration-200 ${
+                      className={`w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                         activeFilter === type
                           ? "bg-green-100 text-green-700 font-semibold"
                           : "text-gray-600 hover:bg-gray-100"
@@ -661,40 +661,46 @@ const App: React.FC = () => {
             )}
             {!loading && !error && (
               <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-500 uppercase">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
                   {getTaskTypeLabel(activeFilter)} ({filteredTasks.length})
                 </h3>
-                <div className="space-y-1 bg-white shadow-xl  rounded-xl overflow-hidden divide-y-t divide-gray-200">
+                <div className="border border-gray-200 bg-white shadow-sm  rounded-xl overflow-hidden divide-y divide-gray-100">
                   {filteredTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center justify-between border-t-3 border-gray-200 p-6 cursor-pointer transition-colors duration-200 hover:border-l-4 hover:border-green-500 rounded-lg hover:bg-green-100"
+                      className="group flex items-center justify-between gap-4 p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-50"
                       onClick={() => openEditTaskModal(task)}
                     >
                       <div className="flex items-start space-x-3">
                         <CheckCircle
-                          className={`h-10 w-10 md:h-5 md:w-5  ${task.completed ? "text-green-600" : "text-gray-400"}`}
+                          className={`h-5 w-5 shrink-0 mt-0.5  ${task.completed ? "text-green-600" : "text-gray-400"}`}
                         />
 
                         <div className="space-y-3">
-                          <p className="text-xl font-semibold text-gray-800">
+                          <p className="font-semibold text-gray-900">
                             {task.name}
                           </p>
-                          <p className="text-lg text-gray-600 space-x-2">
-                            {task.type} • Due: {task.dueDate}, {task.time}
+                          <p className="mt-0.5 text-sm text-gray-500">
+                            {task.type} · Due {task.dueDate}, {task.time}
                           </p>
                           <span
-                            className={`text-lg px-4 py-2 rounded-full font-semibold capitalize ${getPriorityColor(task.priority)}`}
+                            className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${getPriorityColor(task.priority)}`}
                           >
+                            <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                             {task.priority}
                           </span>
                         </div>
                       </div>
-                      <div className="flex justify-end">
-                        <div className="flex flex-col items-center space-y-6">
-                          <ChevronRight className="h-5 w-5 text-gray-400" />
-                          <p className="text-lg text-gray-600">{task.user}</p>
+                      <div className="flex shrink-0 items-center gap-3">
+                        <div className="hidden items-center gap-2 sm:flex">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold uppercase text-gray-600">
+                            {task.user?.charAt(0) || "?"}
+                          </span>
+                          <span className="max-w-[160px] truncate text-sm text-gray-500">
+                            {task.user}
+                          </span>
                         </div>
+                        <ChevronRight className="h-5 w-5 text-gray-300 transition-colors group-hover:text-green-600" />
                       </div>
                     </div>
                   ))}
