@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Camera, TriangleAlert, X } from "lucide-react";
+import { Camera, TriangleAlert, X, Info } from "lucide-react";
 import Image from "next/image";
 import { useProfile } from "@/lib/hooks/useProfile";
 import toast from "react-hot-toast";
@@ -156,11 +156,11 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
   // --- Component JSX (Rendering is identical, provided for context) ---
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="sm:col-span-2">
           <label
             htmlFor="cropName"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Crop Name<span className="text-red-500">*</span>
           </label>
@@ -171,13 +171,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             value={formData.cropName}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         <div>
           <label
             htmlFor="variety"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Variety
           </label>
@@ -187,13 +187,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             placeholder="E.g., Pioneer Hybrid"
             value={formData.variety}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         <div>
           <label
             htmlFor="location"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Field/Location<span className="text-red-500">*</span>
           </label>
@@ -204,13 +204,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             value={formData.location}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         <div>
           <label
             htmlFor="plantingDate"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Planting Date<span className="text-red-500">*</span>
           </label>
@@ -220,13 +220,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             value={formData.plantingDate}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         <div>
           <label
             htmlFor="expectedHarvestDate"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Expected Harvest Date
           </label>
@@ -235,13 +235,13 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             id="expectedHarvestDate"
             value={formData.expectedHarvestDate}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         <div>
           <label
             htmlFor="currentGrowthStage"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Current Growth Stage
           </label>
@@ -249,7 +249,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             id="currentGrowthStage"
             value={formData.currentGrowthStage}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option>Seeding</option>
             <option>Vegetative</option>
@@ -261,7 +261,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         <div>
           <label
             htmlFor="healthStatus"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Health Status
           </label>
@@ -269,35 +269,35 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
             id="healthStatus"
             value={formData.healthStatus}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
-            <option>Good</option>
-            <option>Fair</option>
-            <option>Poor</option>
+            <option value="good">Good</option>
+            <option value="fair">Fair</option>
+            <option value="poor">Poor</option>
           </select>
         </div>
         <div>
           <label
             htmlFor="areaValue"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Area<span className="text-red-500">*</span>
           </label>
-          <div className="flex space-x-0">
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-green-500/20 focus-within:border-green-600 transition-all shadow-sm bg-white">
             <input
               type="number"
               id="areaValue"
               placeholder="0.00"
-              value={formData.areaValue || ""} // Use || '' to allow the user to clear the input
+              value={formData.areaValue || ""}
               onChange={handleChange}
               required
-              className="flex-1 px-1 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="flex-1 min-w-0 px-3 py-2.5 text-gray-800 text-sm focus:outline-none"
             />
             <select
               id="areaUnit"
               value={formData.areaUnit}
               onChange={handleChange}
-              className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="bg-slate-50 px-3 py-2.5 border-l border-gray-300 text-gray-700 text-sm focus:outline-none cursor-pointer"
             >
               <option>ac</option>
               <option>ha</option>
@@ -307,24 +307,24 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
         <div>
           <label
             htmlFor="seedQuantityValue"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Seed Quantity
           </label>
-          <div className="flex space-x-0">
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-green-500/20 focus-within:border-green-600 transition-all shadow-sm bg-white">
             <input
               type="number"
               id="seedQuantityValue"
               placeholder="0.00"
-              value={formData.seedQuantityValue || ""} // Use || '' to allow the user to clear the input
+              value={formData.seedQuantityValue || ""}
               onChange={handleChange}
-              className="flex-1 px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="flex-1 min-w-0 px-3 py-2.5 text-gray-800 text-sm focus:outline-none"
             />
             <select
               id="seedQuantityUnit"
               value={formData.seedQuantityUnit}
               onChange={handleChange}
-              className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="bg-slate-50 px-3 py-2.5 border-l border-gray-300 text-gray-700 text-sm focus:outline-none cursor-pointer"
             >
               <option>kg</option>
               <option>lb</option>
@@ -335,7 +335,7 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
       <div>
         <label
           htmlFor="note"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
         >
           Notes
         </label>
@@ -345,15 +345,15 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
           placeholder="Additional information about this crop..."
           value={formData.note}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-md resize-none text-gray-800"
+          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg resize-none text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
         ></textarea>
       </div>
       <div>
-        <div className="text-sm font-medium text-gray-700 mb-2">Crop Image</div>
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Crop Image</div>
         {/* Image upload area */}
-        <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
-          <Camera className="h-8 w-8 mb-2" />
-          <p className="text-center">
+        <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 bg-slate-50 hover:bg-slate-100/50 transition-colors shadow-sm">
+          <Camera className="h-8 w-8 mb-2 text-gray-400" />
+          <p className="text-center text-xs text-gray-400">
             Drag and drop image here, or click to select file
           </p>
           <input
@@ -366,15 +366,15 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
           />
           <label
             htmlFor="images"
-            className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer"
+            className="mt-4 px-4 py-2 text-xs font-bold text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 cursor-pointer shadow-sm transition-all bg-white"
           >
             Select Image
           </label>
         </div>
         {/* Conditional rendering for the image previews */}
         {imagePreviewUrls.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-4 items-center justify-center">
-            <p className="w-full text-center text-sm text-gray-500 mb-2">
+          <div className="mt-4 flex flex-wrap gap-4 items-center justify-center border p-4 rounded-xl bg-slate-50 border-slate-200">
+            <p className="w-full text-center text-xs font-bold text-gray-500 mb-2">
               Image Preview:
             </p>
             {imagePreviewUrls.map((url, index) => (
@@ -384,38 +384,38 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
                 alt={`Image Preview `}
                 width={120}
                 height={120}
-                className="rounded-md object-cover"
+                className="rounded-lg object-cover border border-slate-200"
               />
             ))}
           </div>
         )}
       </div>
       <div
-        className="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-md"
+        className="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 p-4 rounded-r-lg"
         role="alert"
       >
         <div className="flex items-center">
-          <TriangleAlert className="h-5 w-5 mr-3" />
-          <p className="text-sm">
+          <Info className="h-5 w-5 mr-3 text-emerald-600 flex-shrink-0" />
+          <p className="text-xs font-medium">
             This record will be used for crop tracking, yield forecasting, and
             generating reports. Regular updates to growth stage and health
             status are recommended.
           </p>
         </div>
       </div>
-      {loading && <div className="text-center text-green-600">Adding...</div>}
-      {error && <div className="text-center text-red-500">{error}</div>}
-      <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
+      {loading && <div className="text-center text-sm font-semibold text-green-600">Adding...</div>}
+      {error && <div className="text-center text-sm font-semibold text-red-500">{error}</div>}
+      <div className="p-4 border-t border-gray-100 flex justify-end space-x-3">
         <button
           type="button"
-          className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100"
+          className="px-4 py-2 text-xs font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 shadow-sm transition-colors"
           onClick={onClose}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
+          className="px-4 py-2 text-xs font-bold text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-sm transition-colors"
           disabled={loading}
         >
           Add Crop Record
@@ -642,13 +642,12 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* ... (Other form fields like cropName, variety, location, etc. remain the same) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {/* cropName */}
         <div className="sm:col-span-2">
           <label
             htmlFor="cropName"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Crop Name<span className="text-red-500">*</span>
           </label>
@@ -659,14 +658,14 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             value={formData.cropName}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* variety */}
         <div>
           <label
             htmlFor="variety"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Variety
           </label>
@@ -676,14 +675,14 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             placeholder="E.g., Pioneer Hybrid"
             value={formData.variety}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* location */}
         <div>
           <label
             htmlFor="location"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Field/Location<span className="text-red-500">*</span>
           </label>
@@ -694,14 +693,14 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             value={formData.location}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* plantingDate */}
         <div>
           <label
             htmlFor="plantingDate"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Planting Date<span className="text-red-500">*</span>
           </label>
@@ -711,14 +710,14 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             value={formData.plantingDate}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* expectedHarvestDate */}
         <div>
           <label
             htmlFor="expectedHarvestDate"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Expected Harvest Date
           </label>
@@ -727,14 +726,14 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             id="expectedHarvestDate"
             value={formData.expectedHarvestDate}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* currentGrowthStage */}
         <div>
           <label
             htmlFor="currentGrowthStage"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Current Growth Stage
           </label>
@@ -742,7 +741,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             id="currentGrowthStage"
             value={formData.currentGrowthStage}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option>Seeding</option>
             <option>Vegetative</option>
@@ -755,7 +754,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
         <div>
           <label
             htmlFor="healthStatus"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Health Status
           </label>
@@ -763,7 +762,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
             id="healthStatus"
             value={formData.healthStatus}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option>Good</option>
             <option>Fair</option>
@@ -774,25 +773,25 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
         <div>
           <label
             htmlFor="areaValue"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Area<span className="text-red-500">*</span>
           </label>
-          <div className="flex space-x-0">
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-green-500/20 focus-within:border-green-600 transition-all shadow-sm bg-white">
             <input
               type="number"
               id="areaValue"
               placeholder="0.00"
-              value={formData.areaValue}
+              value={formData.areaValue || ""}
               onChange={handleChange}
               required
-              className="flex-1 px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="flex-1 min-w-0 px-3 py-2.5 text-gray-800 text-sm focus:outline-none"
             />
             <select
               id="areaUnit"
               value={formData.areaUnit}
               onChange={handleChange}
-              className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="bg-slate-50 px-3 py-2.5 border-l border-gray-300 text-gray-700 text-sm focus:outline-none cursor-pointer"
             >
               <option>ac</option>
               <option>ha</option>
@@ -803,24 +802,24 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
         <div>
           <label
             htmlFor="seedQuantityValue"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Seed Quantity
           </label>
-          <div className="flex space-x-0">
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-green-500/20 focus-within:border-green-600 transition-all shadow-sm bg-white">
             <input
               type="number"
               id="seedQuantityValue"
               placeholder="0.00"
-              value={formData.seedQuantityValue}
+              value={formData.seedQuantityValue || ""}
               onChange={handleChange}
-              className="flex-1 px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="flex-1 min-w-0 px-3 py-2.5 text-gray-800 text-sm focus:outline-none"
             />
             <select
               id="seedQuantityUnit"
               value={formData.seedQuantityUnit}
               onChange={handleChange}
-              className="px-0 py-2 border border-gray-300 rounded-md text-gray-800"
+              className="bg-slate-50 px-3 py-2.5 border-l border-gray-300 text-gray-700 text-sm focus:outline-none cursor-pointer"
             >
               <option>kg</option>
               <option>lb</option>
@@ -833,7 +832,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
       <div>
         <label
           htmlFor="note"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
         >
           Notes
         </label>
@@ -843,31 +842,31 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
           placeholder="Additional information about this crop..."
           value={formData.note}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-md resize-none text-gray-800"
+          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg resize-none text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
         ></textarea>
       </div>
 
       {/* --- New Image Upload --- */}
       <div>
-        <div className="text-sm font-medium text-gray-700 mb-2">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
           Add New Crop Image
         </div>
-        <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
-          <Camera className="h-8 w-8 mb-2" />
-          <p className="text-center">
+        <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 bg-slate-50 hover:bg-slate-100/50 transition-colors shadow-sm">
+          <Camera className="h-8 w-8 mb-2 text-gray-400" />
+          <p className="text-center text-xs text-gray-450">
             Drag and drop image here, or click to select new file to add
           </p>
           <input
             type="file"
-            id="newImages" // Changed ID for clarity
+            id="newImages"
             accept="image/*"
-            multiple // Allows multiple new file selection
+            multiple
             onChange={handleNewFileChange}
             className="hidden"
           />
           <label
             htmlFor="newImages"
-            className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer"
+            className="mt-4 px-4 py-2 text-xs font-bold text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 cursor-pointer shadow-sm transition-all bg-white"
           >
             Select New Image
           </label>
@@ -876,8 +875,8 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
 
       {/* --- New Image Previews --- */}
       {newImagePreviewUrls.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-4 items-center justify-center border p-4 rounded-lg bg-yellow-50">
-          <p className="w-full text-center text-sm font-medium text-gray-600 mb-2">
+        <div className="mt-4 flex flex-wrap gap-4 items-center justify-center border p-4 rounded-xl bg-slate-50 border-slate-200 shadow-sm">
+          <p className="w-full text-center text-xs font-bold text-gray-550 mb-2">
             New Image Previews (Will be added on update):
           </p>
           {newImagePreviewUrls.map((url, index) => (
@@ -887,7 +886,7 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
                 alt={`New Image Preview ${index + 1}`}
                 width={100}
                 height={100}
-                className="rounded-md object-cover border border-gray-300"
+                className="rounded-lg object-cover border border-slate-200"
               />
               <button
                 type="button"
@@ -902,20 +901,20 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
         </div>
       )}
 
-      {loading && <div className="text-center text-green-600">Updating...</div>}
-      {error && <div className="text-center text-red-500">{error}</div>}
+      {loading && <div className="text-center text-sm font-semibold text-green-600">Updating...</div>}
+      {error && <div className="text-center text-sm font-semibold text-red-500">{error}</div>}
 
-      <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
+      <div className="p-4 border-t border-gray-100 flex justify-end space-x-3">
         <button
           type="button"
-          className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100"
+          className="px-4 py-2 text-xs font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 shadow-sm transition-colors"
           onClick={onClose}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
+          className="px-4 py-2 text-xs font-bold text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-sm transition-colors"
           disabled={loading}
         >
           Update Crop Record

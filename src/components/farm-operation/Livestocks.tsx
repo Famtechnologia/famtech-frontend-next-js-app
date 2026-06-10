@@ -142,27 +142,27 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* 🚀 FIX: Image preview now maps over multiple URLs */}
+      {/* 🚀 Image preview now maps over multiple URLs */}
       {imagePreviewUrls.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-4 mb-4">
+        <div className="flex flex-wrap justify-center gap-4 border p-4 rounded-xl bg-slate-50 border-slate-200 shadow-sm">
           {imagePreviewUrls.map((url, index) => (
             <Image
               key={index}
               src={url}
               alt={`New image preview ${index + 1}`}
-              width={120} // Smaller size for multiple previews
+              width={120}
               height={120}
-              className="rounded-lg object-cover"
+              className="rounded-lg object-cover border border-slate-200"
             />
           ))}
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="sm:col-span-2">
           <label
             htmlFor="specie"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Livestock Species<span className="text-red-500">*</span>
           </label>
@@ -173,14 +173,14 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             value={formData.specie}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="breed"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Breed
           </label>
@@ -190,14 +190,14 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             placeholder="E.g., Holstein, Leghorn"
             value={formData.breed}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="numberOfAnimal"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Number of Animals<span className="text-red-500">*</span>
           </label>
@@ -209,14 +209,14 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             onChange={handleChange}
             required
             min="1"
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="ageGroup"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Age Group
           </label>
@@ -224,7 +224,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             id="ageGroup"
             value={formData.ageGroup}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option value="Adult">Adult</option>
             <option value="Young">Young</option>
@@ -235,7 +235,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
         <div>
           <label
             htmlFor="acquisitionDate"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Acquisition Date<span className="text-red-500">*</span>
           </label>
@@ -245,14 +245,14 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             value={formData.acquisitionDate}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="healthStatus"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Health Status
           </label>
@@ -260,7 +260,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             id="healthStatus"
             value={formData.healthStatus}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option value="good">Good</option>
             <option value="excellent">Excellent</option>
@@ -272,7 +272,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
         <div>
           <label
             htmlFor="feedSchedule"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Feed Schedule<span className="text-red-500">*</span>
           </label>
@@ -283,14 +283,14 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             value={formData.feedSchedule}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
 
         <div className="sm:col-span-2">
           <label
             htmlFor="note"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Notes
           </label>
@@ -300,29 +300,28 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             placeholder="Additional information about this livestock group..."
             value={formData.note}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md resize-none text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg resize-none text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           ></textarea>
         </div>
 
         <div className="sm:col-span-2">
-          <div className="text-sm font-medium text-gray-700 mb-2">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
             Livestock Image
           </div>
-          <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
-            <Camera className="h-8 w-8 mb-2" />
-            {/* 🚀 FIX: Text updated for multiple files */}
-            <p className="text-center">Select image for this record.</p>
+          <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 bg-slate-50 hover:bg-slate-100/50 transition-colors shadow-sm">
+            <Camera className="h-8 w-8 mb-2 text-gray-400" />
+            <p className="text-center text-xs text-gray-400">Select image for this record.</p>
             <input
               type="file"
               id="image"
               accept="image/*"
               onChange={handleFileChange}
               className="hidden"
-              multiple // 🚀 FIX: Added multiple attribute
+              multiple
             />
             <label
               htmlFor="image"
-              className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer"
+              className="mt-4 px-4 py-2 text-xs font-bold text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 cursor-pointer shadow-sm transition-all bg-white"
             >
               {imageFiles.length > 0
                 ? `${imageFiles.length} image selected`
@@ -332,15 +331,15 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
         </div>
       </div>
 
-      {error && <div className="text-center text-red-500 mt-4">{error}</div>}
+      {error && <div className="text-center text-sm font-semibold text-red-500 mt-4">{error}</div>}
       {loading && (
-        <div className="text-center text-green-600">Adding record...</div>
+        <div className="text-center text-sm font-semibold text-green-600">Adding record...</div>
       )}
 
-      <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
+      <div className="p-4 border-t border-gray-100 flex justify-end space-x-3">
         <button
           type="button"
-          className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100"
+          className="px-4 py-2 text-xs font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 shadow-sm transition-colors"
           onClick={onClose}
           disabled={loading}
         >
@@ -348,7 +347,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
+          className="px-4 py-2 text-xs font-bold text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-sm transition-colors"
           disabled={loading}
         >
           Add Livestock Record
@@ -555,12 +554,12 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {/* specie */}
         <div className="sm:col-span-2">
           <label
             htmlFor="specie"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Livestock Species<span className="text-red-500">*</span>
           </label>
@@ -571,14 +570,14 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             value={formData.specie}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* breed */}
         <div>
           <label
             htmlFor="breed"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Breed
           </label>
@@ -588,14 +587,14 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             placeholder="E.g., Holstein, Leghorn"
             value={formData.breed}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* numberOfAnimal */}
         <div>
           <label
             htmlFor="numberOfAnimal"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Number of Animals<span className="text-red-500">*</span>
           </label>
@@ -607,14 +606,14 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             onChange={handleChange}
             required
             min="1"
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* ageGroup */}
         <div>
           <label
             htmlFor="ageGroup"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Age Group
           </label>
@@ -622,7 +621,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             id="ageGroup"
             value={formData.ageGroup}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option>Adult</option>
             <option>Young</option>
@@ -633,7 +632,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         <div>
           <label
             htmlFor="acquisitionDate"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Last Checkup<span className="text-red-500">*</span>
           </label>
@@ -643,14 +642,14 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             value={formData.acquisitionDate}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
         {/* healthStatus */}
         <div>
           <label
             htmlFor="healthStatus"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Health Status
           </label>
@@ -658,7 +657,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             id="healthStatus"
             value={formData.healthStatus}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm bg-white cursor-pointer"
           >
             <option value="good">Good</option>
             <option value="excellent">Excellent</option>
@@ -670,7 +669,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         <div>
           <label
             htmlFor="feedSchedule"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
           >
             Feed Schedule<span className="text-red-500">*</span>
           </label>
@@ -681,7 +680,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             value={formData.feedSchedule}
             onChange={handleChange}
             required
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-800"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
         </div>
       </div>
@@ -690,7 +689,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
       <div>
         <label
           htmlFor="note"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
         >
           Notes
         </label>
@@ -700,30 +699,30 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
           placeholder="Additional information about this livestock group..."
           value={formData.note}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-md resize-none text-gray-800"
+          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg resize-none text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
         ></textarea>
       </div>
 
-      {/* --- New Image Upload (Style adopted from Crop Form) --- */}
+      {/* --- New Image Upload --- */}
       <div>
-        <div className="text-sm font-medium text-gray-700 mb-2">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
           Update Livestock Image (Replaces existing image)
         </div>
-        <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-md text-gray-500">
-          <Camera className="h-8 w-8 mb-2" />
-          <p className="text-center">
+        <div className="flex flex-col items-center justify-center w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 bg-slate-50 hover:bg-slate-100/50 transition-colors shadow-sm">
+          <Camera className="h-8 w-8 mb-2 text-gray-400" />
+          <p className="text-center text-xs text-gray-400">
             Select a new image to replace the current one.
           </p>
           <input
             type="file"
-            id="newImage" // Changed ID for clarity
+            id="newImage"
             accept="image/*"
             onChange={handleNewFileChange}
             className="hidden"
           />
           <label
             htmlFor="newImage"
-            className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 cursor-pointer"
+            className="mt-4 px-4 py-2 text-xs font-bold text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 cursor-pointer shadow-sm transition-all bg-white"
           >
             {newImageFile
               ? `Change Image: ${newImageFile.name}`
@@ -732,10 +731,10 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         </div>
       </div>
 
-      {/* --- New Image Preview (Style adopted from Crop Form) --- */}
+      {/* --- New Image Preview --- */}
       {newImagePreviewUrl && newImageFile && (
-        <div className="mt-4 flex flex-wrap gap-4 items-center justify-center border p-4 rounded-lg bg-yellow-50">
-          <p className="w-full text-center text-sm font-medium text-gray-600 mb-2">
+        <div className="mt-4 flex flex-wrap gap-4 items-center justify-center border p-4 rounded-xl bg-slate-50 border-slate-200 shadow-sm">
+          <p className="w-full text-center text-xs font-bold text-gray-550 mb-2">
             New Image Preview (Will replace current image on update):
           </p>
           <div className="relative group">
@@ -744,7 +743,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
               alt={`New Image Preview`}
               width={100}
               height={100}
-              className="rounded-md object-cover border border-gray-300"
+              className="rounded-lg object-cover border border-slate-200"
             />
             <button
               type="button"
@@ -758,13 +757,13 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         </div>
       )}
 
-      {loading && <div className="text-center text-green-600">Updating...</div>}
-      {error && <div className="text-center text-red-500">{error}</div>}
+      {loading && <div className="text-center text-sm font-semibold text-green-600">Updating...</div>}
+      {error && <div className="text-center text-sm font-semibold text-red-500">{error}</div>}
 
-      <div className="p-4 border-t border-gray-200 flex justify-end space-x-3">
+      <div className="p-4 border-t border-gray-100 flex justify-end space-x-3">
         <button
           type="button"
-          className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100"
+          className="px-4 py-2 text-xs font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-100 shadow-sm transition-colors"
           onClick={onClose}
           disabled={loading}
         >
@@ -772,7 +771,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700"
+          className="px-4 py-2 text-xs font-bold text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-sm transition-colors"
           disabled={loading}
         >
           Update Livestock Record
