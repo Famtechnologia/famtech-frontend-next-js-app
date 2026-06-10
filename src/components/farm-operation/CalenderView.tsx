@@ -353,9 +353,10 @@ const AddEventModal: React.FC<{
 const CalendarView: React.FC = () => {
   const today = new Date();
   const [currentYear, setCurrentYear] = useState<number>(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState<number>(
-    today.getMonth() + 1
-  ); 
+  const [currentMonth, setCurrentMonth] = useState<number>(today.getMonth() + 1); // 1-12
+  const [activeDate, setActiveDate] = useState<Date>(today);
+  const [viewMode, setViewMode] = useState<"month" | "week">("month");
+  
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -429,8 +430,73 @@ const CalendarView: React.FC = () => {
     setSelectedDay(null);
   };
 
+  const handlePreviousWeek = () => {
+    const prev = new Date(activeDate);
+    prev.setDate(prev.getDate() - 7);
+    setActiveDate(prev);
+    
+    if (prev.getMonth() + 1 !== currentMonth || prev.getFullYear() !== currentYear) {
+      setCurrentMonth(prev.getMonth() + 1);
+      setCurrentYear(prev.getFullYear());
+    }
+    setSelectedDay(null);
+  };
+
+  const handleNextWeek = () => {
+    const next = new Date(activeDate);
+    next.setDate(next.getDate() + 7);
+    setActiveDate(next);
+    
+    if (next.getMonth() + 1 !== currentMonth || next.getFullYear() !== currentYear) {
+      setCurrentMonth(next.getMonth() + 1);
+      setCurrentYear(next.getFullYear());
+    }
+    setSelectedDay(null);
+  };
+
+  const handlePrev = () => {
+    if (viewMode === "month") {
+      handlePreviousMonth();
+    } else {
+      handlePreviousWeek();
+    }
+  };
+
+  const handleNext = () => {
+    if (viewMode === "month") {
+      handleNextMonth();
+    } else {
+      handleNextWeek();
+    }
+  };
+
   const getDaysInMonth = (year: number, month: number): number => {
     return new Date(year, month, 0).getDate();
+  };
+
+  const getDaysForActiveWeek = () => {
+    const start = new Date(activeDate);
+    const dayOfWeek = start.getDay();
+    start.setDate(start.getDate() - dayOfWeek); // Sunday
+    
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      weekDays.push(d);
+    }
+    return weekDays;
+  };
+
+  const getWeekRangeString = () => {
+    const days = getDaysForActiveWeek();
+    const start = days[0];
+    const end = days[6];
+    
+    const startMonth = monthNames[start.getMonth()].substring(0, 3);
+    const endMonth = monthNames[end.getMonth()].substring(0, 3);
+    
+    return `Week of ${startMonth} ${start.getDate()} – ${endMonth} ${end.getDate()}, ${end.getFullYear()}`;
   };
 
   const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
@@ -456,6 +522,7 @@ const CalendarView: React.FC = () => {
     <div className="bg-white p-2 lg:p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
       {/* Left Sidebar for Calendar and Filters */}
       <div className="w-full md:w-64 space-y-6">
+        {/* Navigation / Mini calendar */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-gray-900 text-sm">
@@ -479,7 +546,11 @@ const CalendarView: React.FC = () => {
               (day) => (
                 <div
                   key={day}
-                  onClick={() => setSelectedDay(day + 1)}
+                  onClick={() => {
+                    const selected = new Date(currentYear, currentMonth - 1, day + 1);
+                    setActiveDate(selected);
+                    setSelectedDay(day + 1);
+                  }}
                   className={`p-2 rounded-lg cursor-pointer ${
                     day + 1 === today.getDate() &&
                     currentMonth === today.getMonth() + 1 &&
@@ -492,6 +563,35 @@ const CalendarView: React.FC = () => {
                 </div>
               )
             )}
+          </div>
+        </div>
+
+        {/* View Options */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+            VIEW OPTIONS
+          </h3>
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => setViewMode("month")}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                viewMode === "month" 
+                  ? "text-white bg-green-600 hover:bg-green-700" 
+                  : "text-gray-600 bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
+              Month
+            </button>
+            <button 
+              onClick={() => setViewMode("week")}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                viewMode === "week" 
+                  ? "text-white bg-green-600 hover:bg-green-700" 
+                  : "text-gray-600 bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
+              Week
+            </button>
           </div>
         </div>
 
@@ -546,9 +646,19 @@ const CalendarView: React.FC = () => {
       {/* Main Calendar Grid */}
       <div className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-semibold text-gray-900">
-            {monthNames[currentMonth - 1]} {currentYear}
-          </h2>
+          <div className="flex items-center space-x-3">
+            <h2 className="text-base font-semibold text-gray-900">
+              {viewMode === "month" 
+                ? `${monthNames[currentMonth - 1]} ${currentYear}`
+                : getWeekRangeString()
+              }
+            </h2>
+            <div className="flex items-center space-x-1.5 text-gray-400 font-bold border border-gray-100 rounded-md px-1 py-0.5">
+              <button className="hover:text-green-600 px-1 text-xs" onClick={handlePrev}>&lt;</button>
+              <span className="text-[10px] text-gray-300">|</span>
+              <button className="hover:text-green-600 px-1 text-xs" onClick={handleNext}>&gt;</button>
+            </div>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsAddOpen(true)}
@@ -575,64 +685,126 @@ const CalendarView: React.FC = () => {
                 {day}
               </div>
             ))}
-            {/* build full 6-row × 7-col grid including previous/next month days */}
-            {(() => {
-              const daysInPrevMonth = getDaysInMonth(
-                currentMonth === 1 ? currentYear - 1 : currentYear,
-                currentMonth === 1 ? 12 : currentMonth - 1
-              );
-              const daysInCurrentMonth = getDaysInMonth(
-                currentYear,
-                currentMonth
-              );
-              const totalCells = 42; 
-
-              const cells: React.ReactElement[] = [];
-              
-              // previous month trailing days
-              for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-                const dayNumber = daysInPrevMonth - i;
-                cells.push(
-                  <div
-                    key={`prev-${dayNumber}`}
-                    className="md:h-28 border border-gray-100 rounded-md p-2 mt-2 bg-gray-50 text-gray-300"
-                  >
-                    <span className="text-xs">{dayNumber}</span>
-                  </div>
+            
+            {viewMode === "month" ? (
+              // Month View Grid Cells
+              (() => {
+                const daysInPrevMonth = getDaysInMonth(
+                  currentMonth === 1 ? currentYear - 1 : currentYear,
+                  currentMonth === 1 ? 12 : currentMonth - 1
                 );
-              }
+                const daysInCurrentMonth = getDaysInMonth(currentYear, currentMonth);
+                const totalCells = 42; 
+                const cells: React.ReactElement[] = [];
+                
+                // previous month trailing days
+                for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+                  const dayNumber = daysInPrevMonth - i;
+                  cells.push(
+                    <div
+                      key={`prev-${dayNumber}`}
+                      className="md:h-28 border border-gray-100 rounded-md p-2 mt-2 bg-gray-50 text-gray-300"
+                    >
+                      <span className="text-xs">{dayNumber}</span>
+                    </div>
+                  );
+                }
 
-              // current month days
-              for (let d = 1; d <= daysInCurrentMonth; d++) {
-                const dayData = calendarData?.days?.find((dd) => dd.day === d);
+                // current month days
+                for (let d = 1; d <= daysInCurrentMonth; d++) {
+                  const dayData = calendarData?.days?.find((dd) => dd.day === d);
+                  const tasksForDay = (dayData?.tasks || []).filter(
+                    (t) => enabled[getCategory(t.taskType)]
+                  );
+                  cells.push(
+                    <DayCell
+                      key={`curr-${d}`}
+                      day={d}
+                      tasks={tasksForDay}
+                      onClick={() => {
+                        const targetDate = new Date(currentYear, currentMonth - 1, d);
+                        setActiveDate(targetDate);
+                        setSelectedDay(d);
+                      }} 
+                    />
+                  );
+                }
+
+                // next month leading days
+                const nextDays = totalCells - cells.length;
+                for (let d = 1; d <= nextDays; d++) {
+                  cells.push(
+                    <div
+                      key={`next-${d}`}
+                      className="md:h-28 border border-gray-100 rounded-md p-2 mt-2 bg-gray-50 text-gray-300"
+                    >
+                      <span className="text-xs">{d}</span>
+                    </div>
+                  );
+                }
+
+                return cells;
+              })()
+            ) : (
+              // Week View Grid Cells
+              getDaysForActiveWeek().map((dateItem) => {
+                const isCurrentMonth = dateItem.getMonth() + 1 === currentMonth;
+                const d = dateItem.getDate();
+                
+                const dayData = isCurrentMonth 
+                  ? calendarData?.days?.find((dd) => dd.day === d)
+                  : null;
                 const tasksForDay = (dayData?.tasks || []).filter(
                   (t) => enabled[getCategory(t.taskType)]
                 );
-                cells.push(
-                  <DayCell
-                    key={`curr-${d}`}
-                    day={d}
-                    tasks={tasksForDay}
-                    onClick={() => setSelectedDay(d)} 
-                  />
-                );
-              }
+                
+                const isToday = d === today.getDate() && 
+                                dateItem.getMonth() === today.getMonth() && 
+                                dateItem.getFullYear() === today.getFullYear();
 
-              // next month leading days
-              const nextDays = totalCells - cells.length;
-              for (let d = 1; d <= nextDays; d++) {
-                cells.push(
+                return (
                   <div
-                    key={`next-${d}`}
-                    className="md:h-28 border border-gray-100 rounded-md p-2 mt-2 bg-gray-50 text-gray-300"
+                    key={`week-${dateItem.getTime()}`}
+                    onClick={() => {
+                      if (isCurrentMonth) {
+                        setSelectedDay(d);
+                      } else {
+                        // Change active calendar scope to focus neighbor month
+                        setCurrentMonth(dateItem.getMonth() + 1);
+                        setCurrentYear(dateItem.getFullYear());
+                        setActiveDate(dateItem);
+                        setSelectedDay(d);
+                      }
+                    }}
+                    className={`md:h-28 border rounded-md p-2 mt-2 hover:border-green-400 hover:bg-green-50 cursor-pointer relative overflow-hidden transition-colors ${
+                      isToday ? 'border-green-500 bg-green-50/20' : 'border-gray-200'
+                    }`}
                   >
-                    <span className="text-xs">{d}</span>
+                    <div className="flex justify-between items-center">
+                      <span className={`text-xs font-semibold ${isToday ? 'text-green-700' : 'text-gray-500'}`}>
+                        {d}
+                      </span>
+                      {!isCurrentMonth && (
+                        <span className="text-[8px] text-gray-400 uppercase font-bold tracking-wider">
+                          {monthNames[dateItem.getMonth()].substring(0, 3)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 p-1 flex space-x-1 justify-center md:justify-start overflow-x-auto no-scrollbar">
+                      {tasksForDay.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`h-2 w-2 rounded-full ${CATEGORY[getCategory(task.taskType)].dot} ${
+                            task.status === "completed" ? "opacity-40" : ""
+                          }`}
+                          title={`${task.title} - ${task.status}`}
+                        ></div>
+                      ))}
+                    </div>
                   </div>
                 );
-              }
-
-              return cells;
-            })()}
+              })
+            )}
           </div>
         )}
       </div>
