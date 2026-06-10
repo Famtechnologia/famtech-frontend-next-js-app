@@ -194,7 +194,7 @@ const AddEventModal: React.FC<{
   const [priority, setPriority] = useState("Medium");
   const [dueDate, setDueDate] = useState("");
   const [dueTime, setDueTime] = useState("");
-  const [assignee, setAssignee] = useState("");
+  const [assignee, setAssignee] = useState("Unassigned");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -223,7 +223,7 @@ const AddEventModal: React.FC<{
       await createTask(payload);
       setTitle("");
       setNotes("");
-      setAssignee("");
+      setAssignee("Unassigned");
       setDueTime("");
       onCreated();
       onClose();
@@ -310,7 +310,7 @@ const AddEventModal: React.FC<{
             disabled={saving}
             className={field}
           >
-            <option value="">Unassigned</option>
+            <option value="Unassigned">Unassigned</option>
             {staff?.map((s) => (
               <option key={s.email} value={s.email}>
                 {s.name}
