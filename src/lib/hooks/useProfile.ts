@@ -14,7 +14,11 @@ export const useProfile = () => {
     farmSize: number;
     farmSizeUnit: string;
     establishedYear: number;
-    location: Location;
+    location: {
+      city: string;
+      state: string;
+      country?: string;
+    };
     currency: string;
     timezone: string;
     primaryCrops: string[];
