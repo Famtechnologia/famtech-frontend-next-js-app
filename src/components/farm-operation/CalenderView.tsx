@@ -1,31 +1,22 @@
 // src/components/calendar/CalendarView.tsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Filter } from "lucide-react";
-// Assuming these types and services are correctly exported from your lib files
+import { Plus, Loader2, ListChecks } from "lucide-react";
 import { getCalendarData, CalendarData } from "@/lib/services/calender";
-// createTask service is removed as it is no longer used
 import Modal from "../ui/Modal";
-// The auth store import is kept for context, though not used in the display logic
-import { getTasks, updateTask, createTask, Task } from "../../lib/services/taskplanner";
+import { updateTask, createTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/skeleton/farm-operation/CalenderSkeleton";
-
-import { getStaffById, getStaffs, StaffType } from "@/lib/services/staff";
+import { getStaffs, StaffType } from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
 
-interface SelectedDay {
-  day: number;
-  tasks: Task[];
-  dateString: string; // YYYY-MM-DD format for display
-}
-
-// Task-type categories: drive the filters, the day-dot colors, and the legend
 const CATEGORY = {
   crop: { label: "Crop Tasks", dot: "bg-green-500" },
   livestock: { label: "Livestock Tasks", dot: "bg-purple-500" },
   general: { label: "General Tasks", dot: "bg-blue-500" },
 } as const;
+
 type Category = keyof typeof CATEGORY;
+
 const getCategory = (taskType?: string): Category => {
   const t = (taskType || "").toLowerCase();
   if (t.includes("crop")) return "crop";
@@ -40,9 +31,9 @@ const DayCell: React.FC<{
 }> = ({ day, tasks, onClick }) => (
   <div
     className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 hover:border-green-400 hover:bg-green-50 cursor-pointer relative overflow-hidden transition-colors"
-    onClick={onClick} // Attach the click handler here
+    onClick={onClick}
   >
-    <span className="text-gray-500 text-xs">{day}</span>
+    <span className="text-gray-500 text-xs font-semibold">{day}</span>
     <div className="absolute inset-x-0 bottom-0 p-1 flex space-x-1 justify-center md:justify-start overflow-x-auto no-scrollbar">
       {tasks.map((task) => (
         <div
@@ -58,65 +49,47 @@ const DayCell: React.FC<{
 );
 
 const DayTasksModal: React.FC<{
-  selectedDay: SelectedDay | null;
-  selectedDate: string;
+  isOpen: boolean;
+  tasks: Task[];
+  dateString: string;
   onClose: () => void;
   onTaskUpdate: () => void;
-}> = ({ selectedDay, onClose, onTaskUpdate, selectedDate }) => {
-  const [task, setTask] = useState<Task | null>(null);
-  const [assignee, setAssignee] = useState<string>("");
-  const { profile } = useProfile()
+}> = ({ isOpen, tasks, dateString, onClose, onTaskUpdate }) => {
+  const { profile } = useProfile();
+  const [staffList, setStaffList] = useState<StaffType[]>([]);
+  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const data = await getTasks(profile?.id as string);
+    if (!profile?.id || !isOpen) return;
+    getStaffs(profile.id)
+      .then((d) => setStaffList(d || []))
+      .catch((err) => console.error("Failed to load staff list:", err));
+  }, [profile?.id, isOpen]);
 
-        const mappedTasks = data.find(
-          (task) =>
-            task?.timeline?.dueDate &&
-            new Date(task.timeline.dueDate).toISOString().split("T")[0] ===
-              selectedDate
-        );
+  const getAssigneeName = (assigneeVal?: string) => {
+    if (!assigneeVal) return "Unassigned";
+    const s = staffList.find(
+      (member) => member._id === assigneeVal || member.email === assigneeVal
+    );
+    return s?.name || assigneeVal;
+  };
 
-        // const filteredTasks = mappedTasks.filter(
-        //   (task) => task.dueDate === date
-        // );
-        setTask(mappedTasks || null);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    if (selectedDate) {
-      fetchTasks();
-    }
-  }, [profile?.id, selectedDate]);
-
-  const getAssignee = async (id: string) => {
-    const res = await getStaffById(id);
-
+  const handleToggleStatus = async (task: Task) => {
+    setUpdatingTaskId(task.id);
     try {
-      if (!res) {
-        return null;
-      }
-      setAssignee(res.name as string);
-      return res;
+      const newStatus = task.status === "completed" ? "pending" : "completed";
+      await updateTask(task.id, { ...task, status: newStatus });
+      onTaskUpdate();
     } catch (error) {
-      console.log(error);
+      console.error("Failed to update task status:", error);
+    } finally {
+      setUpdatingTaskId(null);
     }
   };
 
-  useEffect(() => {
-    if (task) {
-      getAssignee(task?.assignee as string);
-    }
-    
-  }, [task]);
+  if (!isOpen) return null;
 
-  if (!selectedDay) return null;
-
-  const formattedDate = new Date(selectedDay.dateString).toLocaleDateString(
+  const formattedDate = dateString ? new Date(dateString).toLocaleDateString(
     "en-US",
     {
       weekday: "long",
@@ -124,69 +97,86 @@ const DayTasksModal: React.FC<{
       month: "long",
       day: "numeric",
     }
-  );
-
-  const handleToggleStatus = async (task: Task) => {
-    try {
-      // Toggle the status
-      const newStatus = task.status === "completed" ? "pending" : "completed";
-
-      // Assuming updateTask takes the task ID and the fields to update
-      // We include all required Task properties (omitting `_id` and the deep `timeline` structure might be needed depending on your API structure)
-      // For simplicity and compatibility with TaskPlanner API, we pass the necessary fields.
-      await updateTask(task.id, { ...task, status: newStatus });
-
-      // Refresh the calendar view
-      onTaskUpdate();
-    } catch (error) {
-      console.error("Failed to update task status:", error);
-      // Optionally show a user-facing error message
-    }
-  };
+  ) : "";
 
   return (
     <Modal
-      show={!!selectedDay}
+      show={isOpen}
       onClose={onClose}
       title={`Tasks for ${formattedDate}`}
     >
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {task ? (
-          <div
-            key={task.id as string}
-            className="p-3 border rounded-md shadow-sm flex justify-between items-center transition-shadow hover:shadow-md border-gray-400"
-          >
-            <div className="flex-1 min-w-0">
-              <h4
-                className={`font-semibold truncate capitalize ${task.status === "completed" ? "line-through text-gray-500" : "text-gray-900"}`}
+      <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
+        {tasks.length > 0 ? (
+          tasks.map((task) => {
+            const isCompleted = task.status === "completed";
+            return (
+              <div
+                key={task.id}
+                className="p-3.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center transition-all"
               >
-                {task.title}
-              </h4>
-              <p className="text-xs text-gray-500 capitalize">
-                {assignee} - Priority: {task.priority}
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleStatus(task)}
-              className={`ml-4 px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
-                task.status === "completed"
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : "bg-orange-100 text-orange-700 hover:bg-orange-200"
-              }`}
-            >
-              {task.status === "completed" ? "Done" : "Mark Complete"}
-            </button>
-          </div>
+                <div className="flex-1 min-w-0 pr-2">
+                  <h4
+                    className={`text-sm font-semibold truncate capitalize ${isCompleted ? "line-through text-gray-400" : "text-gray-800"}`}
+                  >
+                    {task.title}
+                  </h4>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] text-gray-500 font-medium capitalize">
+                      Assignee: {getAssigneeName(task.assignee)}
+                    </span>
+                    <span className="text-gray-300">•</span>
+                    <span className={`text-[9px] px-1.5 py-0.25 rounded border font-semibold tracking-wider uppercase ${
+                      task.priority === 'high' ? 'bg-red-50 text-red-700 border-red-100' :
+                      task.priority === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                      'bg-green-50 text-green-700 border-green-100'
+                    }`}>
+                      {task.priority || 'medium'}
+                    </span>
+                  </div>
+                  {task.note && (
+                    <p className="text-[10px] text-gray-400 mt-1 italic line-clamp-2">
+                      Note: {task.note}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleToggleStatus(task)}
+                  disabled={updatingTaskId === task.id}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${
+                    isCompleted
+                      ? "bg-green-600 text-white hover:bg-green-700"
+                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  } disabled:opacity-50`}
+                >
+                  {updatingTaskId === task.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : isCompleted ? (
+                    "Completed"
+                  ) : (
+                    "Mark Complete"
+                  )}
+                </button>
+              </div>
+            );
+          })
         ) : (
-          <p className="text-gray-500">No tasks scheduled for this day.</p>
+          <div className="text-center py-6">
+            <ListChecks className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-500">No tasks scheduled for this day.</p>
+          </div>
         )}
       </div>
 
-      <div className="pt-4 border-t mt-4">
-        <p className="text-sm text-gray-400">
-          Note: Only tasks for the day are shown. Full details in the Task
-          Planner.
+      <div className="pt-4 border-t border-gray-100 mt-4 flex justify-between items-center">
+        <p className="text-[10px] text-gray-400">
+          Only tasks for this date are shown. Full details in the Planner tab.
         </p>
+        <button
+          onClick={onClose}
+          className="px-3.5 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+        >
+          Close
+        </button>
       </div>
     </Modal>
   );
@@ -211,7 +201,7 @@ const AddEventModal: React.FC<{
   useEffect(() => {
     if (!profile?.id || !show) return;
     getStaffs(profile.id)
-      .then((d) => setStaff(d))
+      .then((d) => setStaff(d || []))
       .catch((err) => console.error("Failed to load staff:", err));
   }, [profile?.id, show]);
 
@@ -245,8 +235,8 @@ const AddEventModal: React.FC<{
   };
 
   const field =
-    "w-full p-2 border border-gray-300 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50";
-  const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+    "w-full p-2 border border-gray-300 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50 text-xs";
+  const labelCls = "block text-xs font-medium text-gray-700 mb-1";
 
   return (
     <Modal show={show} onClose={onClose} title="Add Event">
@@ -343,14 +333,14 @@ const AddEventModal: React.FC<{
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+            className="px-4 py-2 text-xs font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50"
+            className="px-4 py-2 text-xs font-medium text-white rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Create Event"}
           </button>
@@ -365,14 +355,12 @@ const CalendarView: React.FC = () => {
   const [currentYear, setCurrentYear] = useState<number>(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState<number>(
     today.getMonth() + 1
-  ); // 1-12
+  ); 
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedDayTasks, setSelectedDayTasks] = useState<SelectedDay | null>(
-    null
-  );
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
   const [enabled, setEnabled] = useState<Record<Category, boolean>>({
     crop: true,
@@ -403,7 +391,6 @@ const CalendarView: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Note: If user is null, "" is passed for userId, assuming API handles this or it's implicitly part of the auth flow.
       const data = await getCalendarData(
         currentYear,
         currentMonth,
@@ -422,21 +409,6 @@ const CalendarView: React.FC = () => {
     fetchCalendar();
   }, [fetchCalendar]);
 
-  const handleDayClick = (day: number, tasks: Task[]) => {
-    const monthString = String(currentMonth).padStart(2, "0");
-    const dayString = String(day).padStart(2, "0");
-
-    setSelectedDayTasks({
-      day: day,
-      tasks: tasks,
-      dateString: `${currentYear}-${monthString}-${dayString}`,
-    });
-  };
-
-  const handleCloseDayTasksModal = () => {
-    setSelectedDayTasks(null);
-  };
-
   const handlePreviousMonth = () => {
     if (currentMonth === 1) {
       setCurrentMonth(12);
@@ -444,6 +416,7 @@ const CalendarView: React.FC = () => {
     } else {
       setCurrentMonth((prev) => prev - 1);
     }
+    setSelectedDay(null);
   };
 
   const handleNextMonth = () => {
@@ -453,34 +426,47 @@ const CalendarView: React.FC = () => {
     } else {
       setCurrentMonth((prev) => prev + 1);
     }
+    setSelectedDay(null);
   };
 
   const getDaysInMonth = (year: number, month: number): number => {
     return new Date(year, month, 0).getDate();
   };
 
-  // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
   const blankDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
+
   if (isLoading) {
     return <CalendarSkeletonLoader />;
   }
 
+  // Derive reactive tasks and date string for the modal
+  const selectedDayData = selectedDay !== null 
+    ? calendarData?.days?.find((dd) => dd.day === selectedDay)
+    : null;
+  const filteredTasksForModal = (selectedDayData?.tasks || []).filter(
+    (t) => enabled[getCategory(t.taskType)]
+  );
+  
+  const monthString = String(currentMonth).padStart(2, "0");
+  const dayString = selectedDay !== null ? String(selectedDay).padStart(2, "0") : "";
+  const selectedDateString = selectedDay !== null ? `${currentYear}-${monthString}-${dayString}` : "";
+
   return (
-    <div className="bg-white p-2 lg::p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
+    <div className="bg-white p-2 lg:p-6 flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
       {/* Left Sidebar for Calendar and Filters */}
       <div className="w-full md:w-64 space-y-6">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-gray-900 text-sm">
               {monthNames[currentMonth - 1]} {currentYear}
             </h3>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <button onClick={handlePreviousMonth}>&lt;</button>
-              <button onClick={handleNextMonth}>&gt;</button>
+            <div className="flex items-center space-x-2 text-gray-400 font-bold">
+              <button className="hover:text-green-600 p-1" onClick={handlePreviousMonth}>&lt;</button>
+              <button className="hover:text-green-600 p-1" onClick={handleNextMonth}>&gt;</button>
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-sm">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs">
             {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
               <div key={day + index} className="font-medium text-gray-500">
                 {day}
@@ -493,6 +479,7 @@ const CalendarView: React.FC = () => {
               (day) => (
                 <div
                   key={day}
+                  onClick={() => setSelectedDay(day + 1)}
                   className={`p-2 rounded-lg cursor-pointer ${
                     day + 1 === today.getDate() &&
                     currentMonth === today.getMonth() + 1 &&
@@ -508,21 +495,6 @@ const CalendarView: React.FC = () => {
           </div>
         </div>
 
-        {/* View Options */}
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-            VIEW OPTIONS
-          </h3>
-          <div className="flex space-x-2">
-            <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">
-              Month
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">
-              Week
-            </button>
-          </div>
-        </div>
-
         {/* Filter Events */}
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
@@ -532,7 +504,7 @@ const CalendarView: React.FC = () => {
             {(Object.keys(CATEGORY) as Category[]).map((cat) => (
               <label
                 key={cat}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-gray-600 cursor-pointer hover:bg-gray-50"
               >
                 <input
                   type="checkbox"
@@ -561,7 +533,7 @@ const CalendarView: React.FC = () => {
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center space-x-2 text-sm font-medium text-gray-600"
+                className="flex items-center space-x-2 text-xs font-medium text-gray-600"
               >
                 <div className={`h-2.5 w-2.5 rounded-full ${item.color}`}></div>
                 <span>{item.label}</span>
@@ -574,38 +546,32 @@ const CalendarView: React.FC = () => {
       {/* Main Calendar Grid */}
       <div className="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-base font-semibold text-gray-900">
             {monthNames[currentMonth - 1]} {currentYear}
           </h2>
           <div className="flex items-center space-x-2">
-            <div className="relative inline-block text-left">
-              <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100">
-                <Filter className="h-5 w-5" />
-              </button>
-            </div>
             <button
               onClick={() => setIsAddOpen(true)}
-              className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700 transition-colors"
+              className="flex items-center justify-center px-4 py-2 text-xs font-medium text-white rounded-md bg-green-600 hover:bg-green-700 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden md:flex">Add&nbsp;</span>
-              <span>Event</span>
+              <span>Add Event</span>
             </button>
           </div>
         </div>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <p className="text-gray-500">Loading calendar...</p>
+            <Loader2 className="w-8 h-8 animate-spin text-green-600" />
           </div>
         ) : error ? (
-          <div className="flex justify-center items-center h-64 text-red-500">
+          <div className="flex justify-center items-center h-64 text-red-500 text-xs font-semibold">
             <p>{error}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-7 gap-1 md:gap-2 text-center text-sm">
+          <div className="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day} className="font-medium text-gray-500">
+              <div key={day} className="font-semibold text-gray-500 pb-2 border-b">
                 {day}
               </div>
             ))}
@@ -619,17 +585,17 @@ const CalendarView: React.FC = () => {
                 currentYear,
                 currentMonth
               );
-              const totalCells = 42; // 6 rows * 7 columns
+              const totalCells = 42; 
 
               const cells: React.ReactElement[] = [];
+              
               // previous month trailing days
               for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-                // Corrected loop based on firstDayOfMonth
                 const dayNumber = daysInPrevMonth - i;
                 cells.push(
                   <div
                     key={`prev-${dayNumber}`}
-                    className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 bg-gray-50 text-gray-400"
+                    className="md:h-28 border border-gray-100 rounded-md p-2 mt-2 bg-gray-50 text-gray-300"
                   >
                     <span className="text-xs">{dayNumber}</span>
                   </div>
@@ -647,7 +613,7 @@ const CalendarView: React.FC = () => {
                     key={`curr-${d}`}
                     day={d}
                     tasks={tasksForDay}
-                    onClick={() => handleDayClick(d, tasksForDay)} // ADD CLICK HANDLER
+                    onClick={() => setSelectedDay(d)} 
                   />
                 );
               }
@@ -658,7 +624,7 @@ const CalendarView: React.FC = () => {
                 cells.push(
                   <div
                     key={`next-${d}`}
-                    className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 bg-gray-50 text-gray-400"
+                    className="md:h-28 border border-gray-100 rounded-md p-2 mt-2 bg-gray-50 text-gray-300"
                   >
                     <span className="text-xs">{d}</span>
                   </div>
@@ -673,10 +639,11 @@ const CalendarView: React.FC = () => {
 
       {/* MODAL: Render the DayTasksModal */}
       <DayTasksModal
-        selectedDay={selectedDayTasks}
-        selectedDate={`${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(selectedDayTasks?.day).padStart(2, "0")}`}
-        onClose={handleCloseDayTasksModal}
-        onTaskUpdate={fetchCalendar} // Pass fetchCalendar to refresh data after an update (e.g., status change)
+        isOpen={selectedDay !== null}
+        tasks={filteredTasksForModal}
+        dateString={selectedDateString}
+        onClose={() => setSelectedDay(null)}
+        onTaskUpdate={fetchCalendar} 
       />
 
       {/* ADD EVENT MODAL */}
