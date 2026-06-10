@@ -1,10 +1,10 @@
 // src/components/calendar/CalendarView.tsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Loader2, ListChecks } from "lucide-react";
+import { Plus, Loader2, ListChecks, Trash2 } from "lucide-react";
 import { getCalendarData, CalendarData } from "@/lib/services/calender";
 import Modal from "../ui/Modal";
-import { updateTask, createTask, Task } from "../../lib/services/taskplanner";
+import { updateTask, createTask, deleteTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/skeleton/farm-operation/CalenderSkeleton";
 import { getStaffs, StaffType } from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
@@ -58,6 +58,7 @@ const DayTasksModal: React.FC<{
   const { profile } = useProfile();
   const [staffList, setStaffList] = useState<StaffType[]>([]);
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile?.id || !isOpen) return;
@@ -67,7 +68,7 @@ const DayTasksModal: React.FC<{
   }, [profile?.id, isOpen]);
 
   const getAssigneeName = (assigneeVal?: string) => {
-    if (!assigneeVal) return "Unassigned";
+    if (!assigneeVal || assigneeVal === "Unassigned") return "Unassigned";
     const s = staffList.find(
       (member) => member._id === assigneeVal || member.email === assigneeVal
     );
@@ -84,6 +85,19 @@ const DayTasksModal: React.FC<{
       console.error("Failed to update task status:", error);
     } finally {
       setUpdatingTaskId(null);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    setDeletingTaskId(taskId);
+    try {
+      await deleteTask(taskId);
+      onTaskUpdate();
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    } finally {
+      setDeletingTaskId(null);
     }
   };
 
@@ -139,23 +153,37 @@ const DayTasksModal: React.FC<{
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={() => handleToggleStatus(task)}
-                  disabled={updatingTaskId === task.id}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${
-                    isCompleted
-                      ? "bg-green-600 text-white hover:bg-green-700"
-                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                  } disabled:opacity-50`}
-                >
-                  {updatingTaskId === task.id ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : isCompleted ? (
-                    "Completed"
-                  ) : (
-                    "Mark Complete"
-                  )}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleStatus(task)}
+                    disabled={updatingTaskId === task.id || deletingTaskId === task.id}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${
+                      isCompleted
+                        ? "bg-green-600 text-white hover:bg-green-700"
+                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    } disabled:opacity-50`}
+                  >
+                    {updatingTaskId === task.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : isCompleted ? (
+                      "Completed"
+                    ) : (
+                      "Mark Complete"
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    disabled={updatingTaskId === task.id || deletingTaskId === task.id}
+                    className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                    title="Delete Event"
+                  >
+                    {deletingTaskId === task.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             );
           })
