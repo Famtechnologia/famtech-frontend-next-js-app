@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Fragment } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfileStore } from "@/lib/store/farmStore";
 import {
@@ -27,7 +27,8 @@ import {
   Clock,
   CheckCircle,
   Calendar,
-  StoreIcon
+  StoreIcon,
+  Cpu,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -52,6 +53,9 @@ interface NavItem {
   children?: NavChild[];
   premium?: boolean;
   comingSoon?: boolean;
+  // 💡 ADDED: section grouping + optional sub-brand label
+  section?: string;
+  subBrand?: string;
 }
 
 interface ProfileOwner {
@@ -96,7 +100,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setId(user?.farmProfile);
     }
   }, [user?.farmProfile, setId]);
-  
+
   // Close flyout when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -149,48 +153,42 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     if (role === "farmer") {
       return [
+        // ───────── OPERATIONS ─────────
         {
           name: "Dashboard",
           href: `/dashboard`,
           icon: LayoutDashboard,
           key: "dashboard",
           expandable: false,
+          section: "Operations",
         },
         {
           name: "Farm Operations",
           icon: Tractor,
           key: "farm-operations",
           expandable: true,
-          // Note: If you want to mark the entire section as coming soon, you'd add comingSoon: true here.
+          section: "Operations",
           children: [
             // Use query parameters to designate the active tab view
             { name: "Task Planner", href: `/farm-operation?tab=planner` },
-             { name: "Calendar View", href: `/farm-operation?tab=calendar` },
+            { name: "Calendar View", href: `/farm-operation?tab=calendar` },
             {
               name: "Crop and Livestock Records",
               href: `/farm-operation?tab=records`,
             },
-             {
+            {
               name: "Staff Management",
               href: `/farm-operation?tab=staff`,
             },
-           
-            
           ],
         },
-         {
+        {
           name: "Inventory Management",
           href: `/inventory`,
           icon: StoreIcon,
           key: "inventory",
           expandable: false,
-        },
-        {
-          name: "Smart Advisory",
-          icon: Brain,
-          key: "Smart Advisory",
-          expandable: false,
-          href: `/smart-advisory`,
+          section: "Operations",
         },
         {
           name: "Warehouse",
@@ -198,6 +196,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "warehouse",
           expandable: false,
           href: `/warehouse`,
+          section: "Operations",
+        },
+
+        // ───────── INSIGHTS ─────────
+        {
+          name: "Smart Advisory",
+          icon: Brain,
+          key: "Smart Advisory",
+          expandable: false,
+          href: `/smart-advisory`,
+          section: "Insights",
         },
         {
           name: "Reports",
@@ -205,11 +214,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "reports",
           expandable: true,
           comingSoon: true,
+          section: "Insights",
           children: [
             { name: "Production", href: "#" },
-            { name: "Financial", href: "##",
-              comingSoon:true,
-             },
+            { name: "Financial", href: "##", comingSoon: true },
             { name: "Analytics", href: "/analytics" },
           ],
         },
@@ -220,13 +228,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           expandable: false,
           href: `/dashboard/farmer/${subRole}/mapping`,
           comingSoon: true,
+          section: "Insights",
         },
+
+        // ───────── BUSINESS ─────────
         {
-          name: "Financials - SmartNet",
+          name: "Financials",
+          subBrand: "SmartNet",
           icon: CreditCard,
           key: "financials",
           expandable: true,
           comingSoon: true,
+          section: "Business",
           children: [
             { name: "Overview", href: "#" },
             { name: "Income", href: "#" },
@@ -235,11 +248,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           ],
         },
         {
-          name: "Marketplace - Famora",
+          name: "Marketplace",
+          subBrand: "Famora",
           icon: ShoppingCart,
           key: "marketplace",
           expandable: true,
           comingSoon: true,
+          section: "Business",
           children: [
             { name: "Buy", href: "#" },
             { name: "Sell", href: "#" },
@@ -248,25 +263,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         },
         {
           name: "Equipment Sync",
-          icon: Settings,
+          icon: Cpu,
           key: "equipment-sync",
           expandable: false,
           href: `/equipment-sync`,
           comingSoon: true,
+          section: "Business",
         },
-        
+
+        // ───────── ACCOUNT ─────────
         {
           name: "Settings",
           icon: Settings,
           key: "settings",
           expandable: true,
+          section: "Account",
           children: [
             { name: "Profile", href: `/settings/profile` },
             { name: "Farm Settings", href: `/settings/farm-setting` },
             {
               name: "Notifications",
               href: `/dashboard/farmer/${subRole}/settings/notifications`,
-              // 🚀 TARGET: SETTINGS SUB-ITEM COMING SOON
               comingSoon: true,
             },
           ],
@@ -276,23 +293,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           icon: HelpCircle,
           key: "help",
           expandable: true,
+          section: "Account",
           children: [
             {
               name: "Documentation",
               href: `/dashboard/farmer/${subRole}/help/docs`,
-              // 🚀 TARGET: HELP SUB-ITEM COMING SOON
               comingSoon: true,
             },
             { name: "Contact Support", href: `/help/contact-support` },
             {
               name: "Training",
               href: `/dashboard/farmer/${subRole}/help/training`,
-              // 🚀 TARGET: HELP SUB-ITEM COMING SOON
               comingSoon: true,
             },
             { name: "FAQ", href: `/help/faq` },
-           // { name: "Request", href: `/help/request` },
-           // { name: "Resources", href: `/help/support` },
           ],
         },
       ];
@@ -448,11 +462,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             {/* Nav Items */}
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               const isExpanded = expandedMenus.includes(item.key);
               const itemIsActive =
                 isActive(item.href) || isParentActive(item.children);
+
+              // Section header: show when this item starts a new section
+              const prevSection = index > 0 ? navItems[index - 1].section : undefined;
+              const startsNewSection = !!item.section && item.section !== prevSection;
 
               // Determine if the parent itself is "Coming Soon" or "Premium"
               const badge = item.comingSoon ? (
@@ -465,8 +483,32 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </span>
               ) : null;
 
+              // Label (name + optional smaller sub-brand)
+              const label = (
+                <span className="truncate">
+                  {item.name}
+                  {item.subBrand && (
+                    <span className="ml-1.5 text-xs font-normal text-gray-400">
+                      {item.subBrand}
+                    </span>
+                  )}
+                </span>
+              );
+
               return (
-                <div key={item.key}>
+                <Fragment key={item.key}>
+                  {/* Section header (expanded) / divider (collapsed) */}
+                  {startsNewSection &&
+                    (sidebarCollapsed ? (
+                      index > 0 && (
+                        <div className="my-2 mx-2 border-t border-gray-200" />
+                      )
+                    ) : (
+                      <p className="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 select-none">
+                        {item.section}
+                      </p>
+                    ))}
+
                   {item.expandable ? (
                     <div
                       // Handle mouse events for flyout when collapsed
@@ -493,34 +535,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               ? () => setShowComingSoon(true)
                               : undefined // Clicks on collapsed icon now managed by outer div
                         }
-                        className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors border-l-4 ${
                           itemIsActive
-                            ? "bg-green-50 text-green-700"
-                            : "text-gray-700 hover:bg-gray-100"
+                            ? "bg-green-50 text-green-700 font-semibold border-green-600"
+                            : item.comingSoon
+                              ? "text-gray-400 hover:bg-gray-50 border-transparent"
+                              : "text-gray-700 hover:bg-gray-100 border-transparent"
                         } ${sidebarCollapsed ? "justify-center" : ""}`}
                         title={sidebarCollapsed ? item.name : undefined}
                       >
                         <div
-                          className={`flex items-center ${
+                          className={`flex items-center min-w-0 ${
                             sidebarCollapsed ? "justify-center" : ""
                           }`}
                         >
                           <Icon
                             size={18}
-                            className={sidebarCollapsed ? "" : "mr-3"}
+                            className={sidebarCollapsed ? "" : "mr-3 shrink-0"}
                           />
                           {!sidebarCollapsed && (
                             <>
-                              <span>{item.name}</span>
+                              {label}
                               {badge}
                             </>
                           )}
                         </div>
                         {!sidebarCollapsed &&
                           (isExpanded ? (
-                            <ChevronDown size={16} />
+                            <ChevronDown size={16} className="shrink-0" />
                           ) : (
-                            <ChevronRight size={16} />
+                            <ChevronRight size={16} className="shrink-0" />
                           ))}
                       </button>
 
@@ -549,9 +593,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                       setSidebarOpen(false); // Close mobile sidebar on navigation
                                     }
                                   }}
-                                  className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
+                                  className={`block px-3 py-2 rounded-lg text-sm transition-colors hover:bg-gray-50 ${
+                                    isChildComingSoon
+                                      ? "text-gray-400"
+                                      : "text-gray-600 hover:text-gray-900"
+                                  } ${
                                     child.href === pathname
-                                      ? "font-semibold"
+                                      ? "font-semibold text-green-700"
                                       : ""
                                   }`}
                                 >
@@ -585,36 +633,38 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           setSidebarOpen(false); // Close mobile sidebar on navigation
                         }
                       }}
-                      className={`block w-full rounded-lg text-sm font-medium transition-colors ${
+                      className={`block w-full rounded-lg text-sm font-medium transition-colors border-l-4 ${
                         itemIsActive
-                          ? "bg-green-50 text-green-700"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-green-50 text-green-700 font-semibold border-green-600"
+                          : item.comingSoon
+                            ? "text-gray-400 hover:bg-gray-50 border-transparent"
+                            : "text-gray-700 hover:bg-gray-100 border-transparent"
                       }`}
                       title={sidebarCollapsed ? item.name : undefined}
                     >
                       <div
-                        className={`flex items-center px-3 py-3 ${sidebarCollapsed ? "justify-center" : ""}`}
+                        className={`flex items-center min-w-0 px-3 py-3 ${sidebarCollapsed ? "justify-center" : ""}`}
                       >
                         <Icon
                           size={18}
-                          className={sidebarCollapsed ? "" : "mr-3"}
+                          className={sidebarCollapsed ? "" : "mr-3 shrink-0"}
                         />
                         {!sidebarCollapsed && (
                           <>
-                            <span>{item.name}</span>
+                            {label}
                             {badge}
                           </>
                         )}
                       </div>
                     </Link>
                   )}
-                </div>
+                </Fragment>
               );
             })}
           </div>
 
           {/* Bottom Profile/Logout */}
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-t border-gray-200 pt-4 mt-4">
             <div
               className={`flex items-center ${
                 sidebarCollapsed ? "justify-center" : "space-x-3"
@@ -633,7 +683,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <button
               onClick={logout}
-              className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
+              className={`flex items-center w-full px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
               title={sidebarCollapsed ? "Sign out" : undefined}
@@ -679,9 +729,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       setHoveredMenuKey(null); // Close flyout on navigation
                     }
                   }}
-                  className={`block px-3 py-2 rounded-lg text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${
-                    child.href === pathname ? "font-semibold bg-gray-50" : ""
-                  }`}
+                  className={`block px-3 py-2 rounded-lg text-sm transition-colors hover:bg-gray-50 ${
+                    isChildComingSoon
+                      ? "text-gray-400"
+                      : "text-gray-600 hover:text-gray-900"
+                  } ${child.href === pathname ? "font-semibold bg-gray-50 text-green-700" : ""}`}
                 >
                   <span className="flex items-center gap-2">
                     {child.name}
