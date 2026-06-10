@@ -397,7 +397,21 @@ const CalendarView: React.FC = () => {
         currentMonth,
         profile?.id || ""
       );
-      setCalendarData(data);
+      
+      const days = Array.isArray(data) ? data.map((item: any) => {
+        const parts = item.date.split("-");
+        const dayNum = parseInt(parts[2], 10);
+        return {
+          day: dayNum,
+          tasks: item.tasks || []
+        };
+      }) : [];
+
+      setCalendarData({
+        month: currentMonth,
+        year: currentYear,
+        days
+      });
     } catch (err) {
       console.error("Failed to fetch calendar data:", err);
       setError("Failed to load calendar data. Please try again.");
