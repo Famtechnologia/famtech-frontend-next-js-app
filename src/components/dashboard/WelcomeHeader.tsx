@@ -1,101 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
-//import { useAuth } from "@/lib/hooks/useAuth";
-//import apiClient from "@/lib/api/apiClient";
-//import { useProfileStore } from "@/lib/store/farmStore";
-//import axios, { AxiosError } from "axios";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
-
-const sliderData = [
-  {
-    id: 1,
-    welcomeText: "Welcome back",
-    subtitle: "Here's what's happening on your farm today.",
-    badge: "Dashboard",
-    icon: (
-      <svg
-        className="h-4 w-4 sm:h-6 sm:w-6 text-white"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"
-        />
-      </svg>
-    ),
-    status: "All Systems Online",
-    gradient: "from-green-400 via-green-500 to-green-700",
-  },
-  {
-    id: 2,
-    welcomeText: "Great progress",
-    subtitle: "Your crops are growing healthy and strong this season.",
-    badge: "Growth Status",
-    icon: (
-      <svg
-        className="h-4 w-4 sm:h-6 sm:w-6 text-white"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-        />
-      </svg>
-    ),
-    status: "95% Healthy Growth",
-    gradient: "from-emerald-400 via-green-500 to-teal-600",
-  },
-  {
-    id: 3,
-    welcomeText: "Market update",
-    subtitle: "Crop prices are favorable for your harvest this week.",
-    badge: "Price Alert",
-    icon: (
-      <svg
-        className="h-4 w-4 sm:h-6 sm:w-6 text-white"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-        />
-      </svg>
-    ),
-    status: "Prices Up 12%",
-    gradient: "from-green-500 via-emerald-500 to-green-600",
-  },
-];
+import { getCropRecords, getLivestockRecords, CropRecord, LivestockRecord } from "@/lib/services/croplivestock";
 
 export default function WelcomeHeader() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
- // const [farmProfile, setFarmProfile] = useState(null);
+  const [crops, setCrops] = useState<CropRecord[]>([]);
+  const [livestock, setLivestock] = useState<LivestockRecord[]>([]);
 
-  const {profile} = useProfile()
+  const { user } = useAuth();
+  const { profile } = useProfile();
+
+  // Fetch real crops and livestock records from the platform
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      if (!user?._id) return;
+      try {
+        const [cropRecords, livestockRecords] = await Promise.all([
+          getCropRecords(user._id),
+          getLivestockRecords(user._id),
+        ]);
+        setCrops(cropRecords || []);
+        setLivestock(livestockRecords || []);
+      } catch (err) {
+        console.error("Failed to load banner metrics:", err);
+      }
+    };
+
+    fetchMetrics();
+  }, [user?._id]);
 
   // Auto-slide functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % sliderData.length);
+      setCurrentSlide((prev) => (prev + 1) % 3);
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, profile]);
+  }, [isAutoPlaying]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -104,6 +51,107 @@ export default function WelcomeHeader() {
     // Resume auto-play after 10 seconds
     setTimeout(() => setIsAutoPlaying(true), 10000);
   };
+
+  // Compute live metrics
+  const totalCrops = crops.length;
+  const totalAnimals = livestock.reduce((acc, curr) => acc + (curr.numberOfAnimal || 0), 0);
+  const totalSpecies = livestock.length;
+
+  const allRecords = [
+    ...crops.map(c => ({ health: c.healthStatus })),
+    ...livestock.map(l => ({ health: l.healthStatus })),
+  ];
+  
+  const healthyCount = allRecords.filter(
+    (r) => r.health === "good" || r.health === "excellent"
+  ).length;
+
+  const healthyPercentage = allRecords.length > 0
+    ? Math.round((healthyCount / allRecords.length) * 100)
+    : 100;
+
+  const primaryCropsStr = profile?.primaryCrops?.length
+    ? profile.primaryCrops.map(c => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase()).join(", ")
+    : "";
+
+  const sliderData = [
+    {
+      id: 1,
+      welcomeText: "Welcome back",
+      subtitle: totalCrops > 0 || totalSpecies > 0
+        ? `You are currently managing ${totalCrops} active crop species and ${totalSpecies} livestock groups (${totalAnimals} animals) on your farm.`
+        : "Here's what's happening on your farm today. Start by adding crop and livestock records in your farm operations panel.",
+      badge: "Dashboard Overview",
+      icon: (
+        <svg
+          className="h-4 w-4 sm:h-6 sm:w-6 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"
+          />
+        </svg>
+      ),
+      status: profile?.farmName ? `${profile.farmName}` : "All Systems Online",
+      gradient: "from-green-400 via-green-500 to-green-700",
+    },
+    {
+      id: 2,
+      welcomeText: "Crop & Livestock Progress",
+      subtitle: allRecords.length > 0
+        ? `Your records show ${healthyPercentage}% of crops and livestock are in Good/Excellent health this season.`
+        : "Your crops are growing healthy and strong this season. Track growth stages dynamically under Farm Operations.",
+      badge: "Growth Status",
+      icon: (
+        <svg
+          className="h-4 w-4 sm:h-6 sm:w-6 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+          />
+        </svg>
+      ),
+      status: `${healthyPercentage}% Healthy Growth`,
+      gradient: "from-emerald-400 via-green-500 to-teal-600",
+    },
+    {
+      id: 3,
+      welcomeText: "Farm Profile Status",
+      subtitle: profile?.farmSize
+        ? `Spans ${profile.farmSize} ${profile.farmSizeUnit || 'acres'} of ${profile.farmType || 'agricultural'} land${primaryCropsStr ? `, specializing in ${primaryCropsStr}` : ''}.`
+        : "Set up your farm profile in Settings to get customized crop price and growth insights.",
+      badge: profile?.farmType ? `${profile.farmType}` : "Configuration",
+      icon: (
+        <svg
+          className="h-4 w-4 sm:h-6 sm:w-6 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+          />
+        </svg>
+      ),
+      status: profile?.location?.city ? `${profile.location.city}, ${profile.location.state || ''}` : "Configuration Incomplete",
+      gradient: "from-green-500 via-emerald-500 to-green-600",
+    },
+  ];
+
   const currentData = sliderData[currentSlide];
 
   return (
@@ -145,7 +193,7 @@ export default function WelcomeHeader() {
                 </span>
                 !
               </h2>
-              <p className="text-green-50 text-sm sm:text-base lg:text-lg opacity-90 leading-relaxed">
+              <p className="text-green-50 text-sm sm:text-base lg:text-lg opacity-95 leading-relaxed">
                 {currentData.subtitle}
               </p>
             </div>
@@ -156,13 +204,15 @@ export default function WelcomeHeader() {
             <div className="flex items-center text-green-100">
               <svg
                 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
                 <path
-                  fillRule="evenodd"
-                  d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
               <span className="text-sm sm:text-base font-medium">
