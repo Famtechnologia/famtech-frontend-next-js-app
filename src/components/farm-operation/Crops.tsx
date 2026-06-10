@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Camera, TriangleAlert, X } from "lucide-react";
 import Image from "next/image";
 import { useProfile } from "@/lib/hooks/useProfile";
+import toast from "react-hot-toast";
 
 import {
   updateCropRecord,
@@ -138,10 +139,12 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
 
     try {
       await createCropRecord(data);
+      toast.success("Crop record added successfully!");
       onClose();
       onRecordAdded();
     } catch (err) {
       console.error("Failed to add crop record:", err);
+      toast.error("Failed to add crop record.");
       setError(
         "Failed to add crop record. Check network and ensure all required fields are valid."
       );
@@ -590,12 +593,14 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
     try {
       // Perform the update with a single API call using the consolidated FormData
       await updateCropRecord(record.id, data);
+      toast.success("Crop record updated successfully!");
 
       // Close and refresh parent component data
       onClose();
       onRecordUpdated();
     } catch (err) {
       console.error("Update failed:", err);
+      toast.error("Failed to update crop record.");
       setError(
         "Failed to update crop record. Please check the form fields and connection."
       );

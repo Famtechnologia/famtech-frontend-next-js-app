@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { Camera, X } from "lucide-react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 import {
   UpdateLivestockPayload,
@@ -123,12 +124,14 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
 
     try {
       await createLivestockRecord(data);
+      toast.success("Livestock record added successfully!");
       onClose();
       onRecordAdded();
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred.";
       console.error("Failed to add livestock record:", errorMessage);
+      toast.error("Failed to add livestock record.");
       setError(
         "Failed to add livestock record. Check required fields and network connection."
       );
@@ -363,7 +366,7 @@ const formatDate = (dateString: string): string => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");
-  return `${day}-${month}-${year}`;
+  return `${year}-${month}-${day}`;
 };
 
 // 🚀 Type for the component's props
@@ -516,11 +519,13 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
       // NOTE: The crop form separated JSON update and image POST.
       // The original livestock form merged them using FormData. We maintain the merged logic for consistency with the livestock API.
       await updateLivestockRecord(record.id, submissionData);
+      toast.success("Livestock record updated successfully!");
 
       onClose();
       onRecordUpdated();
     } catch (err: unknown) {
       console.error("Update failed:", err);
+      toast.error("Failed to update livestock record.");
       setError("Failed to update livestock record. Please try again.");
     } finally {
       setLoading(false);
