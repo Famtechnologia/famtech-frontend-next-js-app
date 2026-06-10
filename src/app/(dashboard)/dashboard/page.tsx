@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
+import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardSkeleton from "@/components/skeleton/DashboardSkeleton";
 import WeatherForecast from "@/app/(dashboard)/weather/components/WeatherCard";
 import Tasks from "@/components/tasks/tasksCard";
@@ -85,6 +86,9 @@ export default function FarmerAdminDashboard() {
   return (
       <div className="space-y-6">
         <WelcomeHeader />
+
+        {/* KPI stat cards */}
+        <DashboardStats />
 
         {/* Top Section */}
         <div
