@@ -9,7 +9,7 @@ import {
   Plus, 
   Trash2,
   Calendar,
-  Sparkles
+  ListTodo
 } from 'lucide-react';
 import { getTasks, updateTask, deleteTask, createTask, Task } from '@/lib/services/taskplanner'; 
 import useSWR from 'swr'; 
@@ -266,7 +266,7 @@ const DashboardTasks = () => {
                 ) : (
                     <div className="text-center py-6 flex flex-col items-center justify-center h-full">
                         <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mb-2 animate-bounce">
-                            <Sparkles className="w-5 h-5 text-green-600" />
+                            <ListTodo className="w-5 h-5 text-green-600" />
                         </div>
                         <p className='text-xs font-semibold text-gray-700 mb-0.5'>All caught up! 🥂</p>
                         <p className="text-[10px] text-gray-400">No pending operations listed.</p>
