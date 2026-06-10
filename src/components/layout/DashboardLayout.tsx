@@ -646,30 +646,31 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Fragment>
               );
             })}
-            {/* Bottom Profile/Logout */}
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <button
-                onClick={() => setShowLogoutConfirm(true)}
-                className={`w-full flex items-center ${
-                  sidebarCollapsed ? "px-2 justify-center" : "px-3"
-                } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 border-transparent text-gray-650 hover:bg-gray-100 hover:text-gray-950`}
-                title={sidebarCollapsed ? "Sign out" : undefined}
-              >
-                <div
-                  className={`flex items-center min-w-0 ${
-                    sidebarCollapsed ? "justify-center" : ""
-                  }`}
-                >
-                  <LogOut
-                    size={18}
-                    className={sidebarCollapsed ? "" : "mr-3 shrink-0"}
-                  />
-                  {!sidebarCollapsed && <span>Sign out</span>}
-                </div>
-              </button>
-            </div>
           </div>
         </nav>
+
+        {/* Pinned Sign Out Section */}
+        <div className={`border-t border-gray-200 bg-white ${sidebarCollapsed ? "p-1.5" : "p-4"}`}>
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className={`w-full flex items-center ${
+              sidebarCollapsed ? "px-2 justify-center" : "px-3"
+            } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 border-transparent text-gray-650 hover:bg-gray-100 hover:text-gray-950`}
+            title={sidebarCollapsed ? "Sign out" : undefined}
+          >
+            <div
+              className={`flex items-center min-w-0 ${
+                sidebarCollapsed ? "justify-center" : ""
+              }`}
+            >
+              <LogOut
+                size={18}
+                className={sidebarCollapsed ? "" : "mr-3 shrink-0"}
+              />
+              {!sidebarCollapsed && <span>Sign out</span>}
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Collapsed Sidebar Flyout Preview (Higher Z-index: 60) */}
