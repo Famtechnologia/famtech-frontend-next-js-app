@@ -9,6 +9,8 @@ import {
   PawPrint,
   Settings,
   AlertTriangle,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import Modal from "../ui/Modal";
 import {
@@ -664,48 +666,107 @@ const App: React.FC = () => {
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
                   {getTaskTypeLabel(activeFilter)} ({filteredTasks.length})
                 </h3>
-                <div className="border border-gray-200 bg-white shadow-sm  rounded-xl overflow-hidden divide-y divide-gray-100">
-                  {filteredTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="group flex items-center justify-between gap-4 p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-50"
-                      onClick={() => openEditTaskModal(task)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle
-                          className={`h-5 w-5 shrink-0 mt-0.5  ${task.completed ? "text-green-600" : "text-gray-400"}`}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredTasks.map((task) => {
+                    const isCrop = task.type.toLowerCase().includes("crop");
+                    const isLivestock = task.type.toLowerCase().includes("livestock");
+                    const typeColor = isCrop
+                      ? "text-emerald-700 bg-emerald-50 border-emerald-100"
+                      : isLivestock
+                      ? "text-purple-700 bg-purple-50 border-purple-100"
+                      : "text-blue-700 bg-blue-50 border-blue-100";
+
+                    return (
+                      <div
+                        key={task.id}
+                        className={`group relative flex flex-col justify-between p-5 bg-gradient-to-br from-white to-slate-50/40 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-300 cursor-pointer ${
+                          task.completed ? "opacity-75" : ""
+                        }`}
+                        onClick={() => openEditTaskModal(task)}
+                      >
+                        <div
+                          className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl ${
+                            isCrop ? "bg-emerald-500" : isLivestock ? "bg-purple-500" : "bg-blue-500"
+                          }`}
                         />
 
-                        <div className="space-y-3">
-                          <p className="font-semibold text-gray-900">
-                            {task.name}
-                          </p>
-                          <p className="mt-0.5 text-sm text-gray-500">
-                            {task.type} · Due {task.dueDate}, {task.time}
-                          </p>
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-start space-x-3 min-w-0">
+                            <CheckCircle
+                              className={`h-5 w-5 shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 ${
+                                task.completed ? "text-green-600" : "text-slate-300"
+                              }`}
+                            />
+                            <div className="min-w-0">
+                              <h4
+                                className={`text-base font-semibold truncate capitalize tracking-tight ${
+                                  task.completed
+                                    ? "line-through text-slate-400 font-medium"
+                                    : "text-slate-800"
+                                }`}
+                              >
+                                {task.name}
+                              </h4>
+                              {task.description && (
+                                <p className="text-xs text-slate-400 mt-1 line-clamp-1 italic">
+                                  {task.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <ChevronRight className="h-5 w-5 text-slate-300 shrink-0 transition-all duration-200 group-hover:text-green-600 group-hover:translate-x-1" />
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
                           <span
-                            className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${getPriorityColor(task.priority)}`}
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${typeColor}`}
                           >
-                            <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                            {task.type}
+                          </span>
+                          <span className="text-slate-300 text-xs font-semibold">•</span>
+                          <span className="inline-flex items-center text-xs text-slate-500 font-medium gap-1 bg-slate-100 px-2 py-0.5 rounded-md">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {task.dueDate} · {task.time}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100/80">
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 text-xs font-bold uppercase text-green-700 shadow-inner">
+                              {task.user?.charAt(0) || "?"}
+                            </span>
+                            <span className="truncate text-xs font-semibold text-slate-600">
+                              {task.user || "Unassigned"}
+                            </span>
+                          </div>
+
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold capitalize border ${
+                              task.priority === "high"
+                                ? "bg-red-50 text-red-700 border-red-100"
+                                : task.priority === "medium"
+                                ? "bg-amber-50 text-amber-700 border-amber-100"
+                                : "bg-green-50 text-green-700 border-green-100"
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                task.priority === "high"
+                                  ? "bg-red-500"
+                                  : task.priority === "medium"
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              }`}
+                            />
                             {task.priority}
                           </span>
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <div className="hidden items-center gap-2 sm:flex">
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold uppercase text-gray-600">
-                            {task.user?.charAt(0) || "?"}
-                          </span>
-                          <span className="max-w-[160px] truncate text-sm text-gray-500">
-                            {task.user}
-                          </span>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-gray-300 transition-colors group-hover:text-green-600" />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {filteredTasks.length === 0 && (
-                    <div className="text-center py-4 text-gray-500">
+                    <div className="col-span-full text-center py-8 text-slate-400 font-medium">
                       No tasks found
                     </div>
                   )}

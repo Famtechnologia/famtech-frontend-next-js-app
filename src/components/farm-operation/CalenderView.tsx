@@ -1,7 +1,7 @@
 // src/components/calendar/CalendarView.tsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Loader2, ListChecks, Trash2 } from "lucide-react";
+import { Plus, Loader2, ListChecks, Trash2, AlertTriangle } from "lucide-react";
 import { getCalendarData, CalendarData } from "@/lib/services/calender";
 import Modal from "../ui/Modal";
 import { updateTask, createTask, deleteTask, Task } from "../../lib/services/taskplanner";
@@ -59,6 +59,7 @@ const DayTasksModal: React.FC<{
   const [staffList, setStaffList] = useState<StaffType[]>([]);
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   useEffect(() => {
     if (!profile?.id || !isOpen) return;
@@ -88,11 +89,11 @@ const DayTasksModal: React.FC<{
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
+  const confirmDeleteTask = async (taskId: string) => {
     setDeletingTaskId(taskId);
     try {
       await deleteTask(taskId);
+      setTaskToDelete(null);
       onTaskUpdate();
     } catch (error) {
       console.error("Failed to delete task:", error);
@@ -120,7 +121,39 @@ const DayTasksModal: React.FC<{
       title={`Tasks for ${formattedDate}`}
     >
       <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
-        {tasks.length > 0 ? (
+        {taskToDelete ? (
+          <div className="p-6 bg-red-50/50 border border-red-100 rounded-2xl text-center space-y-4 animate-fadeIn">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-600 shadow-sm">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-base font-bold text-slate-800">Delete Event</h4>
+              <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
+                Are you sure you want to permanently delete: <strong className="text-red-700 font-semibold">"{taskToDelete.title}"</strong>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => setTaskToDelete(null)}
+                disabled={deletingTaskId === taskToDelete.id}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmDeleteTask(taskToDelete.id)}
+                disabled={deletingTaskId === taskToDelete.id}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {deletingTaskId === taskToDelete.id ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  "Yes, Delete It"
+                )}
+              </button>
+            </div>
+          </div>
+        ) : tasks.length > 0 ? (
           tasks.map((task) => {
             const isCompleted = task.status === "completed";
             return (
@@ -172,7 +205,7 @@ const DayTasksModal: React.FC<{
                     )}
                   </button>
                   <button
-                    onClick={() => handleDeleteTask(task.id)}
+                    onClick={() => setTaskToDelete(task)}
                     disabled={updatingTaskId === task.id || deletingTaskId === task.id}
                     className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                     title="Delete Event"

@@ -801,50 +801,61 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           No new notifications.
                         </div>
                       ) : (
-                        notifications.map((notification) => (
-                          <Link
-                            key={notification.id}
-                            href={`/farm-operation?tab=planner`}
-                            onClick={() => setIsDropdownOpen(false)}
-                            className={`flex items-start p-4 hover:bg-green-50 transition-colors ${
-                              notification.read
-                                ? "text-gray-500"
-                                : "bg-green-50 text-gray-900 font-medium"
-                            }`}
-                            title={notification?.notification}
-                          >
-                            <div className="flex-shrink-0 pt-1 mr-3">
-                              <CheckCircle
-                                size={16}
-                                className={
-                                  notification.read
-                                    ? "text-gray-400"
-                                    : "text-green-600"
-                                }
-                              />
-                            </div>
-                            <div>
-                              <p className="text-sm leading-snug capitalize">
-                                {notification?.title}
-                              </p>
-                              <div className="inline-flex items-center gap-2">
-                                <p className="text-xs text-gray-400 mt-1 flex items-center">
-                                  <Calendar size={12} className="mr-1" />
-                                  {new Date(
-                                    notification?.timeline?.dueDate || null
-                                  )?.toLocaleDateString()}
-                                </p>
-                                <span className="text-gray-400">-</span>
-                                <p className="text-xs text-gray-400 mt-1 flex items-center">
-                                  <Clock size={12} className="mr-1" />
-                                  {dateFormatter(
-                                    notification?.timeline?.dueTime
-                                  )}
-                                </p>
+                        notifications.map((notification) => {
+                          const isRead = notification.read;
+                          return (
+                            <Link
+                              key={notification.id}
+                              href={`/farm-operation?tab=planner`}
+                              onClick={() => setIsDropdownOpen(false)}
+                              className={`relative flex items-start gap-3 p-4 border-b border-slate-50 transition-all duration-200 ${
+                                isRead
+                                  ? "bg-white hover:bg-slate-50/80 text-slate-600"
+                                  : "bg-gradient-to-r from-green-50/40 to-emerald-50/10 hover:from-green-50/60 hover:to-emerald-50/20 text-slate-900 font-semibold"
+                              }`}
+                              title={notification?.notification}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                <div
+                                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
+                                    isRead
+                                      ? "bg-slate-100 text-slate-400"
+                                      : "bg-green-100 text-green-700 shadow-sm"
+                                  }`}
+                                >
+                                  <CheckCircle size={16} />
+                                </div>
                               </div>
-                            </div>
-                          </Link>
-                        ))
+
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm leading-snug capitalize tracking-tight ${isRead ? "text-slate-600 font-medium" : "text-slate-800 font-semibold"}`}>
+                                  {notification?.title}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                  <span className="inline-flex items-center text-[10px] text-slate-400 font-medium gap-1 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
+                                    <Calendar size={10} />
+                                    {new Date(
+                                      notification?.timeline?.dueDate || null
+                                    )?.toLocaleDateString()}
+                                  </span>
+                                  <span className="inline-flex items-center text-[10px] text-slate-400 font-medium gap-1 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
+                                    <Clock size={10} />
+                                    {dateFormatter(
+                                      notification?.timeline?.dueTime
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {!isRead && (
+                                <span className="absolute top-4 right-4 flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                              )}
+                            </Link>
+                          );
+                        })
                       )}
                     </div>
 
