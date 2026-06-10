@@ -20,7 +20,6 @@ import {
   Bell,
   ChevronRight,
   ChevronDown,
-  User,
   LucideIcon,
   Clock,
   CheckCircle,
@@ -54,14 +53,6 @@ interface NavItem {
   // 💡 ADDED: section grouping + optional sub-brand label
   section?: string;
   subBrand?: string;
-}
-
-interface ProfileOwner {
-  firstName?: string;
-}
-
-interface Profile {
-  owner?: ProfileOwner;
 }
 
 interface DashboardLayoutProps {
@@ -772,18 +763,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                       )}
                     </button>
-
-                    {/* 👤 Profile Section (Uses props/state you provided) */}
-                    <div className="flex items-center space-x-2">
-                      <Link
-                        href="/settings/profile"
-                        className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
-                      >
-                        <User size={16} className="text-white" />
-                      </Link>
-
-                      <ChevronDown size={16} className="text-gray-500" />
-                    </div>
                   </div>
 
                   {/* 📥 Notification Dropdown Content (Only visible if isDropdownOpen is TRUE) */}
