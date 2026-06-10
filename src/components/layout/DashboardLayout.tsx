@@ -754,124 +754,170 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </div>*/}
             </div>
-            <header className=" p-4 sticky top-0 z-[20]">
-              <div className="flex justify-end">
-                {/* 🎯 Notification Dropdown Container (Relative position for absolute dropdown) */}
-                <div className="relative" ref={dropdownRef}>
-                  <div className="flex items-center space-x-2 md:space-x-4">
-                    {/* 🔔 Bell Icon Button (Toggle on click) */}
-                    <button
-                      className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                      onClick={toggleDropdown} // ⬅️ This makes the dropdown appear
-                      disabled={isLoading} // Optional: disable while initial count is loading
-                    >
-                      <Bell size={20} />
-                      {/* Unread Indicator Dot (Always visible if count > 0) */}
-                      {unreadCount > 0 && (
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                      )}
-                    </button>
-
-                    {/* 👤 Profile Section */}
-                    <div className="flex items-center space-x-2">
-                      <Link
-                        href="/settings/profile"
-                        className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center overflow-hidden border border-green-600/10 hover:scale-105 transition-transform"
-                      >
-                        {user?.profileImage ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img
-                            src={user.profileImage}
-                            alt="Profile"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <User size={16} className="text-white" />
-                        )}
-                      </Link>
-
-                      <ChevronDown size={16} className="text-gray-500" />
-                    </div>
-                  </div>
-
-                  {/* 📥 Notification Dropdown Content (Only visible if isDropdownOpen is TRUE) */}
-                  {isDropdownOpen && (
-                    <div className="absolute right-2 md:right-0 mt-3 w-70 md:w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[110] overflow-hidden">
-                      <div className="p-4 border-b border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          Notifications ({unreadCount})
-                        </h3>
-                      </div>
-
-                      <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
-                        {isLoading ? (
-                          <div className="p-4 text-center text-gray-500">
-                            Loading notifications...
-                          </div>
-                        ) : notifications.length === 0 ? (
-                          <div className="p-4 text-center text-gray-500">
-                            No new notifications.
-                          </div>
-                        ) : (
-                          notifications.map((notification) => (
-                            <Link
-                              key={notification.id}
-                              href={`/farm-operation?tab=planner`}
-                              onClick={() => setIsDropdownOpen(false)} // Close on click
-                              className={`flex items-start p-4 hover:bg-green-50 transition-colors ${
-                                notification.read
-                                  ? "text-gray-500"
-                                  : "bg-green-50 text-gray-900 font-medium"
-                              }`}
-                              title={notification?.notification}
-                            >
-                              <div className="flex-shrink-0 pt-1 mr-3">
-                                <CheckCircle
-                                  size={16}
-                                  className={
-                                    notification.read
-                                      ? "text-gray-400"
-                                      : "text-green-600"
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <p className="text-sm leading-snug capitalize">
-                                  {notification?.title}
-                                </p>
-                                <div className="inline-flex items-center gap-2">
-                                  <p className="text-xs text-gray-400 mt-1 flex items-center">
-                                    <Calendar size={12} className="mr-1" />
-                                    {new Date(
-                                      notification?.timeline?.dueDate || null
-                                    )?.toLocaleDateString()}
-                                  </p>
-                                  <span className="text-gray-400">-</span>
-                                  <p className="text-xs text-gray-400 mt-1 flex items-center">
-                                    <Clock size={12} className="mr-1" />
-                                    {dateFormatter(
-                                      notification?.timeline?.dueTime
-                                    )}
-                                  </p>
-                                </div>
-                              </div>
-                            </Link>
-                          ))
-                        )}
-                      </div>
-
-                      {notifications.length > 0 && (
-                        <div className="p-2 border-t text-center border-gray-100">
-                          <button className="text-xs text-green-600 hover:text-green-700">
-                            Mark all as read
-                          </button>
-                        </div>
-                      )}
-                    </div>
+            <div className="flex items-center space-x-2 md:space-x-4">
+              {/* 🎯 Notification Dropdown Container */}
+              <div className="relative" ref={dropdownRef}>
+                {/* 🔔 Bell Icon Button (Toggle on click) */}
+                <button
+                  className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={toggleDropdown}
+                  disabled={isLoading}
+                >
+                  <Bell size={20} />
+                  {/* Unread Indicator Dot */}
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
-                </div>
+                </button>
+
+                {/* 📥 Notification Dropdown Content */}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-70 md:w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[110] overflow-hidden">
+                    <div className="p-4 border-b border-gray-100">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        Notifications ({unreadCount})
+                      </h3>
+                    </div>
+
+                    <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                      {isLoading ? (
+                        <div className="p-4 text-center text-gray-500">
+                          Loading notifications...
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          No new notifications.
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <Link
+                            key={notification.id}
+                            href={`/farm-operation?tab=planner`}
+                            onClick={() => setIsDropdownOpen(false)}
+                            className={`flex items-start p-4 hover:bg-green-50 transition-colors ${
+                              notification.read
+                                ? "text-gray-500"
+                                : "bg-green-50 text-gray-900 font-medium"
+                            }`}
+                            title={notification?.notification}
+                          >
+                            <div className="flex-shrink-0 pt-1 mr-3">
+                              <CheckCircle
+                                size={16}
+                                className={
+                                  notification.read
+                                    ? "text-gray-400"
+                                    : "text-green-600"
+                                }
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm leading-snug capitalize">
+                                {notification?.title}
+                              </p>
+                              <div className="inline-flex items-center gap-2">
+                                <p className="text-xs text-gray-400 mt-1 flex items-center">
+                                  <Calendar size={12} className="mr-1" />
+                                  {new Date(
+                                    notification?.timeline?.dueDate || null
+                                  )?.toLocaleDateString()}
+                                </p>
+                                <span className="text-gray-400">-</span>
+                                <p className="text-xs text-gray-400 mt-1 flex items-center">
+                                  <Clock size={12} className="mr-1" />
+                                  {dateFormatter(
+                                    notification?.timeline?.dueTime
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+
+                    {notifications.length > 0 && (
+                      <div className="p-2 border-t text-center border-gray-100">
+                        <button className="text-xs text-green-600 hover:text-green-700">
+                          Mark all as read
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </header>
+
+              {/* 👤 Profile Dropdown Section */}
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  onClick={() => setIsProfileDropdownOpen((prev) => !prev)}
+                  className="flex items-center space-x-1 focus:outline-none hover:opacity-90 transition-opacity cursor-pointer p-1"
+                >
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center overflow-hidden border border-green-600/10 hover:scale-105 transition-transform">
+                    {user?.profileImage ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={user.profileImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={16} className="text-white" />
+                    )}
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-500 transition-transform duration-200 ${
+                      isProfileDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-[110] transition-all">
+                    {/* User Info Header in Dropdown */}
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Signed in as</p>
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {user?.email || "Farmer"}
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/settings/profile"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <User size={16} className="mr-2.5 text-gray-400" />
+                      View Profile
+                    </Link>
+
+                    <Link
+                      href="/settings/profile"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Settings size={16} className="mr-2.5 text-gray-400" />
+                      Settings
+                    </Link>
+
+                    <div className="border-t border-gray-100 my-1"></div>
+
+                    <button
+                      onClick={() => {
+                        setIsProfileDropdownOpen(false);
+                        setShowLogoutConfirm(true);
+                      }}
+                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+                    >
+                      <LogOut size={16} className="mr-2.5" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </header>
 
