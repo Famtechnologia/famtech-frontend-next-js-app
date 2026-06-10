@@ -23,6 +23,8 @@ import {
 import TaskSkeleton from "@/components/skeleton/farm-operation/TaskPlanner";
 import { StaffType, getStaffs } from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useAuth } from "@/lib/hooks/useAuth";
+import toast from "react-hot-toast";
 
 interface Task {
   id: string;
@@ -88,6 +90,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [staff, setStaff] = useState<StaffType[]>([]);
 
   const { profile } = useProfile();
+  const { user } = useAuth();
 
   const fetchStaffData = useCallback(async () => {
     if (!profile) return;
@@ -198,7 +201,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
             disabled={isSaving}
             className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           >
-            <option hidden>Select an assignee</option>
+            <option value="" disabled>Select an assignee</option>
+            {user?.email && (
+              <option value={user.email}>
+                {profile?.owner ? `${profile.owner.firstName} ${profile.owner.lastName} (Me)` : "Me"}
+              </option>
+            )}
             {staff?.map((staff) => (
               <option key={staff.email} value={staff.email}>
                 {staff.name}
@@ -373,6 +381,12 @@ const App: React.FC = () => {
 
   const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formAssignee) {
+      toast.error("Please assign the task to yourself or a staff member.");
+      return;
+    }
+
     // Convert taskType: "General task" -> "general_task" for the API
     const taskTypeForApi = formTaskType.toLowerCase();
 
@@ -395,14 +409,18 @@ const App: React.FC = () => {
     try {
       if (modalMode === "new") {
         await createTask(taskData);
+        toast.success("Task created successfully!");
       } else if (selectedTask) {
         await updateTask(selectedTask.id, taskData);
+        toast.success("Task updated successfully!");
       }
       setIsModalOpen(false);
       fetchTasks();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save task:", err);
       setError(err as Error);
+      const errMsg = err?.response?.data?.errors?.[0]?.msg || err?.response?.data?.error || err?.message || "Failed to save task";
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -427,10 +445,12 @@ const App: React.FC = () => {
     setLoading(true);
     try {
       await deleteTask(selectedTask.id);
+      toast.success("Task deleted successfully!");
       fetchTasks();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to delete task:", err);
       setError(err as Error);
+      toast.error(err?.message || "Failed to delete task");
     } finally {
       setLoading(false);
     }
