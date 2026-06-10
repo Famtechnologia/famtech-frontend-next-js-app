@@ -68,6 +68,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["dashboard"]);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   // NEW STATE for collapsed sidebar flyout preview
@@ -330,6 +331,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // Reference for closing the dropdown when clicking outside
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // --- Data Fetching Logic ---
   // Fetch notifications ONLY when the component mounts or the user changes
@@ -357,6 +359,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const toggleDropdown = () => {
     // Toggle the visibility state
     setIsDropdownOpen((prev) => !prev);
+    
+    // Close profile dropdown when opening notifications
+    setIsProfileDropdownOpen(false);
 
     // Optional: Re-fetch only when opening to get the freshest data
     if (!isDropdownOpen) {
@@ -372,6 +377,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsDropdownOpen(false);
+      }
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
       }
     };
 
@@ -851,7 +862,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {/* 👤 Profile Dropdown Section */}
               <div className="relative" ref={profileDropdownRef}>
                 <button
-                  onClick={() => setIsProfileDropdownOpen((prev) => !prev)}
+                  onClick={() => {
+                    setIsProfileDropdownOpen((prev) => !prev);
+                    setIsDropdownOpen(false);
+                  }}
                   className="flex items-center space-x-1 focus:outline-none hover:opacity-90 transition-opacity cursor-pointer p-1"
                 >
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center overflow-hidden border border-green-600/10 hover:scale-105 transition-transform">
