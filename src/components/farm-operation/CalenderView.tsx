@@ -7,10 +7,10 @@ import { getCalendarData, CalendarData } from "@/lib/services/calender";
 // createTask service is removed as it is no longer used
 import Modal from "../ui/Modal";
 // The auth store import is kept for context, though not used in the display logic
-import { getTasks, updateTask, Task } from "../../lib/services/taskplanner";
+import { getTasks, updateTask, createTask, Task } from "../../lib/services/taskplanner";
 import CalendarSkeletonLoader from "@/components/skeleton/farm-operation/CalenderSkeleton";
 
-import { getStaffById} from "@/lib/services/staff";
+import { getStaffById, getStaffs, StaffType } from "@/lib/services/staff";
 import { useProfile } from "@/lib/hooks/useProfile";
 
 interface SelectedDay {
@@ -25,7 +25,7 @@ const DayCell: React.FC<{
   onClick: () => void;
 }> = ({ day, tasks, onClick }) => (
   <div
-    className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 hover:bg-green-300 cursor-pointer relative overflow-hidden transition-colors"
+    className="md:h-28 border border-gray-200 rounded-md p-2 mt-2 hover:border-green-400 hover:bg-green-50 cursor-pointer relative overflow-hidden transition-colors"
     onClick={onClick} // Attach the click handler here
   >
     <span className="text-gray-500 text-xs">{day}</span>
@@ -178,18 +178,171 @@ const DayTasksModal: React.FC<{
   );
 };
 
-const InactiveAddEventButton: React.FC = () => {
-  // This button does nothing when clicked, as requested.
+const AddEventModal: React.FC<{
+  show: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+}> = ({ show, onClose, onCreated }) => {
+  const { profile } = useProfile();
+  const [staff, setStaff] = useState<StaffType[]>([]);
+  const [title, setTitle] = useState("");
+  const [taskType, setTaskType] = useState("General task");
+  const [priority, setPriority] = useState("Medium");
+  const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState("");
+  const [assignee, setAssignee] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.id || !show) return;
+    getStaffs(profile.id)
+      .then((d) => setStaff(d))
+      .catch((err) => console.error("Failed to load staff:", err));
+  }, [profile?.id, show]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        title,
+        status: "pending",
+        priority: priority.toLowerCase(),
+        timeline: { dueDate, dueTime },
+        note: notes,
+        taskType: taskType.toLowerCase(),
+        assignee,
+        userId: profile?.id,
+        entity_id: "sample_entity_id",
+      };
+      await createTask(payload);
+      setTitle("");
+      setNotes("");
+      setAssignee("");
+      setDueTime("");
+      onCreated();
+      onClose();
+    } catch (err) {
+      console.error("Failed to create event:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const field =
+    "w-full p-2 border border-gray-300 rounded-md text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50";
+  const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+
   return (
-    <button
-      // Use 'cursor-not-allowed' for inactive visual
-      className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 cursor-not-allowed "
-      disabled // The disabled attribute makes it truly inactive
-    >
-      <Plus className="h-4 w-4 mr-2" />
-      <span className="hidden md:flex">Add </span>
-      <span> Event</span>
-    </button>
+    <Modal show={show} onClose={onClose} title="Add Event">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className={labelCls}>Title</label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            disabled={saving}
+            placeholder="e.g. Water the maize field"
+            className={field}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Event Type</label>
+            <select
+              value={taskType}
+              onChange={(e) => setTaskType(e.target.value)}
+              disabled={saving}
+              className={field}
+            >
+              <option value="General task">General</option>
+              <option value="Crop task">Crop</option>
+              <option value="Livestock task">Livestock</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              disabled={saving}
+              className={field}
+            >
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Date</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              required
+              disabled={saving}
+              className={field}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Time</label>
+            <input
+              type="time"
+              value={dueTime}
+              onChange={(e) => setDueTime(e.target.value)}
+              required
+              disabled={saving}
+              className={field}
+            />
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Assign To</label>
+          <select
+            value={assignee}
+            onChange={(e) => setAssignee(e.target.value)}
+            disabled={saving}
+            className={field}
+          >
+            <option value="">Unassigned</option>
+            {staff?.map((s) => (
+              <option key={s.email} value={s.email}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Notes</label>
+          <textarea
+            rows={3}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            disabled={saving}
+            className={`${field} resize-none`}
+          />
+        </div>
+        <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50"
+          >
+            {saving ? "Saving..." : "Create Event"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
@@ -206,6 +359,7 @@ const CalendarView: React.FC = () => {
   const [selectedDayTasks, setSelectedDayTasks] = useState<SelectedDay | null>(
     null
   );
+  const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
 
   const monthNames = [
     "January",
@@ -335,7 +489,7 @@ const CalendarView: React.FC = () => {
 
         {/* View Options */}
         <div>
-          <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             VIEW OPTIONS
           </h3>
           <div className="flex space-x-2">
@@ -350,7 +504,7 @@ const CalendarView: React.FC = () => {
 
         {/* Filter Events */}
         <div>
-          <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             FILTER EVENTS
           </h3>
           <div className="space-y-2">
@@ -362,7 +516,7 @@ const CalendarView: React.FC = () => {
             ].map((type) => (
               <div
                 key={type}
-                className="flex items-center space-x-2 p-2 rounded-xl text-base font-medium text-gray-600"
+                className="flex items-center space-x-2 p-2 rounded-xl text-sm font-medium text-gray-600"
               >
                 <input
                   type="checkbox"
@@ -377,7 +531,7 @@ const CalendarView: React.FC = () => {
 
         {/* Legend */}
         <div>
-          <h3 className="text-base md:text-lg font-semibold text-gray-500 uppercase mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             LEGEND
           </h3>
           <div className="space-y-3">
@@ -390,7 +544,7 @@ const CalendarView: React.FC = () => {
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center space-x-2 text-base font-medium text-gray-600"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-600"
               >
                 <div className={`h-2.5 w-2.5 rounded-full ${item.color}`}></div>
                 <span>{item.label}</span>
@@ -412,8 +566,14 @@ const CalendarView: React.FC = () => {
                 <Filter className="h-5 w-5" />
               </button>
             </div>
-            {/* INACTIVE ADD EVENT BUTTON */}
-            <InactiveAddEventButton />
+            <button
+              onClick={() => setIsAddOpen(true)}
+              className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md bg-green-600 hover:bg-green-700 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden md:flex">Add&nbsp;</span>
+              <span>Event</span>
+            </button>
           </div>
         </div>
 
@@ -498,6 +658,13 @@ const CalendarView: React.FC = () => {
         selectedDate={`${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(selectedDayTasks?.day).padStart(2, "0")}`}
         onClose={handleCloseDayTasksModal}
         onTaskUpdate={fetchCalendar} // Pass fetchCalendar to refresh data after an update (e.g., status change)
+      />
+
+      {/* ADD EVENT MODAL */}
+      <AddEventModal
+        show={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onCreated={fetchCalendar}
       />
     </div>
   );
