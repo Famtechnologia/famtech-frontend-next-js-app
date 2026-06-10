@@ -12,8 +12,8 @@ import {
   ListTodo
 } from 'lucide-react';
 import { getTasks, updateTask, deleteTask, createTask, Task } from '@/lib/services/taskplanner'; 
-import useSWR from 'swr'; 
-import { useAuth } from '@/lib/hooks/useAuth';
+import useSWR from 'swr';
+import { useProfile } from '@/lib/hooks/useProfile';
 
 // --- Custom Task Hook ---
 
@@ -44,8 +44,8 @@ export const useTaskSummary = () => {
         setIsClient(true);
     }, []);
 
-    const { user } = useAuth();
-    const userId = user?._id;
+    const { profile } = useProfile();
+    const userId = profile?.id;
     
     const swrKey = isClient && userId ? ['tasks', userId] : null;
 
@@ -121,9 +121,10 @@ const DashboardTasks = () => {
                 status: 'pending',
                 priority: 'medium',
                 taskType: 'general',
-                assignee: userId,
-                entity_id: 'default'
-            });
+                assignee: 'Unassigned',
+                entity_id: 'default',
+                userId: userId
+            } as any);
             setNewTitle("");
             mutate();
         } catch (err) {
