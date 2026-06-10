@@ -86,8 +86,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   // const { handleLogout } = useLogout();
 
-  const { profile, setId } = useProfileStore() as {
-    profile?: Profile;
+  const { setId } = useProfileStore() as {
     loading: boolean;
     error: unknown;
     setId: (id: string) => void;
@@ -658,22 +657,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* Bottom Profile/Logout */}
           <div className={`border-t border-gray-200 pt-4 mt-4 ${sidebarCollapsed ? "px-1.5" : "px-4"}`}>
-            <div
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "space-x-3"
-              } mb-3`}
-            >
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <User size={16} className="text-white" />
-              </div>
-              {!sidebarCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 capitalize">
-                    {profile?.owner?.firstName}
-                  </p>
-                </div>
-              )}
-            </div>
             <button
               onClick={logout}
               className={`flex items-center w-full ${
