@@ -201,7 +201,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             disabled={isSaving}
             className="w-full p-2 border border-gray-300 rounded-md text-gray-800 disabled:bg-gray-50"
           >
-            <option value="" disabled>Select an assignee</option>
+            <option value="" disabled>Select a staff member</option>
             {user?.email && (
               <option value={user.email}>
                 {profile?.owner ? `${profile.owner.firstName} ${profile.owner.lastName} (Me)` : "Me"}

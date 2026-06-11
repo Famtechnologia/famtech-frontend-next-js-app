@@ -169,7 +169,7 @@ const DayTasksModal: React.FC<{
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] text-gray-500 font-medium capitalize">
-                      Assignee: {getAssigneeName(task.assignee)}
+                      Staff: {getAssigneeName(task.assignee)}
                     </span>
                     <span className="text-gray-300">•</span>
                     <span className={`text-[9px] px-1.5 py-0.25 rounded border font-semibold tracking-wider uppercase ${

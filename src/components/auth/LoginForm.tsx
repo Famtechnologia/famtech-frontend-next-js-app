@@ -41,7 +41,7 @@ const Login: React.FC = () => {
 
         useAuthStore.getState().setToken(token);
         Cookies.set("famtech-auth", token, { expires: 3 });
-        toast.success(message || "Assignee Login successful!");
+        toast.success(message || "Staff Login successful!");
 
         // ⏳ Keep loading true until navigation completes
         router.replace("/staffs/dashboard");
@@ -140,7 +140,7 @@ const Login: React.FC = () => {
               Farmer
             </option>
             <option value="assignee" className="text-black">
-              Assignee
+              Farm Staff
             </option>
           </select>
 
