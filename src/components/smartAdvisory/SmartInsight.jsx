@@ -195,7 +195,7 @@ export const SmartInsight = () => {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-210px)] min-h-[460px] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
+    <div className="flex h-[calc(100vh-330px)] min-h-[420px] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
       
       {/* --- SIDEBAR CHAT PANEL (CLAUDE STYLE) --- */}
       <div className="hidden lg:flex flex-col w-64 bg-slate-50 border-r border-slate-100 p-4 shrink-0">
