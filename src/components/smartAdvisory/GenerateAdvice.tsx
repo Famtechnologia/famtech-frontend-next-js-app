@@ -94,28 +94,27 @@ export const GenerateAdvice = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={`relative bg-white rounded-lg shadow-base border border-gray-200 overflow-hidden cursor-pointer p-4 transition-all duration-300`}
+      className="relative bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 p-6 md:p-8 transition-all duration-300 space-y-5"
     >
-      <div className="mb-4">
-        <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-2 mt-8 ">
+      <div>
+        <h2 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
           Welcome to Smart Advisory
         </h2>
-        <p className="text-gray-500 text-sm md:text-base">
-          Lets help you to manage our farm - from seed to harvest
+        <p className="text-slate-500 text-xs md:text-sm mt-1">
+          Let's help you manage your farm operations - from seed to harvest.
         </p>
       </div>
       
-      <div className="mb-4 mt-4">
-        <label htmlFor="type" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
+      <div>
+        <label htmlFor="type" className="block text-slate-700 font-semibold text-xs mb-1">
           Choose Farm Type
         </label>
-        {/* type */}
         <select
           id="type"
-          {...register("type", { required: "Crop Type is required" })} // Fix: 'type' is a valid property in SignupFormInputs
-          className="w-full p-3 mt-1 border-gray-400 border rounded-xl text-gray-500 text-sm"
+          {...register("type", { required: "Crop Type is required" })}
+          className="w-full p-3 mt-1.5 border border-slate-200 rounded-xl text-slate-750 text-xs bg-white focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all shadow-sm"
         >
-          <option value="" hidden >
+          <option value="" hidden>
             Select Crop Type
           </option>
           {["Crop farming", "livestock farming", "Mixed (both)"]?.map(
@@ -127,36 +126,34 @@ export const GenerateAdvice = ({
           )}
         </select>
         {errors.type && (
-          <p className="text-red-600 text-sm">{errors?.type?.message}</p>
+          <p className="text-red-650 text-[11px] mt-1 font-semibold">{errors?.type?.message}</p>
         )}
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="produce" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
+      <div>
+        <label htmlFor="produce" className="block text-slate-700 font-semibold text-xs mb-1">
           Farm Produce
         </label>
-        {/* produce */}
         <input
           id="produce"
-          type="produce"
-          placeholder="Produce"
+          type="text"
+          placeholder="e.g. Maize, Cassava, Cattle"
           {...register("produce", { required: "Produce is required" })}
-          className="w-full p-3 border-gray-400 border rounded-xl"
+          className="w-full p-3 mt-1.5 border border-slate-200 rounded-xl text-slate-750 text-xs focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all shadow-sm"
         />
         {errors.produce && (
-          <p className="text-red-600 text-sm">{errors?.produce?.message}</p>
+          <p className="text-red-650 text-[11px] mt-1 font-semibold">{errors?.produce?.message}</p>
         )}
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="level" className="text-gray-700 mb-2 font-medium text-base md:text-lg">
-          Level
+      <div>
+        <label htmlFor="level" className="block text-slate-700 font-semibold text-xs mb-1">
+          Proficiency Level
         </label>
-        {/* level */}
         <select
           id="level"
           {...register("level", { required: "Level is required" })}
-          className="w-full p-3 border-gray-400 border rounded-xl  text-gray-500 text-sm"
+          className="w-full p-3 mt-1.5 border border-slate-200 rounded-xl text-slate-750 text-xs bg-white focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all shadow-sm"
         >
           <option value="" hidden>
             Select Level
@@ -170,17 +167,19 @@ export const GenerateAdvice = ({
           )}
         </select>
         {errors.level && (
-          <p className="text-red-600 text-sm">{errors?.level?.message}</p>
+          <p className="text-red-650 text-[11px] mt-1 font-semibold">{errors?.level?.message}</p>
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-auto bg-green-600 text-white text-sm md:text-base py-3 px-4 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400 float-right"
-      >
-        {loading ? "Generating..." : "Generate Advice"}
-      </button>
+      <div className="pt-4 border-t border-slate-100 flex justify-end">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-green-600 text-white text-xs font-bold py-2.5 px-5 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400 shadow-sm"
+        >
+          {loading ? "Generating Plan..." : "Generate Advice Plan"}
+        </button>
+      </div>
     </form>
   );
 };

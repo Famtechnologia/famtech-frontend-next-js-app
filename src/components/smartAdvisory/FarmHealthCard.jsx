@@ -90,18 +90,28 @@ export default function FarmHealthCard({ location }) {
         // 🦴 show skeletons while loading
         [...Array(3)].map((_, i) => <FarmCardSkeleton key={i} />)
       ) : smartProduct?.length === 0 ? (
-        <div className="w-full px-2 md:px-6 p-6 md:col-span-2 lg:col-span-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl md:2xl font-bold">Farming Health</h2>
+        <div className="w-full px-4 md:px-6 py-6 md:col-span-2 lg:col-span-3 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-slate-800">Farming Health</h2>
             <Link
               href="/farm-operation?tab=records"
-              className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-150"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition shadow-sm hover:shadow"
             >
-              Add <span className="hidden md:flex">Record</span>
+              Add Record
             </Link>
           </div>
-          <div className="text-center text-gray-500 w-full h-48 flex items-center justify-center">
-            No crop or livestock records found. Please add some in your farm operation to view health tips.
+          <div className="text-center py-16 max-w-md mx-auto my-4">
+            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+              <span className="font-bold text-xl">+</span>
+            </div>
+            <p className="text-slate-500 text-sm font-semibold">No crop or livestock records found</p>
+            <p className="text-slate-400 text-xs mt-1 mb-6">Please register some livestock or crop items in your farm operations to unlock health checks.</p>
+            <Link
+              href="/farm-operation?tab=records"
+              className="inline-flex bg-green-600 text-white py-2.5 px-5 text-xs font-bold rounded-xl hover:bg-green-700 transition shadow-sm"
+            >
+              Go to Farm Operations
+            </Link>
           </div>
         </div>
       ) : (

@@ -104,46 +104,53 @@ export default function Page() {
     }
   
   return (
-    <div className="p-3 pt-6 md:p-6 bg-white">
-      <div>
-        <h2 className="text-lg text-green-700 sm:text-xl lg:text-2xl font-bold leading-tight mb-4">
-          Hi <span className="capitalize">{owner?.firstName || "Farmer"}</span>,
-          here&apos;s your farm health update for today ⛅
-        </h2>
-        <p className="text-gray-500 text-base leading-relaxed mb-4">
-          {new Date().toLocaleDateString("en-NG", {
-            weekday: "long",
-            month: "short",
-            day: "numeric",
-            year: "numeric",
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 font-sans relative">
+      <div className="container p-4 mx-auto max-w-7xl">
+        
+        {/* Header Block */}
+        <div className="mb-6 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Hi <span className="capitalize text-green-700">{owner?.firstName || "Farmer"}</span>, here&apos;s your advisory workspace ⛅
+            </h1>
+            <p className="text-slate-500 mt-1 text-xs md:text-sm font-semibold">
+              {new Date().toLocaleDateString("en-NG", {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+        </div>
+
+        {/* --- SEGMENTED TABS SECTION --- */}
+        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl mb-8 max-w-2xl">
+          {tabsConfig.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTabKey === tab.key;
+
+            return (
+              <button
+                key={tab.key}
+                onClick={() => handleTabChange(tab.key)}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 text-xs md:text-sm font-bold rounded-xl transition-all duration-200 whitespace-nowrap flex-1
+                          ${
+                            isActive
+                              ? "bg-white text-green-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                              : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
+                          }`}
+              >
+                <Icon size={16} />
+                <span>{tab.label}</span>
+              </button>
+            );
           })}
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-6 mt-2">
-        {tabsConfig.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTabKey === tab.key;
+        </div>
 
-          return (
-            <button
-              key={tab.key}
-              onClick={() => handleTabChange(tab.key)}
-              className={`flex items-center space-x-2 px-1 mr-8 py-3 text-base font-medium transition-colors
-                                ${
-                                  isActive
-                                    ? "border-b-2 border-green-600 text-green-700"
-                                    : "text-gray-500 hover:text-gray-700"
-                                }`}
-            >
-              <Icon size={18} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+        {/* Render the Active Component */}
+        <div className="mt-4">{ActiveComponent}</div>
       </div>
-
-      {/* Render the Active Component */}
-      <div className="mt-4">{ActiveComponent}</div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ export const Explore = ({
   const [showFarmingType, setShowFarmingType] = useState(false);
 
   return (
-    <div className="relative bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden cursor-pointer">
+    <div className="relative bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] overflow-hidden">
       {showFarmingType ? (
         <GenerateAdvice location={location} setShowFarmingType={setShowFarmingType} />
       ) : (

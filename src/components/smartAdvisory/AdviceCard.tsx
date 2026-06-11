@@ -48,21 +48,27 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
   return (
     <Card
       title="Farming Plan"
-      className="hover:border-green-500 transition-all duration-300"
+      borderless={true}
+      className="hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden"
     >
-      <div className="flex flex-col items-start md:p-4">
-        <div className="flex items-center mb-4">
-          <ClipboardList className="w-8 h-8 text-green-600 mr-4 hidden md:flex " />
-          <div>
-            <p className="text-gray-600 capitalize">
-              Type: <span className="font-semibold">{farmType}</span>
+      {/* Top green line indicator */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-green-600" />
+      
+      <div className="flex flex-col justify-between h-full pt-2">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-green-50 rounded-xl text-green-700 hidden md:block">
+            <ClipboardList className="w-6 h-6" />
+          </div>
+          <div className="text-xs space-y-1 font-semibold text-slate-500">
+            <p className="capitalize">
+              Type: <span className="text-slate-800 font-bold ml-1">{farmType}</span>
             </p>
-            <p className="text-gray-600 capitalize">
-              Produce: <span className="font-semibold">{produce}</span>
+            <p className="capitalize">
+              Produce: <span className="text-slate-800 font-bold ml-1">{produce}</span>
             </p>
-            <p className="text-gray-600">
+            <p className="capitalize text-[11px]">
               Location:{" "}
-              <span className="font-semibold capitalize">
+              <span className="text-slate-700 ml-1">
                 {location.state}, {location.country}
               </span>
             </p>
@@ -72,12 +78,12 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
         <button
           onClick={handleViewAdvice}
           disabled={loading}
-          className={`w-full flex justify-center items-center gap-2 text-center bg-green-600 text-white py-2 px-4 rounded-md transition duration-150 mt-4 ${
-            loading ? "opacity-80 cursor-not-allowed" : "hover:bg-green-700"
+          className={`w-full flex justify-center items-center gap-1.5 text-center bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 py-2.5 px-4 rounded-xl text-xs font-bold transition duration-150 mt-6 ${
+            loading ? "opacity-80 cursor-not-allowed" : ""
           }`}
         >
-          {loading && <Loader2 className="animate-spin w-5 h-5" />}
-          {loading ? "Loading..." : "View Advice"}
+          {loading && <Loader2 className="animate-spin w-4 h-4" />}
+          {loading ? "Loading..." : "View Advice Plan"}
         </button>
       </div>
     </Card>
