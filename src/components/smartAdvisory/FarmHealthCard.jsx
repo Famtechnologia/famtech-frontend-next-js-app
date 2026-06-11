@@ -13,9 +13,12 @@ export default function FarmHealthCard({ location }) {
   const [livestockRecords, setLivestockRecords] = useState([]);
   const [smartProduct, setSmartProduct] = useState([]);
 
-  const { profile } = useProfile();
+  const { profile, isHydrating } = useProfile();
 
   const fetchData = useCallback(async () => {
+    // Stay in loading state while the store is reading from localStorage
+    if (isHydrating) return;
+
     if (!profile?.id) {
       setIsLoading(false);
       return;
@@ -40,7 +43,7 @@ export default function FarmHealthCard({ location }) {
     } finally {
       setIsLoading(false);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isHydrating]);
 
   useEffect(() => {
     fetchData();

@@ -61,27 +61,27 @@ export const SmartInsight = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
-  const { profile } = useProfile();
+  const { profile, isHydrating } = useProfile();
 
   const fetchCropData = useCallback(async () => {
-    if (!profile?.id) return;
+    if (isHydrating || !profile?.id) return;
     try {
       const data = await getCropRecords(profile?.id);
       setCropRecords(data || []);
     } catch (err) {
       console.error(err);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isHydrating]);
 
   const fetchLivestockData = useCallback(async () => {
-    if (!profile?.id) return;
+    if (isHydrating || !profile?.id) return;
     try {
       const data = await getLivestockRecords(profile?.id);
       setLivestockRecords(data || []);
     } catch (err) {
       console.error(err);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isHydrating]);
 
   useEffect(() => {
     fetchCropData();

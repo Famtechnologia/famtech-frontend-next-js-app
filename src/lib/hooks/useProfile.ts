@@ -9,14 +9,18 @@ let isFetching = false;
 
 export const useProfile = () => {
   const { token } = useAuthStore();
-  const { profile, setId } = useProfileStore() as {
+  const { profile, _hasHydrated, setId } = useProfileStore() as {
     profile: Record<string, unknown> | null;
+    _hasHydrated: boolean;
     setId: (id: string) => void;
   };
 
+  // isHydrating = store hasn't finished reading from localStorage yet
+  const isHydrating = !_hasHydrated;
+
   useEffect(() => {
-    // ✅ Already cached in Zustand (persisted to localStorage) → instant, no fetch
-    if (profile || !token || isFetching) return;
+    // Not ready yet, or already have profile data, or a fetch is running
+    if (!_hasHydrated || profile || !token || isFetching) return;
 
     const hydrate = async () => {
       isFetching = true;
@@ -25,15 +29,12 @@ export const useProfile = () => {
         const userId = userData?.data?._id;
         if (!userId) return;
 
-        // Register the user ID so other store consumers can use it
         setId(userId);
 
         const response = await apiClient.get(`/api/get-profile/${userId}`);
         const farmProfile = response?.data?.data?.farmProfile;
 
         if (farmProfile) {
-          // Push directly into the persisted Zustand store — instantly
-          // available to every component using useProfile across the app
           useProfileStore.setState({ profile: farmProfile });
         }
       } catch (error) {
@@ -45,7 +46,7 @@ export const useProfile = () => {
 
     hydrate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, _hasHydrated]);
 
   return {
     profile: profile as {
@@ -67,7 +68,8 @@ export const useProfile = () => {
       createdAt: string;
       updatedAt: string;
     } | null,
-    // Keep the same API surface so no other files need changes
+    /** true while Zustand is reading from localStorage — never show empty states during this */
+    isHydrating,
     setProfile: (p: unknown) =>
       useProfileStore.setState({ profile: p as Record<string, unknown> }),
   };

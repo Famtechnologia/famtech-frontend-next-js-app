@@ -12,6 +12,8 @@ interface ProfileState {
   loading: boolean;
   error: string | null;
   id: string | null;
+  _hasHydrated: boolean;
+  setHasHydrated: (val: boolean) => void;
   fetchProfile: (id: string) => Promise<void>;
   setId: (id: string) => void;
 }
@@ -23,6 +25,8 @@ export const useProfileStore = create<ProfileState>()(
       loading: false,
       error: null,
       id: null,
+      _hasHydrated: false,
+      setHasHydrated: (val) => set({ _hasHydrated: val }),
       setId: (id) => set({ id }),
 
       fetchProfile: async (id) => {
@@ -55,7 +59,11 @@ export const useProfileStore = create<ProfileState>()(
     }),
     {
       name: "profile-storage",
-      partialize: (state) => ({ profile: state.profile }),
+      partialize: (state) => ({ profile: state.profile, id: state.id }),
+      // ✅ Mark hydration complete after localStorage data is restored
+      onRehydrateStorage: () => (state) => {
+        if (state) state.setHasHydrated(true);
+      },
     }
   )
 );

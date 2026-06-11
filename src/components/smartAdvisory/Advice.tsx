@@ -15,7 +15,7 @@ interface AdviceData {
 const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
   setShowFarmingType,
 }) => {
-  const { user } = useAuth();
+  const { user, isHydrating } = useAuth();
   const [adviceData, setAdviceData] = useState<AdviceData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -31,10 +31,12 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
   };
 
   useEffect(() => {
+    // Stay in loading state while the auth store is reading from localStorage
+    if (isHydrating) return;
+
     const fetchUserAdvice = async () => {
       try {
         setLoading(true);
-
         const user_advice = await getUserAdvice(user?._id || "");
         setAdviceData(user_advice?.data || []);
         setLoading(false);
@@ -45,7 +47,7 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
     };
 
     fetchUserAdvice();
-  }, [user?._id]);
+  }, [user?._id, isHydrating]);
 
   return (
     <div className="px-3 md:px-4 py-4">
