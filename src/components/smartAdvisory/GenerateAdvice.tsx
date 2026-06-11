@@ -24,7 +24,7 @@ export const GenerateAdvice = ({
   const {user} = useAuthStore()
 
   const [loading, setLoading] = useState(false);
- const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const onSubmit = async (data: {
     type: string;
     produce: string;
@@ -79,17 +79,6 @@ export const GenerateAdvice = ({
       setLoading(false);
     }
   };
-  useEffect(() => {
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 1500); // ⏳ 1.5 seconds (you can adjust this)
-  
-      return () => clearTimeout(timer);
-    }, [])
-
-    if (isLoading) {
-      return <FormSkeleton />;
-    } 
 
   return (
     <form

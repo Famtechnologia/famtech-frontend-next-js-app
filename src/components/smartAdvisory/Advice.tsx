@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import AdviceCard from "./AdviceCard";
-import { getUserAdvice } from "@/lib/services/advisory";
-import {useAuth} from "@/lib/hooks/useAuth"
+import { getUserAdvice, deleteAdvice } from "@/lib/services/advisory";
+import {useAuth} from "@/lib/hooks/useAuth";
+import { toast } from "react-hot-toast";
 
 interface AdviceData {
   id: string;
@@ -18,6 +19,17 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
   const [adviceData, setAdviceData] = useState<AdviceData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const handleDeleteAdvice = async (id: string) => {
+    try {
+      await deleteAdvice(id);
+      setAdviceData((prev) => prev.filter((item) => String(item.id) !== String(id)));
+      toast.success("Advice plan deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete advice:", err);
+      toast.error("Failed to delete advice plan.");
+    }
+  };
+
   useEffect(() => {
     const fetchUserAdvice = async () => {
       try {
@@ -25,11 +37,7 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
 
         const user_advice = await getUserAdvice(user?._id || "");
         setAdviceData(user_advice?.data || []);
-
-        // 🕒 Ensure skeleton shows for at least 2s even if fetch is fast
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
+        setLoading(false);
       } catch (error) {
         console.error("❌ Failed to fetch advice:", error);
         setLoading(false);
@@ -91,6 +99,7 @@ const Advice: React.FC<{ setShowFarmingType: (show: boolean) => void }> = ({
                 }}
                 advice={cleanedAdvice}
                 id={data.id}
+                onDelete={handleDeleteAdvice}
               />
             );
           })}

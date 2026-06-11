@@ -54,7 +54,7 @@ export default function Page() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const {profile} = useProfile()
 
   const activeTabKey = searchParams.get("tab") || "farm advice";
@@ -70,14 +70,6 @@ export default function Page() {
   useEffect(() => {
     setFarmProfile(profile as FarmProfileData | null);
   }, [profile]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500); // ⏳ 1.5 seconds (you can adjust this)
-
-    return () => clearTimeout(timer);
-  }, [])
 
   const owner = farmProfile?.owner;
 

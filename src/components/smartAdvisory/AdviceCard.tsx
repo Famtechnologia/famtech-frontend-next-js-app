@@ -1,9 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Card from "../ui/Card";
-import { ClipboardList, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { ClipboardList, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import AdviceCardSkeleton from "../skeleton/smart-advisory/AdviceCard"; // 👈 import skeleton
 
 interface AdviceCardProps {
   farmType: string;
@@ -14,6 +12,7 @@ interface AdviceCardProps {
   };
   advice: string;
   id: string;
+  onDelete: (id: string) => Promise<void>;
 }
 
 const AdviceCard: React.FC<AdviceCardProps> = ({
@@ -21,41 +20,77 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
   produce,
   location,
   id,
+  onDelete,
 }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showSkeleton, setShowSkeleton] = useState(true); // 👈 skeleton state
-
-  // 👇 simulate loading delay before showing real card
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSkeleton(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleViewAdvice = () => {
     setLoading(true);
-    // 👇 add a tiny delay so the loader shows briefly
-    setTimeout(() => {
-      router.push(`/smart-advisory/${id}`);
-    }, 1000);
+    router.push(`/smart-advisory/${id}`);
   };
 
-  // 👇 show skeleton if still loading
-  if (showSkeleton) {
-    return <AdviceCardSkeleton />;
-  }
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(id);
+    } catch (error) {
+      console.error("Failed to delete advice:", error);
+    } finally {
+      setIsDeleting(false);
+      setIsConfirming(false);
+    }
+  };
 
   return (
-    <Card
-      title="Farming Plan"
-      borderless={true}
-      className="hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden"
-    >
+    <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden flex flex-col justify-between border border-slate-100">
       {/* Top green line indicator */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-green-600" />
       
-      <div className="flex flex-col justify-between h-full pt-2">
-        <div className="flex items-center gap-4">
+      {/* Inline Confirmation Overlay */}
+      {isConfirming && (
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4 text-center animate-in fade-in duration-200">
+          <div className="p-2 bg-red-50 rounded-xl text-red-500 mb-2">
+            <Trash2 className="h-5 w-5 animate-bounce" />
+          </div>
+          <h4 className="font-bold text-slate-800 text-sm">Delete Farming Plan?</h4>
+          <p className="text-slate-500 text-xs mt-1 mb-4 leading-normal">This action will permanently remove this advisory plan.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsConfirming(false)}
+              disabled={isDeleting}
+              className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
+            >
+              {isDeleting && <Loader2 className="h-3 w-3 animate-spin" />}
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 flex-1">
+        {/* Header Section */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-850">Farming Plan</h2>
+          <button
+            onClick={() => setIsConfirming(true)}
+            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+            title="Delete Farming Plan"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4 pt-1">
           <div className="p-3 bg-green-50 rounded-xl text-green-700 hidden md:block">
             <ClipboardList className="w-6 h-6" />
           </div>
@@ -74,11 +109,13 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
             </p>
           </div>
         </div>
+      </div>
 
+      <div className="p-4 pt-0">
         <button
           onClick={handleViewAdvice}
           disabled={loading}
-          className={`w-full flex justify-center items-center gap-1.5 text-center bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 py-2.5 px-4 rounded-xl text-sm font-bold transition duration-150 mt-6 ${
+          className={`w-full flex justify-center items-center gap-1.5 text-center bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 py-2.5 px-4 rounded-xl text-sm font-bold transition duration-150 ${
             loading ? "opacity-80 cursor-not-allowed" : ""
           }`}
         >
@@ -86,7 +123,7 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
           {loading ? "Loading..." : "View Advice Plan"}
         </button>
       </div>
-    </Card>
+    </div>
   );
 };
 

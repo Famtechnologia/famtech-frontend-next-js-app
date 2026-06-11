@@ -28,8 +28,7 @@ export default function FarmHealthCard({ location }) {
     } catch (err) {
       setError(err);
     } finally {
-      // ⏳ ensure loader stays for at least 2s
-      setTimeout(() => setIsLoading(false), 2000);
+      setIsLoading(false);
     }
   }, [user?._id]);
 
@@ -49,7 +48,7 @@ export default function FarmHealthCard({ location }) {
     } catch (err) {
       setError(err);
     } finally {
-      setTimeout(() => setIsLoading(false), 2000);
+      setIsLoading(false);
     }
   }, [user?._id]);
 
