@@ -19,6 +19,9 @@ export interface Task {
   taskType: string;
   assignee: string;
   entity_id: string;
+  createdAt?: string;
+  updatedAt?: string;
+  userId?: string;
 }
 
 export type TaskCreationPayload = Omit<Task, "id" | "createdTime">;

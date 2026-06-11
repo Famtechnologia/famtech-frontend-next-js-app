@@ -16,6 +16,12 @@ import {
   Briefcase,
   UserCheck,
   UserMinus,
+  ArrowUpDown,
+  Filter,
+  Eye,
+  CheckSquare,
+  Activity,
+  Calendar,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -27,7 +33,7 @@ import {
   deleteStaff,
   updateStaff,
 } from "@/lib/services/staff";
-import { getTasks, Task as ApiTask } from "@/lib/services/taskplanner";
+import { getTasks, createTask, updateTask, Task as ApiTask } from "@/lib/services/taskplanner";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
@@ -49,6 +55,27 @@ const StaffManagement = () => {
   });
   const [staffCreate, setStaffCreate] = useState(false);
   const [staffDelete, setStaffDelete] = useState(false);
+
+  // Sorting & Filtering State
+  const [sortBy, setSortBy] = useState<"name-asc" | "name-desc" | "workload-desc" | "workload-asc">("name-asc");
+  const [filterStatus, setFilterStatus] = useState<"all" | "verified" | "pending">("all");
+  const [filterWorkload, setFilterWorkload] = useState<"all" | "available" | "busy" | "overloaded">("all");
+
+  // Direct Task Assignment Modal
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assigneeForNewTask, setAssigneeForNewTask] = useState<string>("");
+  const [newTaskData, setNewTaskData] = useState({
+    title: "",
+    taskType: "General task",
+    priority: "Low",
+    dueDate: "",
+    dueTime: "",
+    note: "",
+  });
+
+  // View Tasks Modal
+  const [showViewTasksModal, setShowViewTasksModal] = useState(false);
+  const [selectedStaffForTasks, setSelectedStaffForTasks] = useState<StaffType | null>(null);
 
   const { profile } = useProfile();
 
@@ -75,10 +102,6 @@ const StaffManagement = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  const filteredStaff = (staff as StaffType[]).filter((person) =>
-    (person.name as string).toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleAddStaff = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +191,63 @@ const StaffManagement = () => {
     setStaffCreate(false);
   };
 
+  // Direct Task Assignment Submit
+  const handleCreateAssignedTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskData.title || !newTaskData.dueDate || !newTaskData.dueTime) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await createTask({
+        title: newTaskData.title,
+        status: "pending",
+        priority: newTaskData.priority.toLowerCase(),
+        timeline: {
+          dueDate: newTaskData.dueDate,
+          dueTime: newTaskData.dueTime,
+        },
+        note: newTaskData.note,
+        taskType: newTaskData.taskType.toLowerCase(),
+        assignee: assigneeForNewTask,
+        entity_id: "sample_entity_id",
+        userId: profile?.id as string,
+      });
+      toast.success("Task assigned successfully!");
+      setShowAssignModal(false);
+      setNewTaskData({
+        title: "",
+        taskType: "General task",
+        priority: "Low",
+        dueDate: "",
+        dueTime: "",
+        note: "",
+      });
+      fetchStaffData();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to assign task.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Farmer checking off a worker task
+  const handleToggleTaskStatus = async (task: ApiTask) => {
+    try {
+      const newStatus = task.status === "completed" ? "pending" : "completed";
+      await updateTask(task.id, {
+        status: newStatus,
+      });
+      toast.success(`Task status updated to ${newStatus}`);
+      fetchStaffData();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update task status.");
+    }
+  };
+
   // Metrics calculations
   const totalStaff = staff.length;
   const activeStaff = staff.filter((s) => s.isVerified === "true" || String(s.isVerified) === "true").length;
@@ -181,6 +261,7 @@ const StaffManagement = () => {
       t.status?.toLowerCase() !== "completed"
   ).length;
 
+  // Workload and verification rendering helper
   const getWorkloadPill = (count: number) => {
     if (count === 0) {
       return (
@@ -220,6 +301,73 @@ const StaffManagement = () => {
     }
   };
 
+  // Staff lookup helper for activity feed
+  const getStaffNameByEmail = (email: string) => {
+    if (!email) return "Unassigned";
+    const found = staff.find((s) => s.email?.toLowerCase() === email.toLowerCase());
+    return found ? found.name : email;
+  };
+
+  // Live updates calculation from task changes
+  const recentUpdates = [...tasks]
+    .filter((t) => t.assignee)
+    .sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdTime || 0);
+      const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(b.createdTime || 0);
+      return dateB.getTime() - dateA.getTime();
+    })
+    .slice(0, 6);
+
+  // Sorting and Filtering logic
+  const filteredAndSortedStaff = staff
+    .filter((person) => {
+      // Search term
+      const matchesSearch = (person.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (person.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // Verification Status
+      const isPersonVerified = person.isVerified === "true" || String(person.isVerified) === "true";
+      if (filterStatus === "verified" && !isPersonVerified) return false;
+      if (filterStatus === "pending" && isPersonVerified) return false;
+
+      // Workload status
+      const personTasks = tasks.filter(
+        (t) => t.assignee?.toLowerCase() === person.email?.toLowerCase()
+      );
+      const activeCount = personTasks.filter(
+        (t) => t.status?.toLowerCase() !== "completed"
+      ).length;
+
+      if (filterWorkload === "available" && activeCount > 0) return false;
+      if (filterWorkload === "busy" && (activeCount === 0 || activeCount > 2)) return false;
+      if (filterWorkload === "overloaded" && activeCount <= 2) return false;
+
+      return true;
+    })
+    .sort((a, b) => {
+      const getActiveCount = (email?: string) => {
+        if (!email) return 0;
+        return tasks.filter(
+          (t) => t.assignee?.toLowerCase() === email.toLowerCase() && t.status?.toLowerCase() !== "completed"
+        ).length;
+      };
+
+      if (sortBy === "name-asc") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+      if (sortBy === "name-desc") {
+        return (b.name || "").localeCompare(a.name || "");
+      }
+      if (sortBy === "workload-desc") {
+        return getActiveCount(b.email) - getActiveCount(a.email);
+      }
+      if (sortBy === "workload-asc") {
+        return getActiveCount(a.email) - getActiveCount(b.email);
+      }
+      return 0;
+    });
+
   return (
     <div className="p-0 md:p-6 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -258,134 +406,252 @@ const StaffManagement = () => {
               <Briefcase className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Active Tasks</p>
+              <p className="text-xs text-gray-500 font-medium">Active Workload</p>
               <h3 className="text-xl font-bold text-gray-800">{totalActiveTasks}</h3>
             </div>
           </div>
         </div>
 
-        {/* Control Bar */}
-        <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search staff members by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button className="flex items-center px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-250 rounded-lg hover:bg-gray-50 transition-colors">
-              <ListFilter className="h-4 w-4 mr-2" /> Filter
-            </button>
-            <button className="hidden lg:flex items-center px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-250 rounded-lg hover:bg-gray-50 transition-colors">
-              <LayoutGrid className="h-4 w-4 mr-2" /> Format
-            </button>
-            <button
-              onClick={() => {
-                setShowAddStaffModal(true);
-                setFormError(null);
-              }}
-              disabled={!profile || isLoading}
-              className="flex items-center px-4 py-2 text-sm font-semibold text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors w-fit md:w-auto justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              <Plus className="h-4 w-4 mr-1.5" /> Add Staff
-            </button>
-          </div>
-        </div>
-
-        {/* Staff Members Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStaff.length > 0 ? (
-            filteredStaff.map((person) => {
-              // Calculate task stats for this staff member
-              const personTasks = tasks.filter(
-                (t) => t.assignee?.toLowerCase() === person.email?.toLowerCase()
-              );
-              const personActiveCount = personTasks.filter(
-                (t) => t.status?.toLowerCase() !== "completed"
-              ).length;
-              const personCompletedCount = personTasks.length - personActiveCount;
-
-              return (
-                <div
-                  key={person.email}
-                  className="bg-white rounded-2xl border border-gray-150 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
-                >
-                  <div className="p-6 space-y-4">
-                    {/* Header: Avatar, Name & Verification status */}
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-lg flex items-center justify-center shadow-inner uppercase">
-                          {person.name?.charAt(0) || "?"}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-gray-800 text-base capitalize leading-tight">
-                            {person.name}
-                          </h4>
-                          <p className="text-xs text-gray-500 lowercase break-all mt-0.5">
-                            {person.email}
-                          </p>
-                        </div>
-                      </div>
-                      {getVerificationBadge(person.isVerified)}
-                    </div>
-
-                    {/* Stats & Workload detail */}
-                    <div className="pt-2 border-t border-gray-50 space-y-2">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-gray-500 font-medium">Phone:</span>
-                        <span className="font-semibold text-gray-700">{person.phone || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-gray-500 font-medium">Workload Status:</span>
-                        {getWorkloadPill(personActiveCount)}
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-gray-500 font-medium">Completed tasks:</span>
-                        <span className="font-bold text-emerald-600">{personCompletedCount} done</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions footer */}
-                  <div className="px-6 py-4 bg-slate-50 border-t border-gray-100 flex justify-between items-center">
-                    <button
-                      onClick={() => {
-                        setStaffDelete(true);
-                        setSelectedId(person._id as string);
-                        setSelectedEmail(person.email as string);
-                      }}
-                      disabled={isLoading}
-                      className="flex items-center text-xs font-semibold text-rose-600 hover:text-rose-800 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />
-                      Delete Member
-                    </button>
-                    <button
-                      className="flex items-center text-xs font-semibold text-emerald-650 hover:text-emerald-800 transition-colors"
-                      onClick={() => handleUpdateOpen(person)}
-                    >
-                      <SquarePen className="h-3.5 w-3.5 mr-1" />
-                      Edit Details
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="text-center py-16 col-span-full border-2 border-dashed border-gray-300 rounded-2xl bg-white shadow-sm">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg font-semibold">No staff members found.</p>
-              <p className="text-gray-400 text-sm mt-1">
-                Try searching for a different name, or click the Add Staff button to invite someone new.
-              </p>
+        {/* Dynamic Filters and Options Bar */}
+        <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            {/* Search */}
+            <div className="relative max-w-md w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search staff members by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              />
             </div>
-          )}
+
+            {/* Actions button */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => {
+                  setShowAddStaffModal(true);
+                  setFormError(null);
+                }}
+                disabled={!profile || isLoading}
+                className="flex items-center px-4 py-2 text-sm font-semibold text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors w-fit justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                <Plus className="h-4 w-4 mr-1.5" /> Invite Staff
+              </button>
+            </div>
+          </div>
+
+          {/* Inline filters */}
+          <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-600">
+            {/* Sort Dropdown */}
+            <div className="flex items-center space-x-2">
+              <ArrowUpDown className="h-3.5 w-3.5 text-gray-450" />
+              <span>Sort By:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-slate-50 border border-gray-200 rounded px-2.5 py-1 text-gray-750 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold"
+              >
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="workload-desc">Workload (Highest First)</option>
+                <option value="workload-asc">Workload (Lowest First)</option>
+              </select>
+            </div>
+
+            {/* Verification status filter */}
+            <div className="flex items-center space-x-2">
+              <Filter className="h-3.5 w-3.5 text-gray-450" />
+              <span>Status:</span>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+                className="bg-slate-50 border border-gray-200 rounded px-2.5 py-1 text-gray-750 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold"
+              >
+                <option value="all">All Statuses</option>
+                <option value="verified">Verified / Active Only</option>
+                <option value="pending">Pending Invitations Only</option>
+              </select>
+            </div>
+
+            {/* Workload filter */}
+            <div className="flex items-center space-x-2">
+              <Briefcase className="h-3.5 w-3.5 text-gray-450" />
+              <span>Capacity:</span>
+              <select
+                value={filterWorkload}
+                onChange={(e) => setFilterWorkload(e.target.value as any)}
+                className="bg-slate-50 border border-gray-200 rounded px-2.5 py-1 text-gray-750 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold"
+              >
+                <option value="all">All Capacities</option>
+                <option value="available">Available (0 tasks)</option>
+                <option value="busy">Busy (1-2 tasks)</option>
+                <option value="overloaded">Overloaded (3+ tasks)</option>
+              </select>
+            </div>
+          </div>
         </div>
+
+        {/* Dashboard Content Split Layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
+          {/* Staff Members Grid (Left 3 Columns) */}
+          <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredAndSortedStaff.length > 0 ? (
+              filteredAndSortedStaff.map((person) => {
+                const personTasks = tasks.filter(
+                  (t) => t.assignee?.toLowerCase() === person.email?.toLowerCase()
+                );
+                const personActiveCount = personTasks.filter(
+                  (t) => t.status?.toLowerCase() !== "completed"
+                ).length;
+                const personCompletedCount = personTasks.length - personActiveCount;
+
+                return (
+                  <div
+                    key={person.email}
+                    className="bg-white rounded-2xl border border-gray-150 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                  >
+                    <div className="p-5 space-y-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3.5">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-base flex items-center justify-center shadow-inner uppercase">
+                            {person.name?.charAt(0) || "?"}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-800 text-base capitalize leading-tight">
+                              {person.name}
+                            </h4>
+                            <p className="text-xs text-gray-450 lowercase break-all mt-0.5">
+                              {person.email}
+                            </p>
+                          </div>
+                        </div>
+                        {getVerificationBadge(person.isVerified)}
+                      </div>
+
+                      {/* Workload overview */}
+                      <div className="pt-3 border-t border-gray-55 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 font-semibold">Phone:</span>
+                          <span className="font-bold text-gray-700">{person.phone || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 font-semibold">Workload Status:</span>
+                          {getWorkloadPill(personActiveCount)}
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500 font-semibold">Overall Progress:</span>
+                          <span className="font-bold text-emerald-600">
+                            {personCompletedCount} / {personTasks.length} tasks completed
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Specific Actions */}
+                      <div className="pt-2 grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedStaffForTasks(person);
+                            setShowViewTasksModal(true);
+                          }}
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-200 transition-colors"
+                        >
+                          <Eye size={13} /> View Tasks
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAssigneeForNewTask(person.email || "");
+                            setShowAssignModal(true);
+                          }}
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-xs border border-emerald-150 transition-colors"
+                        >
+                          <Plus size={13} /> Assign Task
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Footer delete/update */}
+                    <div className="px-5 py-3.5 bg-slate-50 border-t border-gray-100 flex justify-between items-center">
+                      <button
+                        onClick={() => {
+                          setStaffDelete(true);
+                          setSelectedId(person._id as string);
+                          setSelectedEmail(person.email as string);
+                        }}
+                        disabled={isLoading}
+                        className="flex items-center text-xs font-semibold text-rose-600 hover:text-rose-800 disabled:text-gray-450 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        Remove Member
+                      </button>
+                      <button
+                        className="flex items-center text-xs font-semibold text-emerald-650 hover:text-emerald-800 transition-colors"
+                        onClick={() => handleUpdateOpen(person)}
+                      >
+                        <SquarePen className="h-3.5 w-3.5 mr-1" />
+                        Edit details
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-16 col-span-full border-2 border-dashed border-gray-300 rounded-2xl bg-white shadow-sm">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg font-semibold">No matching staff members found.</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Adjust filters or search parameters to see registered accounts.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Activity Feed (Right 1 Column) */}
+          <div className="xl:col-span-1 space-y-6">
+            <div className="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Activity size={15} className="text-emerald-600" /> Live Update Feed
+                </h3>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </div>
+              <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+                {recentUpdates.map((task) => {
+                  const staffName = getStaffNameByEmail(task.assignee);
+                  const date = task.updatedAt ? new Date(task.updatedAt) : new Date(task.createdTime || Date.now());
+                  const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  
+                  return (
+                    <div key={task.id} className="text-xs space-y-1.5 border-l-2 border-emerald-500 pl-3 py-0.5">
+                      <p className="text-gray-700 font-semibold leading-snug">
+                        <span className="capitalize text-emerald-700">{staffName}</span> updated status to{" "}
+                        <span className="font-bold text-slate-800 capitalize bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
+                          {task.status}
+                        </span>
+                      </p>
+                      <p className="text-gray-500 font-medium italic">"{task.title}"</p>
+                      {task.note && (
+                        <p className="text-[11px] text-gray-600 bg-slate-50 p-2 rounded border border-gray-100 italic leading-tight">
+                          "{task.note}"
+                        </p>
+                      )}
+                      <span className="text-[9px] text-gray-400 font-bold block">{timeStr}</span>
+                    </div>
+                  );
+                })}
+                {recentUpdates.length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-6">No recent task activity recorded.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* --- ADD STAFF MODAL --- */}
@@ -395,7 +661,7 @@ const StaffManagement = () => {
           setShowAddStaffModal(false);
           setFormError(null);
         }}
-        title={edit ? "Edit Staff Details" : "Add New Staff Member"}
+        title={edit ? "Edit Staff Details" : "Invite New Staff Member"}
       >
         <form onSubmit={handleAddStaff} className="space-y-5">
           <div>
@@ -480,6 +746,216 @@ const StaffManagement = () => {
         </form>
       </Modal>
 
+      {/* --- DIRECT TASK ASSIGNMENT MODAL --- */}
+      <Modal
+        show={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title={`Assign Task to ${getStaffNameByEmail(assigneeForNewTask)}`}
+      >
+        <form onSubmit={handleCreateAssignedTask} className="space-y-4">
+          <div>
+            <label htmlFor="task-title" className="block text-xs font-bold text-gray-700 mb-1">
+              Task Title *
+            </label>
+            <input
+              type="text"
+              id="task-title"
+              value={newTaskData.title}
+              onChange={(e) => setNewTaskData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="e.g. Water greenhouse crop"
+              required
+              className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="task-type" className="block text-xs font-bold text-gray-700 mb-1">
+                Task Type
+              </label>
+              <select
+                id="task-type"
+                value={newTaskData.taskType}
+                onChange={(e) => setNewTaskData(prev => ({ ...prev, taskType: e.target.value }))}
+                className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-850 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="General task">General Task</option>
+                <option value="Crop task">Crop Task</option>
+                <option value="Livestock task">Livestock Task</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="task-priority" className="block text-xs font-bold text-gray-700 mb-1">
+                Priority
+              </label>
+              <select
+                id="task-priority"
+                value={newTaskData.priority}
+                onChange={(e) => setNewTaskData(prev => ({ ...prev, priority: e.target.value }))}
+                className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-850 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="task-date" className="block text-xs font-bold text-gray-700 mb-1">
+                Due Date *
+              </label>
+              <input
+                type="date"
+                id="task-date"
+                required
+                value={newTaskData.dueDate}
+                onChange={(e) => setNewTaskData(prev => ({ ...prev, dueDate: e.target.value }))}
+                className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="task-time" className="block text-xs font-bold text-gray-700 mb-1">
+                Due Time *
+              </label>
+              <input
+                type="time"
+                id="task-time"
+                required
+                value={newTaskData.dueTime}
+                onChange={(e) => setNewTaskData(prev => ({ ...prev, dueTime: e.target.value }))}
+                className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="task-notes" className="block text-xs font-bold text-gray-700 mb-1">
+              Instructions / Notes
+            </label>
+            <textarea
+              id="task-notes"
+              rows={2}
+              value={newTaskData.note}
+              onChange={(e) => setNewTaskData(prev => ({ ...prev, note: e.target.value }))}
+              placeholder="Add details, locations, or requirements..."
+              className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowAssignModal(false)}
+              className="px-4 py-2 text-xs font-bold text-gray-650 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex items-center px-5 py-2 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow"
+            >
+              {isLoading && <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />}
+              Assign Task
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* --- STAFF TASK INSPECTOR MODAL --- */}
+      {selectedStaffForTasks && (
+        <Modal
+          show={showViewTasksModal}
+          onClose={() => {
+            setShowViewTasksModal(false);
+            setSelectedStaffForTasks(null);
+          }}
+          title={`Task Sheet: ${selectedStaffForTasks.name}`}
+        >
+          <div className="space-y-4">
+            <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase pb-2 border-b border-gray-100">
+              <span>Task List</span>
+              <span>
+                {tasks.filter((t) => t.assignee?.toLowerCase() === selectedStaffForTasks.email?.toLowerCase()).length} Assigned
+              </span>
+            </div>
+            
+            <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+              {tasks
+                .filter((t) => t.assignee?.toLowerCase() === selectedStaffForTasks.email?.toLowerCase())
+                .map((task) => {
+                  const isCompleted = task.status === "completed";
+                  return (
+                    <div 
+                      key={task.id} 
+                      className={`p-3.5 rounded-xl border transition-all flex justify-between items-start ${
+                        isCompleted 
+                          ? "bg-slate-50 border-gray-200 opacity-80" 
+                          : "bg-white border-slate-200 shadow-sm"
+                      }`}
+                    >
+                      <div className="space-y-1 max-w-[75%]">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                            task.priority === "high"
+                              ? "bg-red-50 border-red-100 text-red-600"
+                              : task.priority === "medium"
+                              ? "bg-amber-50 border-amber-100 text-amber-600"
+                              : "bg-slate-50 border-slate-100 text-slate-500"
+                          }`}>
+                            {task.priority}
+                          </span>
+                          <span className="text-[10px] text-gray-400 capitalize">{task.taskType}</span>
+                        </div>
+                        <h5 className={`text-sm font-bold text-gray-800 capitalize leading-tight ${isCompleted ? 'line-through text-gray-400' : ''}`}>
+                          {task.title}
+                        </h5>
+                        {task.note && (
+                          <p className="text-xs text-gray-500 italic leading-snug">
+                            "{task.note}"
+                          </p>
+                        )}
+                        <p className="text-[10px] text-gray-450 font-semibold flex items-center gap-1">
+                          <Calendar size={11} /> Due: {task.timeline?.dueDate ? new Date(task.timeline.dueDate).toLocaleDateString() : "N/A"} · {task.timeline?.dueTime}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => handleToggleTaskStatus(task)}
+                        className={`flex items-center justify-center p-2 rounded-lg border transition-all ${
+                          isCompleted
+                            ? "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100"
+                            : "bg-white border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-250"
+                        }`}
+                        title={isCompleted ? "Mark Pending" : "Mark Completed"}
+                      >
+                        <CheckSquare className="h-4.5 w-4.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+              {tasks.filter((t) => t.assignee?.toLowerCase() === selectedStaffForTasks.email?.toLowerCase()).length === 0 && (
+                <div className="text-center py-8 text-gray-400 text-xs font-semibold">
+                  No tasks currently assigned to this staff member.
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowViewTasksModal(false);
+                  setSelectedStaffForTasks(null);
+                }}
+                className="px-4 py-2 text-xs font-bold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-250"
+              >
+                Close Sheet
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* --- Staff Creation Successful --- */}
       <Modal
         show={staffCreate}
@@ -487,7 +963,7 @@ const StaffManagement = () => {
         title="Staff member added successfully!"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-650">
             A staff account has been set up with the following login details:
           </p>
           <div className="bg-slate-50 border border-gray-150 rounded-xl p-4 space-y-2">
