@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Card from "../ui/Card";
-import { ClipboardList, Loader2 } from "lucide-react";
+import { ClipboardList, Loader2, MapPin, Sprout, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdviceCardSkeleton from "../skeleton/smart-advisory/AdviceCard"; // 👈 import skeleton
 
@@ -46,39 +45,54 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
   }
 
   return (
-    <Card
-      title="Farming Plan"
-      borderless={true}
-      className="hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden"
-    >
+    <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full relative group min-w-[250px]">
       {/* Top green line indicator */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-green-600" />
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-500 to-emerald-600 opacity-80" />
       
-      <div className="flex flex-col justify-between h-full pt-2">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-green-50 rounded-xl text-green-700 hidden md:block">
-            <ClipboardList className="w-6 h-6" />
-          </div>
-          <div className="text-xs space-y-1 font-semibold text-slate-500">
-            <p className="capitalize">
-              Type: <span className="text-slate-800 font-bold ml-1">{farmType}</span>
-            </p>
-            <p className="capitalize">
-              Produce: <span className="text-slate-800 font-bold ml-1">{produce}</span>
-            </p>
-            <p className="capitalize text-[11px]">
-              Location:{" "}
-              <span className="text-slate-700 ml-1">
-                {location.state}, {location.country}
-              </span>
-            </p>
-          </div>
+      <div className="p-5 flex-1 pt-7">
+        {/* Header Section */}
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="font-bold text-slate-800 text-xl leading-snug tracking-tight">
+            Farming Plan
+          </h3>
         </div>
 
+        {/* Info Section */}
+        <div className="space-y-3 mt-4">
+          <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="p-2 bg-slate-50 rounded-xl text-slate-400 group-hover:text-green-600 transition-colors">
+              <Layers className="h-4.5 w-4.5" />
+            </div>
+            <span className="font-medium text-slate-700 capitalize">
+              Type: <span className="font-bold text-slate-900 ml-1">{farmType}</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="p-2 bg-slate-50 rounded-xl text-slate-400">
+              <Sprout className="h-4.5 w-4.5" />
+            </div>
+            <span className="font-medium text-slate-700 capitalize">
+              Produce: <span className="font-bold text-slate-900 ml-1">{produce}</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="p-2 bg-slate-50 rounded-xl text-slate-400">
+              <MapPin className="h-4.5 w-4.5" />
+            </div>
+            <span className="truncate font-medium text-slate-700">
+              Location: <span className="font-bold text-slate-900 ml-1">{location.state}, {location.country}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 pt-0 mt-auto">
         <button
           onClick={handleViewAdvice}
           disabled={loading}
-          className={`w-full flex justify-center items-center gap-1.5 text-center bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 py-2.5 px-4 rounded-xl text-xs font-bold transition duration-150 mt-6 ${
+          className={`w-full flex justify-center items-center gap-1.5 text-center bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 py-2.5 px-4 rounded-xl text-sm font-semibold transition duration-150 ${
             loading ? "opacity-80 cursor-not-allowed" : ""
           }`}
         >
@@ -86,7 +100,7 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
           {loading ? "Loading..." : "View Advice Plan"}
         </button>
       </div>
-    </Card>
+    </div>
   );
 };
 
