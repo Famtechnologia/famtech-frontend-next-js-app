@@ -14,6 +14,8 @@ import {
   User,
   Calendar,
   Loader2,
+  AlertTriangle,
+  ShoppingCart,
 } from "lucide-react";
 import { getFarmProfile, ProfileType } from "@/lib/services/farm";
 import { useAssignee } from "@/lib/hooks/Assignee";
@@ -40,6 +42,9 @@ interface Task {
   description: string;
   notes?: string;
   dueDate?: string;
+  blocker?: string;
+  restockRequired?: boolean;
+  restockNotes?: string;
 }
 
 export default function TasksPage() {
@@ -55,6 +60,9 @@ export default function TasksPage() {
   // Modal edit states
   const [modalStatus, setModalStatus] = useState<"pending" | "ongoing" | "completed">("pending");
   const [modalNotes, setModalNotes] = useState<string>("");
+  const [modalBlocker, setModalBlocker] = useState<string>("");
+  const [modalRestockRequired, setModalRestockRequired] = useState<boolean>(false);
+  const [modalRestockNotes, setModalRestockNotes] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const { user } = useAssignee();
@@ -75,12 +83,12 @@ export default function TasksPage() {
   type ApiTaskWithId = ApiTask & { id: string };
 
   const fetchTasks = useCallback(async () => {
-    if (!farmProfile?.userId) return;
+    if (!farmProfile?.id) return;
     setLoading(true);
     setError(null);
     try {
       const data = (await getTasks(
-        farmProfile.userId as string
+        farmProfile.id as string
       )) as ApiTaskWithId[];
 
       const mappedTasks: Task[] = data.map((task) => {
@@ -111,6 +119,9 @@ export default function TasksPage() {
           description: task.note ?? "",
           notes: task.note,
           dueDate: formattedDateForDisplay,
+          blocker: task.blocker || "",
+          restockRequired: !!task.restockRequired,
+          restockNotes: task.restockNotes || "",
         };
       });
 
@@ -121,13 +132,13 @@ export default function TasksPage() {
     } finally {
       setLoading(false);
     }
-  }, [farmProfile?.userId]);
+  }, [farmProfile?.id]);
 
   useEffect(() => {
-    if (farmProfile?.userId) {
+    if (farmProfile?.id) {
       fetchTasks();
     }
-  }, [farmProfile?.userId, fetchTasks]);
+  }, [farmProfile?.id, fetchTasks]);
 
   const taskTypeIcons = {
     "Crop task": { label: "Crop Tasks", icon: Sprout },
@@ -211,6 +222,9 @@ export default function TasksPage() {
       await updateTask(selectedTask.id, {
         status: modalStatus,
         note: modalNotes,
+        blocker: modalBlocker,
+        restockRequired: modalRestockRequired,
+        restockNotes: modalRestockRequired ? modalRestockNotes : "",
       });
       toast.success("Progress updated successfully!");
       fetchTasks();
@@ -392,6 +406,24 @@ export default function TasksPage() {
                           "{task.notes}"
                         </div>
                       )}
+                      {task.blocker && (
+                        <div className="text-xs text-red-700 bg-red-50 border border-red-100 p-2.5 rounded-xl flex items-start gap-1.5 font-medium">
+                          <AlertTriangle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-[10px] block uppercase text-red-800 tracking-wider mb-0.5">Blocker Flagged</span>
+                            {task.blocker}
+                          </div>
+                        </div>
+                      )}
+                      {task.restockRequired && (
+                        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-100 p-2.5 rounded-xl flex items-start gap-1.5 font-medium">
+                          <ShoppingCart className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-[10px] block uppercase text-amber-800 tracking-wider mb-0.5">Restock Requested</span>
+                            {task.restockNotes || "Materials/tools finished and need restocking."}
+                          </div>
+                        </div>
+                      )}
                       <div className="grid grid-cols-2 gap-4 pt-1">
                         <div className="flex items-center gap-1.5 text-xs text-gray-550 font-medium">
                           <Calendar className="h-4 w-4 text-gray-400" />
@@ -418,6 +450,9 @@ export default function TasksPage() {
                           setSelectedTask(task);
                           setModalStatus(task.status);
                           setModalNotes(task.notes || "");
+                          setModalBlocker(task.blocker || "");
+                          setModalRestockRequired(!!task.restockRequired);
+                          setModalRestockNotes(task.restockNotes || "");
                           setShowConfirm(true);
                         }}
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
@@ -517,6 +552,51 @@ export default function TasksPage() {
                 onChange={(e) => setModalNotes(e.target.value)}
                 className="w-full p-3 border border-gray-250 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-gray-800"
               />
+            </div>
+
+            {/* Blocker Input */}
+            <div>
+              <label htmlFor="modal-blocker" className="block text-sm font-semibold text-gray-700 mb-2">
+                Flag a Blocker (Optional)
+              </label>
+              <textarea
+                id="modal-blocker"
+                rows={2}
+                placeholder="Specify if there is anything stopping you from completing this task..."
+                value={modalBlocker}
+                onChange={(e) => setModalBlocker(e.target.value)}
+                className="w-full p-3 border border-gray-250 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all text-gray-800"
+              />
+            </div>
+
+            {/* Restock Needs */}
+            <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <ShoppingCart className="h-5 w-5 text-amber-500" />
+                  <label htmlFor="modal-restock-checkbox" className="text-sm font-semibold text-gray-700 cursor-pointer">
+                    Tools / Materials Finished? (Needs Restock)
+                  </label>
+                </div>
+                <input
+                  id="modal-restock-checkbox"
+                  type="checkbox"
+                  checked={modalRestockRequired}
+                  onChange={(e) => setModalRestockRequired(e.target.checked)}
+                  className="h-4.5 w-4.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                />
+              </div>
+
+              {modalRestockRequired && (
+                <textarea
+                  id="modal-restock-notes"
+                  rows={2}
+                  placeholder="List the tools or materials that are finished or need to be restocked..."
+                  value={modalRestockNotes}
+                  onChange={(e) => setModalRestockNotes(e.target.value)}
+                  className="w-full p-3 border border-gray-250 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-gray-800"
+                />
+              )}
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">

@@ -15,6 +15,9 @@ export interface Task {
   };
   createdTime?: string;
   note?: string;
+  blocker?: string;
+  restockRequired?: boolean;
+  restockNotes?: string;
   attachment?: unknown;
   taskType: string;
   assignee: string;

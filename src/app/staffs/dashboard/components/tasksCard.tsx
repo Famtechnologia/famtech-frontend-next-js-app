@@ -53,7 +53,7 @@ export const useTaskSummary = () => {
     fetchFarmProfile();
   }, [user]);
 
-  const userId = farmProfile?.userId;
+  const userId = farmProfile?.id;
 
   const swrKey = isClient && userId ? ["tasks", userId, user.email] : null;
 
