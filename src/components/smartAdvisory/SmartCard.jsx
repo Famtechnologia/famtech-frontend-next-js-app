@@ -1,33 +1,60 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getAdvice } from "@/lib/services/advisory";
-import { CircleCheck, MoveRight, Lightbulb, Sprout, PawPrint } from "lucide-react";
+import { MoveRight, Lightbulb, Sprout, PawPrint } from "lucide-react";
 import Link from "next/link";
 
-export const SmartCard = ({
-  location,
-  type,
-  name,
-  tip,
-  record,
-}) => {
-  const [advice, setAdvice] = useState("");
-  const [error, setError] = useState("");
+const TIP_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/** Read a cached tip, returning null if missing or expired */
+const getCachedTip = (key) => {
+  try {
+    const raw = localStorage.getItem(`tip_${key}`);
+    if (!raw) return null;
+    const { value, ts } = JSON.parse(raw);
+    if (Date.now() - ts > TIP_TTL_MS) {
+      localStorage.removeItem(`tip_${key}`);
+      return null;
+    }
+    return value;
+  } catch {
+    return null;
+  }
+};
+
+const setCachedTip = (key, value) => {
+  try {
+    localStorage.setItem(`tip_${key}`, JSON.stringify({ value, ts: Date.now() }));
+  } catch { /* storage quota */ }
+};
+
+export const SmartCard = ({ location, type, name, tip, record }) => {
+  // Seed state directly from localStorage — renders instantly without an API call
+  const [advice, setAdvice] = useState(() => getCachedTip(`${name}_${type}`) ?? "");
 
   const isCrop = type === "crop";
 
   useEffect(() => {
+    // Cache hit → nothing to fetch
+    if (advice) return;
+
     const generateAdvice = async () => {
-      const question = "I need a 4 word tip, Note go straight to the point for the tip don't add any unnecessary text, just give me the 4 word tip, no more, no less. Note only the tip.";
+      const question =
+        "I need a 4 word tip, Note go straight to the point for the tip don't add any unnecessary text, just give me the 4 word tip, no more, no less. Note only the tip.";
       try {
         const res = await getAdvice(question, tip);
-        setAdvice(res?.advice);
-      } catch (error) {
-        setError(error?.message);
+        const text = res?.advice;
+        if (text) {
+          setAdvice(text);
+          setCachedTip(`${name}_${type}`, text);
+        }
+      } catch (err) {
+        console.error("[SmartCard] tip fetch failed:", err);
       }
     };
+
     generateAdvice();
-  }, [tip]);
+  }, [tip, name, type, advice]);
 
   return (
     <div className="relative bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
@@ -42,11 +69,13 @@ export const SmartCard = ({
             )}
             {name}
           </h3>
-          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider shrink-0 ${
-            isCrop 
-              ? "bg-emerald-50 text-emerald-700 border-emerald-100/40" 
-              : "bg-blue-50 text-blue-700 border-blue-100/40"
-          }`}>
+          <span
+            className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider shrink-0 ${
+              isCrop
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100/40"
+                : "bg-blue-50 text-blue-700 border-blue-100/40"
+            }`}
+          >
             {type}
           </span>
         </div>
@@ -61,7 +90,6 @@ export const SmartCard = ({
             <span>Growth Stage</span>
             <span className="text-slate-800">{record}%</span>
           </div>
-
           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
@@ -73,17 +101,27 @@ export const SmartCard = ({
         </div>
 
         {/* Advisory Tips banner */}
-        <div className={`mt-5 border rounded-xl p-3.5 text-xs font-semibold text-slate-700 flex items-start gap-2.5 ${
-          isCrop 
-            ? "bg-emerald-50/35 border-emerald-100/30" 
-            : "bg-blue-50/35 border-blue-100/30"
-        }`}>
-          <Lightbulb className={`h-4 w-4 shrink-0 mt-0.5 ${
-            isCrop ? "text-emerald-600" : "text-blue-600"
-          }`} />
+        <div
+          className={`mt-5 border rounded-xl p-3.5 text-xs font-semibold text-slate-700 flex items-start gap-2.5 ${
+            isCrop
+              ? "bg-emerald-50/35 border-emerald-100/30"
+              : "bg-blue-50/35 border-blue-100/30"
+          }`}
+        >
+          <Lightbulb
+            className={`h-4 w-4 shrink-0 mt-0.5 ${
+              isCrop ? "text-emerald-600" : "text-blue-600"
+            }`}
+          />
           <div>
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider mb-0.5">Quick Tip</span>
-            <span className="leading-relaxed">{advice || "Optimizing records..."}</span>
+            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider mb-0.5">
+              Quick Tip
+            </span>
+            <span className="leading-relaxed">
+              {advice || (
+                <span className="animate-pulse text-slate-400">Loading tip…</span>
+              )}
+            </span>
           </div>
         </div>
       </div>
