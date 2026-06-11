@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus,
@@ -9,6 +10,12 @@ import {
   Trash2,
   SquarePen,
   Loader2,
+  Users,
+  CheckCircle,
+  Clock,
+  Briefcase,
+  UserCheck,
+  UserMinus,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -20,12 +27,15 @@ import {
   deleteStaff,
   updateStaff,
 } from "@/lib/services/staff";
+import { getTasks, Task as ApiTask } from "@/lib/services/taskplanner";
 import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 const StaffManagement = () => {
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [staff, setStaff] = useState<StaffType[]>([]);
+  const [tasks, setTasks] = useState<ApiTask[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -45,10 +55,13 @@ const StaffManagement = () => {
   const fetchStaffData = useCallback(async () => {
     if (!profile) return;
     try {
-      const data = await getStaffs(profile.id);
-      setStaff(data);
+      const staffData = await getStaffs(profile.id);
+      setStaff(staffData);
+
+      const taskData = await getTasks(profile.id);
+      setTasks(taskData);
     } catch (error) {
-      console.error("Failed to fetch staff data:", error);
+      console.error("Failed to fetch staff or tasks data:", error);
     }
   }, [profile]);
 
@@ -88,13 +101,14 @@ const StaffManagement = () => {
     try {
       if (edit) {
         await updateStaff(formData);
+        toast.success("Staff details updated successfully!");
         fetchStaffData();
         setShowAddStaffModal(false);
         setSelectedId("");
-
         return;
       }
       await createStaff({ ...formData, farmId: profile.id });
+      toast.success("Staff member created successfully!");
       fetchStaffData();
       setShowAddStaffModal(false);
       setStaffCreate(true);
@@ -109,6 +123,7 @@ const StaffManagement = () => {
       }
       console.error("Failed to add staff:", errorMessage);
       setFormError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -117,19 +132,20 @@ const StaffManagement = () => {
   const handleDeleteStaff = async () => {
     try {
       await deleteStaff(selectedEmail);
+      toast.success("Staff member deleted successfully!");
       fetchStaffData();
       setStaffDelete(false);
       setSelectedId("");
       setSelectedEmail("");
     } catch (error) {
       console.error("Failed to delete staff:", error);
+      toast.error("Failed to delete staff member.");
     }
   };
 
   const handleUpdateOpen = (person: StaffType) => {
     setEdit(true);
     setShowAddStaffModal(true);
-    // Reset form
     setFormData({
       name: person.name as string,
       email: person.email as string,
@@ -152,112 +168,224 @@ const StaffManagement = () => {
     setStaffCreate(false);
   };
 
+  // Metrics calculations
+  const totalStaff = staff.length;
+  const activeStaff = staff.filter((s) => s.isVerified === "true" || String(s.isVerified) === "true").length;
+  const pendingStaff = totalStaff - activeStaff;
+
+  const staffEmails = staff.map((s) => s.email?.toLowerCase());
+  const totalActiveTasks = tasks.filter(
+    (t) =>
+      t.assignee &&
+      staffEmails.includes(t.assignee.toLowerCase()) &&
+      t.status?.toLowerCase() !== "completed"
+  ).length;
+
+  const getWorkloadPill = (count: number) => {
+    if (count === 0) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full">
+          <CheckCircle className="h-3 w-3" /> Available
+        </span>
+      );
+    } else if (count <= 2) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-full">
+          <Clock className="h-3 w-3" /> Active Tasks ({count})
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-full">
+          <TriangleAlert className="h-3 w-3" /> Overloaded ({count})
+        </span>
+      );
+    }
+  };
+
+  const getVerificationBadge = (isVerified: boolean | string | undefined) => {
+    const verified = isVerified === true || isVerified === "true";
+    if (verified) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full">
+          Verified
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-full">
+          Pending
+        </span>
+      );
+    }
+  };
+
   return (
-    <div className="p-2 lg:pt-8 lg:pb-8 max-w-7xl mx-auto">
-      {/* --- CONTROL BAR --- */}
-      <div className="md:flex justify-between items-center space-y-4 md:space-y-0 mb-8">
-        {/* Search */}
-        <div className="relative max-w-xs w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search staff..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-          />
+    <div className="p-0 md:p-6 bg-slate-50 min-h-screen">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Stats Metrics Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+              <Users className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Total Staff</p>
+              <h3 className="text-xl font-bold text-gray-800">{totalStaff}</h3>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+              <UserCheck className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Verified Active</p>
+              <h3 className="text-xl font-bold text-gray-800">{activeStaff}</h3>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
+            <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
+              <UserMinus className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Pending Onboarding</p>
+              <h3 className="text-xl font-bold text-gray-800">{pendingStaff}</h3>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
+            <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
+              <Briefcase className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Active Tasks</p>
+              <h3 className="text-xl font-bold text-gray-800">{totalActiveTasks}</h3>
+            </div>
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap items-center gap-3">
-          <button className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
-            <ListFilter className="h-4 w-4 mr-2" /> Filter
-          </button>
-          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
-            <LayoutGrid className="h-4 w-4 mr-2" /> Format
-          </button>
-          <button
-            onClick={() => {
-              setShowAddStaffModal(true);
-              setFormError(null);
-            }}
-            disabled={!profile || isLoading}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-md transition-colors w-fit md:w-auto justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            <Plus className="h-4 w-4 mr-2" /> Add Staff
-          </button>
-        </div>
-      </div>
+        {/* Control Bar */}
+        <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search staff members by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+            />
+          </div>
 
-      {/* --- STAFF MEMBERS GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredStaff.length > 0 ? (
-          filteredStaff.map((person) => (
-            <Card
-              key={person.email}
-              title={person.name}
-              className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300 capitalize"
+          <div className="flex items-center gap-3">
+            <button className="flex items-center px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-250 rounded-lg hover:bg-gray-50 transition-colors">
+              <ListFilter className="h-4 w-4 mr-2" /> Filter
+            </button>
+            <button className="hidden lg:flex items-center px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-250 rounded-lg hover:bg-gray-50 transition-colors">
+              <LayoutGrid className="h-4 w-4 mr-2" /> Format
+            </button>
+            <button
+              onClick={() => {
+                setShowAddStaffModal(true);
+                setFormError(null);
+              }}
+              disabled={!profile || isLoading}
+              className="flex items-center px-4 py-2 text-sm font-semibold text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-md transition-colors w-fit md:w-auto justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              <div className="space-y-2">
-                <div className="flex items-center space-x-4">
-                  <img
-                    alt={person.name}
-                    className="w-16 h-16 rounded-full"
-                    src={"images/help/download.png"}
-                    width={100}
-                    height={100}
-                    // priority
-                  />
-                  <div>
-                    <p className="font-semibold text-lg capitalize">
-                      {person.name}
-                    </p>
-                    <p className="text-sm text-gray-500 lowercase break-all">
-                      {person.email}
-                    </p>
+              <Plus className="h-4 w-4 mr-1.5" /> Add Staff
+            </button>
+          </div>
+        </div>
+
+        {/* Staff Members Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStaff.length > 0 ? (
+            filteredStaff.map((person) => {
+              // Calculate task stats for this staff member
+              const personTasks = tasks.filter(
+                (t) => t.assignee?.toLowerCase() === person.email?.toLowerCase()
+              );
+              const personActiveCount = personTasks.filter(
+                (t) => t.status?.toLowerCase() !== "completed"
+              ).length;
+              const personCompletedCount = personTasks.length - personActiveCount;
+
+              return (
+                <div
+                  key={person.email}
+                  className="bg-white rounded-2xl border border-gray-150 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                >
+                  <div className="p-6 space-y-4">
+                    {/* Header: Avatar, Name & Verification status */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-lg flex items-center justify-center shadow-inner uppercase">
+                          {person.name?.charAt(0) || "?"}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-base capitalize leading-tight">
+                            {person.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 lowercase break-all mt-0.5">
+                            {person.email}
+                          </p>
+                        </div>
+                      </div>
+                      {getVerificationBadge(person.isVerified)}
+                    </div>
+
+                    {/* Stats & Workload detail */}
+                    <div className="pt-2 border-t border-gray-50 space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500 font-medium">Phone:</span>
+                        <span className="font-semibold text-gray-700">{person.phone || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500 font-medium">Workload Status:</span>
+                        {getWorkloadPill(personActiveCount)}
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-gray-500 font-medium">Completed tasks:</span>
+                        <span className="font-bold text-emerald-600">{personCompletedCount} done</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions footer */}
+                  <div className="px-6 py-4 bg-slate-50 border-t border-gray-100 flex justify-between items-center">
+                    <button
+                      onClick={() => {
+                        setStaffDelete(true);
+                        setSelectedId(person._id as string);
+                        setSelectedEmail(person.email as string);
+                      }}
+                      disabled={isLoading}
+                      className="flex items-center text-xs font-semibold text-rose-600 hover:text-rose-800 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Delete Member
+                    </button>
+                    <button
+                      className="flex items-center text-xs font-semibold text-emerald-650 hover:text-emerald-800 transition-colors"
+                      onClick={() => handleUpdateOpen(person)}
+                    >
+                      <SquarePen className="h-3.5 w-3.5 mr-1" />
+                      Edit Details
+                    </button>
                   </div>
                 </div>
-                <p className="flex justify-between text-sm">
-                  <span className="text-gray-500">Phone:</span>
-                  <span className="font-semibold text-gray-800">
-                    {person.phone}
-                  </span>
-                </p>
-              </div>
-              {/* Actions */}
-              <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
-                <button
-                  onClick={() => {
-                    setStaffDelete(true);
-                    setSelectedId(person._id as string);
-                    setSelectedEmail(person.email as string);
-                  }}
-                  disabled={isLoading}
-                  className="flex items-center text-sm font-medium text-red-600 hover:text-red-800 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </button>
-                <button
-                  className="flex items-center text-sm font-medium text-green-600 hover:text-green-800 transition-colors"
-                  onClick={() => handleUpdateOpen(person)}
-                >
-                  <SquarePen className="h-4 w-4 mr-1" />
-                  Update
-                </button>
-              </div>
-            </Card>
-          ))
-        ) : (
-          <div className="text-center py-12 col-span-full border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-            <p className="text-gray-500 text-lg font-medium">
-              No staff members found.
-            </p>
-            <p className="text-gray-400 text-sm mt-1">
-              Try a different search term or click Add Staff to get started.
-            </p>
-          </div>
-        )}
+              );
+            })
+          ) : (
+            <div className="text-center py-16 col-span-full border-2 border-dashed border-gray-300 rounded-2xl bg-white shadow-sm">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg font-semibold">No staff members found.</p>
+              <p className="text-gray-400 text-sm mt-1">
+                Try searching for a different name, or click the Add Staff button to invite someone new.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* --- ADD STAFF MODAL --- */}
@@ -267,16 +395,15 @@ const StaffManagement = () => {
           setShowAddStaffModal(false);
           setFormError(null);
         }}
-        title="Add New Staff Member"
+        title={edit ? "Edit Staff Details" : "Add New Staff Member"}
       >
-        <form onSubmit={handleAddStaff} className="space-y-6">
-          {/* Form fields for staff details */}
+        <form onSubmit={handleAddStaff} className="space-y-5">
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-semibold text-gray-700 mb-1"
             >
-              Name
+              Full Name
             </label>
             <input
               type="text"
@@ -284,15 +411,16 @@ const StaffManagement = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              placeholder="e.g. John Doe"
+              className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-semibold text-gray-700 mb-1"
             >
-              Email
+              Email Address
             </label>
             <input
               type="email"
@@ -300,15 +428,17 @@ const StaffManagement = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              disabled={edit}
+              placeholder="e.g. john@example.com"
+              className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <div>
             <label
               htmlFor="phone"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-semibold text-gray-700 mb-1"
             >
-              Phone
+              Phone Number
             </label>
             <input
               type="tel"
@@ -316,12 +446,13 @@ const StaffManagement = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+              placeholder="e.g. +1 (555) 000-0000"
+              className="w-full p-2.5 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-gray-100">
             {formError && (
-              <p className="mb-3 text-sm text-red-600 flex items-start">
+              <p className="mb-3 text-sm text-rose-600 flex items-start">
                 <TriangleAlert className="h-4 w-4 mt-0.5 mr-1 flex-shrink-0" />
                 <span>{formError}</span>
               </p>
@@ -330,20 +461,20 @@ const StaffManagement = () => {
               type="submit"
               disabled={isLoading}
               className={`
-                    w-full flex justify-center rounded-lg border border-transparent py-3 px-4 text-sm font-semibold shadow-md transition-colors text-white
-                    ${
-                      isLoading
-                        ? "bg-green-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }
-                `}
+                w-full flex justify-center items-center rounded-lg py-2.5 px-4 text-sm font-bold shadow-md transition-colors text-white
+                ${
+                  isLoading
+                    ? "bg-emerald-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700"
+                }
+              `}
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 mr-1.5" />
               )}
-              {isLoading ? "Saving..." : "Save Staff"}
+              {isLoading ? "Saving..." : edit ? "Save Changes" : "Create Account"}
             </button>
           </div>
         </form>
@@ -355,66 +486,62 @@ const StaffManagement = () => {
         onClose={handleCreateStaffModalClose}
         title="Staff member added successfully!"
       >
-        <div>
-          <h4 className="py-4 text-lg font-semibold text-gray-800">
-            Login Credentials
-          </h4>
-          <div>
-            <p className="flex justify-between items-center">
-              <span className="font-semibold text-base text-gray-500">
-                Email:
-              </span>{" "}
-              <span className="font-semibold text-base text-gray-800">
-                {formData.email}
-              </span>
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            A staff account has been set up with the following login details:
+          </p>
+          <div className="bg-slate-50 border border-gray-150 rounded-xl p-4 space-y-2">
+            <p className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-gray-500">Email:</span>
+              <span className="font-bold text-gray-850">{formData.email}</span>
             </p>
-            <p className="flex justify-between items-center">
-              <span className="font-semibold text-base text-gray-500">
-                Password:
-              </span>{" "}
-              <span className="font-semibold text-base text-gray-800">
-                12345678
-              </span>
+            <p className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-gray-500">Temporary Password:</span>
+              <span className="font-bold text-gray-850">12345678</span>
             </p>
           </div>
+          <p className="text-xs text-amber-600 font-medium">
+            Note: Please share these temporary credentials securely with the staff member.
+          </p>
         </div>
-        {/* Action Buttons */}
-        <div className="pt-6 mt-8 border-t border-gray-100 flex justify-end">
+        <div className="pt-4 mt-6 border-t border-gray-100 flex justify-end">
           <button
             onClick={handleCreateStaffModalClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-250 transition-colors"
           >
             Close
           </button>
         </div>
       </Modal>
 
-      {/* --- Staff Deletion Successful --- */}
+      {/* --- Staff Deletion Confirmation --- */}
       <Modal
         show={staffDelete}
         onClose={() => setStaffDelete(false)}
-        title="Delete Staff"
+        title="Delete Staff Member"
       >
-        <p className="mb-3 text-lg flex items-start">
-          Are you sure you want to delete this staff member?
-        </p>
-        <p className="mb-3 text-sm text-gray-500 flex items-start">
-          This action cannot be undone.
-        </p>
+        <div className="space-y-3">
+          <p className="text-gray-600 font-medium text-base">
+            Are you sure you want to delete this staff member?
+          </p>
+          <p className="text-xs text-rose-600 font-semibold bg-rose-50 border border-rose-100 p-2.5 rounded-lg flex items-center gap-1.5">
+            <TriangleAlert className="h-4.5 w-4.5 flex-shrink-0" />
+            This will remove their access to the farm operations, and this action cannot be undone.
+          </p>
+        </div>
 
-        {/* Action Buttons */}
-        <div className="pt-6 mt-8 border-t border-gray-100 flex justify-end gap-4">
+        <div className="pt-4 mt-6 border-t border-gray-100 flex justify-end gap-3">
           <button
             onClick={() => setStaffDelete(false)}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            className="px-4 py-2 text-sm font-semibold text-gray-750 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Close
+            Cancel
           </button>
           <button
-            onClick={() => handleDeleteStaff()}
-            className="px-8 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 focus:ring-4 focus:ring-gray-100 transition-all duration-200 shadow-lg shadow-gray-200"
+            onClick={handleDeleteStaff}
+            className="px-6 py-2 bg-rose-600 text-white text-sm font-bold rounded-lg hover:bg-rose-700 transition-colors shadow-sm"
           >
-            Delete
+            Confirm Delete
           </button>
         </div>
       </Modal>
