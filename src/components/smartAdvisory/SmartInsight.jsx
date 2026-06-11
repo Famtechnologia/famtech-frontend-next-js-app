@@ -5,7 +5,7 @@ import {
   Plus, 
   MessageCircleMore, 
   User2, 
-  Sparkles, 
+  BotMessageSquare, 
   Copy, 
   Check, 
   RotateCcw, 
@@ -249,7 +249,7 @@ export const SmartInsight = () => {
             /* --- BEAUTIFUL CLAUDE-STYLE GREETING LANDING --- */
             <div className="flex flex-col items-center justify-center py-12 md:py-16 text-center space-y-8 animate-in fade-in duration-350">
               <div className="p-3.5 bg-gradient-to-tr from-green-500 to-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-500/10">
-                <Sparkles className="h-8 w-8" />
+                <BotMessageSquare className="h-8 w-8" />
               </div>
               <div className="space-y-2 max-w-lg">
                 <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
@@ -296,7 +296,7 @@ export const SmartInsight = () => {
                     {chat.type === "user" ? (
                       <User2 className="h-4.5 w-4.5" />
                     ) : (
-                      <Sparkles className="h-4.5 w-4.5" />
+                      <BotMessageSquare className="h-4.5 w-4.5" />
                     )}
                   </div>
 
@@ -354,7 +354,7 @@ export const SmartInsight = () => {
               {isLoading && (
                 <div className="flex items-start gap-4 animate-in slide-in-from-bottom-2">
                   <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
-                    <Sparkles className="h-4.5 w-4.5" />
+                    <BotMessageSquare className="h-4.5 w-4.5" />
                   </div>
                   <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-none px-5 py-4 max-w-md shadow-sm">
                     <div className="flex items-center gap-1.5">

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getAdvice } from "@/lib/services/advisory";
-import { CircleCheck, MoveRight, Sparkles } from "lucide-react";
+import { CircleCheck, MoveRight, Lightbulb, Sprout, PawPrint } from "lucide-react";
 import Link from "next/link";
 
 export const SmartCard = ({
@@ -13,6 +13,8 @@ export const SmartCard = ({
 }) => {
   const [advice, setAdvice] = useState("");
   const [error, setError] = useState("");
+
+  const isCrop = type === "crop";
 
   useEffect(() => {
     const generateAdvice = async () => {
@@ -32,10 +34,19 @@ export const SmartCard = ({
       <div>
         {/* Header Block */}
         <div className="flex items-center justify-between gap-3">
-          <h3 className="font-extrabold text-slate-800 text-base md:text-lg capitalize tracking-tight truncate">
+          <h3 className="font-extrabold text-slate-800 text-base md:text-lg capitalize tracking-tight truncate flex items-center gap-1.5">
+            {isCrop ? (
+              <Sprout className="h-4 w-5 text-emerald-600 shrink-0" />
+            ) : (
+              <PawPrint className="h-4 w-5 text-blue-600 shrink-0" />
+            )}
             {name}
           </h3>
-          <span className="px-2.5 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100/40 uppercase tracking-wider shrink-0">
+          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider shrink-0 ${
+            isCrop 
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100/40" 
+              : "bg-blue-50 text-blue-700 border-blue-100/40"
+          }`}>
             {type}
           </span>
         </div>
@@ -53,15 +64,23 @@ export const SmartCard = ({
 
           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+              className={`h-full rounded-full transition-all duration-500 ${
+                isCrop ? "bg-emerald-500" : "bg-blue-500"
+              }`}
               style={{ width: `${record}%` }}
             />
           </div>
         </div>
 
         {/* Advisory Tips banner */}
-        <div className="mt-5 bg-emerald-50/35 border border-emerald-100/30 rounded-xl p-3.5 text-xs font-semibold text-slate-700 flex items-start gap-2.5">
-          <Sparkles className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+        <div className={`mt-5 border rounded-xl p-3.5 text-xs font-semibold text-slate-700 flex items-start gap-2.5 ${
+          isCrop 
+            ? "bg-emerald-50/35 border-emerald-100/30" 
+            : "bg-blue-50/35 border-blue-100/30"
+        }`}>
+          <Lightbulb className={`h-4 w-4 shrink-0 mt-0.5 ${
+            isCrop ? "text-emerald-600" : "text-blue-600"
+          }`} />
           <div>
             <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider mb-0.5">Quick Tip</span>
             <span className="leading-relaxed">{advice || "Optimizing records..."}</span>
@@ -72,7 +91,11 @@ export const SmartCard = ({
       <div className="border-t border-slate-100/80 pt-4 mt-6 flex justify-end">
         <Link
           href="/farm-operation?tab=records"
-          className="inline-flex items-center gap-1 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50/50 hover:bg-green-50 px-3 py-1.5 rounded-xl transition-all"
+          className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${
+            isCrop
+              ? "text-green-700 hover:text-green-800 bg-green-50/50 hover:bg-green-50"
+              : "text-blue-700 hover:text-blue-800 bg-blue-50/50 hover:bg-blue-50"
+          }`}
         >
           View More
           <MoveRight size={14} />

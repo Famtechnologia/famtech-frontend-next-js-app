@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ClipboardList, Loader2, Trash2 } from "lucide-react";
+import { Sprout, PawPrint, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface AdviceCardProps {
@@ -27,6 +27,8 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const isCrop = farmType?.toLowerCase()?.includes("crop");
+
   const handleViewAdvice = () => {
     setLoading(true);
     router.push(`/smart-advisory/${id}`);
@@ -46,8 +48,10 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden flex flex-col justify-between border border-slate-100">
-      {/* Top green line indicator */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-green-600" />
+      {/* Top line indicator */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${
+        isCrop ? "bg-green-600" : "bg-blue-600"
+      }`} />
       
       {/* Inline Confirmation Overlay */}
       {isConfirming && (
@@ -91,8 +95,14 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
         </div>
 
         <div className="flex items-center gap-4 pt-1">
-          <div className="p-3 bg-green-50 rounded-xl text-green-700 hidden md:block">
-            <ClipboardList className="w-6 h-6" />
+          <div className={`p-3 rounded-xl hidden md:block ${
+            isCrop ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"
+          }`}>
+            {isCrop ? (
+              <Sprout className="w-6 h-6" />
+            ) : (
+              <PawPrint className="w-6 h-6" />
+            )}
           </div>
           <div className="text-sm space-y-1 font-semibold text-slate-500">
             <p className="capitalize">
@@ -115,7 +125,11 @@ const AdviceCard: React.FC<AdviceCardProps> = ({
         <button
           onClick={handleViewAdvice}
           disabled={loading}
-          className={`w-full flex justify-center items-center gap-1.5 text-center bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 py-2.5 px-4 rounded-xl text-sm font-bold transition duration-150 ${
+          className={`w-full flex justify-center items-center gap-1.5 text-center py-2.5 px-4 rounded-xl text-sm font-bold transition duration-150 ${
+            isCrop 
+              ? "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800" 
+              : "bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
+          } ${
             loading ? "opacity-80 cursor-not-allowed" : ""
           }`}
         >

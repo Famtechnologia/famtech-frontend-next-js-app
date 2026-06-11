@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { 
   Calendar, 
   Sprout, 
+  PawPrint,
   ChevronLeft, 
   CheckCircle2 
 } from "lucide-react";
@@ -263,12 +264,20 @@ export default function AdviceDetailsPage() {
 
         {/* --- Top Title Header Card --- */}
         <div className="w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 p-6 md:p-8 relative overflow-hidden mb-8">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-green-600" />
+          <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${
+            advice.type?.toLowerCase()?.includes("crop")
+              ? "from-emerald-500 to-green-600"
+              : "from-blue-500 to-indigo-600"
+          }`} />
           
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 capitalize tracking-tight flex items-center gap-2">
-                <Sprout className="h-7 w-7 text-emerald-600" />
+                {advice.type?.toLowerCase()?.includes("crop") ? (
+                  <Sprout className="h-7 w-7 text-emerald-600" />
+                ) : (
+                  <PawPrint className="h-7 w-7 text-blue-600" />
+                )}
                 {advice.produce}
               </h1>
               {structuredAdvice && (
@@ -278,7 +287,11 @@ export default function AdviceDetailsPage() {
               )}
             </div>
             
-            <span className="px-3.5 py-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold rounded-xl uppercase tracking-wider shrink-0 self-start sm:self-auto capitalize">
+            <span className={`px-3.5 py-1.5 border text-xs font-bold rounded-xl uppercase tracking-wider shrink-0 self-start sm:self-auto capitalize ${
+              advice.type?.toLowerCase()?.includes("crop")
+                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                : "bg-blue-50 border-blue-100 text-blue-700"
+            }`}>
               {advice.type} Plan
             </span>
           </div>
