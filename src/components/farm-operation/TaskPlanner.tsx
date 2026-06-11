@@ -204,7 +204,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
             <option value="" disabled>Select a staff member</option>
             {user?.email && (
               <option value={user.email}>
-                {profile?.owner ? `${profile.owner.firstName} ${profile.owner.lastName} (Me)` : "Me"}
+                {profile?.owner 
+                  ? `${profile.owner.firstName} ${profile.owner.lastName} (Owner - ${user.email})` 
+                  : `${user.email} (Owner)`}
               </option>
             )}
             {staff?.map((staff) => (
