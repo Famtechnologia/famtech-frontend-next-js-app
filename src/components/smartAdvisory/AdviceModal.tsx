@@ -1,9 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import Modal from "../ui/Modal"; // Assuming the path to your generic Modal component
-//import { deleteAdvice } from "@/lib/services/advisory";
-//import { toast } from "react-hot-toast";
-//import { useRouter } from "next/navigation";
+import Modal from "../ui/Modal";
 
 interface AdviceModalProps {
   advice: string;
@@ -22,29 +19,33 @@ interface AdviceFormat {
   }[];
 }
 
-const AdviceModal: React.FC<AdviceModalProps> = ({ advice, onClose}) => {
-const [showModal] = useState(true);
-//const router = useRouter();
+const AdviceModal: React.FC<AdviceModalProps> = ({ advice, onClose }) => {
+  const [showModal] = useState(true);
+
   const parseAdvice = (adviceString: string) => {
     try {
       const adviceJson: AdviceFormat = JSON.parse(adviceString);
       return (
-        <div>
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-1">
           {adviceJson.body.map((weeklyData) => (
-            <div key={weeklyData.week} className="mb-6">
-              <h3 className="text-xl font-semibold text-green-700 mb-3">
+            <div key={weeklyData.week} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
                 Week {weeklyData.week}
               </h3>
-              <ul className="space-y-2">
+              
+              <ul className="space-y-3">
                 {weeklyData.tasks.map((task, index) => (
                   <li
                     key={index}
-                    className="grid grid-cols-1 md:grid-cols-[100px,1fr] gap-2 border border-gray-200 rounded-md p-2"
+                    className="p-3.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col md:flex-row md:items-start gap-3 hover:bg-slate-50 transition-colors"
                   >
-                    <span className="font-semibold text-gray-700">
-                      {task.day}:
+                    <span className="inline-flex px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100/35 rounded-lg uppercase tracking-wider shrink-0 mt-0.5 self-start">
+                      {task.day}
                     </span>
-                    <span className="text-gray-600">{task.instruction}</span>
+                    <span className="text-slate-700 text-xs md:text-sm font-medium leading-relaxed">
+                      {task.instruction}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -54,8 +55,7 @@ const [showModal] = useState(true);
       );
     } catch (error) {
       console.error("Failed to parse advice JSON:", error);
-      // Fallback for non-JSON advice
-      return <p className="text-gray-600">{advice}</p>;
+      return <p className="text-slate-600 text-sm">{advice}</p>;
     }
   };
 
@@ -69,35 +69,9 @@ const [showModal] = useState(true);
     }
   };
 
-  //const handleDelete = async () => {
-  //  try {
-  //    const isDelete = await deleteAdvice(id);
-
-    //  if (!isDelete) {
-  //      toast.success(isDelete?.message);
-    //  }
-
-   //   toast.success(isDelete?.message);
-   //   setShowModal(false);
-
-   //   router.refresh();
-   // } catch (error) {
-    //  console.error("Advice failed:", error);
-    //  const errorMessage =
-    //    error instanceof Error ? error.message : "Advice Generation Failed";
-    //  toast.error(errorMessage);
-   // }
- // };
-
   return (
     <Modal show={showModal} onClose={onClose} title={getTitle(advice)}>
       {parseAdvice(advice)}
-     {/*<button
-        onClick={handleDelete}
-        className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-150 float-right mb-4"
-      >
-        Delete
-      </button>*/}
     </Modal>
   );
 };

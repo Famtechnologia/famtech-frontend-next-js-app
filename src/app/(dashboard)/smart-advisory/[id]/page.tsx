@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getUserAdvice } from "@/lib/services/advisory";
-import Id from '@/components/skeleton/smart-advisory/Id'
+import Id from '@/components/skeleton/smart-advisory/Id';
 import { useAuth } from "@/lib/hooks/useAuth";
+import { ArrowLeft, Calendar, Sprout, ChevronLeft } from "lucide-react";
+
 // --- Type Definitions ---
 interface Task {
   day: string;
@@ -37,7 +39,7 @@ export default function AdviceDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [structuredAdvice, setStructuredAdvice] = useState<StructuredAdviceBody | null>(null);
   const [activeWeek, setActiveWeek] = useState<number | null>(null);
-   const [, setIsLoading] = useState<boolean>(true);
+  const [, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchAdvice = async () => {
@@ -84,142 +86,135 @@ export default function AdviceDetailsPage() {
     if (user?._id && id) fetchAdvice();
   }, [user, id]);
 
- const renderWeekContent = () => {
-  if (!structuredAdvice) return null;
-
-  const selectedWeek = structuredAdvice.body.find(
-    (weekData) => weekData.week === activeWeek
-  );
-
-  if (!selectedWeek) return <p>No tasks for this week.</p>;
-
-  // Function to clean the day string, removing "Day " if present
   const cleanDay = (dayValue: string | number) => {
-    // 💡 FIX: Convert the value to a string first using String() or .toString()
     const dayString = String(dayValue); 
-    
-    // Remove "Day" or "day" prefix, and trim whitespace
     return dayString.replace(/^(Day|day)\s*/, "").trim();
   };
 
-  switch (activeWeek) {
-    default:
-      return (
-        <div className=" px-1.5 pt-6  pb-6 bg-white rounded-xl ">
-          <h3 className="text-xl font-semibold mb-4 text-green-600 border-b pb-2">
-            Weekly Action Plan — Week {selectedWeek.week}
-          </h3>
-          <ol className="space-y-5 list-none pl-0">
-            {selectedWeek.tasks.map((task, index) => (
-              <li
-                key={index}
-                className="flex p-4 border-l-2 md:border-l-3 border-green-400 bg-green-50 rounded-l-2xl rounded-r-lg shadow-sm"
-              >
-                <div className="flex flex-col">
-                  {/* The fix is implemented in the cleanDay function itself */}
-                  <span className="font-bold text-gray-900 mb-1">
-                    Day {cleanDay(task.day)} Instruction: 
-                  </span>
-                  <p className="text-gray-700 leading-relaxed">
-                    {task.instruction}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      );
-  }
-};
-useEffect(() => {
+  const renderWeekContent = () => {
+    if (!structuredAdvice) return null;
+
+    const selectedWeek = structuredAdvice.body.find(
+      (weekData) => weekData.week === activeWeek
+    );
+
+    if (!selectedWeek) return <p className="text-slate-500 text-sm">No tasks for this week.</p>;
+
+    return (
+      <div className="bg-white rounded-xl">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-6 flex items-center gap-2">
+          <Calendar className="h-4.5 w-4.5 text-green-700" />
+          Weekly Action Plan — Week {selectedWeek.week}
+        </h3>
+        
+        <ol className="space-y-4 list-none pl-0">
+          {selectedWeek.tasks.map((task, index) => (
+            <li
+              key={index}
+              className="p-5 bg-slate-50/50 border border-slate-100 rounded-2xl flex flex-col md:flex-row md:items-start gap-4 hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <span className="inline-flex px-3 py-1 text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-100/35 rounded-xl uppercase tracking-wider shrink-0 mt-0.5 self-start">
+                Day {cleanDay(task.day)}
+              </span>
+              <div className="space-y-1">
+                <p className="text-slate-850 text-xs md:text-sm font-bold leading-snug">Instructions</p>
+                <p className="text-slate-600 text-xs md:text-sm leading-relaxed font-medium">
+                  {task.instruction}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  };
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500); // ⏳ 1.5 seconds (you can adjust this)
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [])
+  }, []);
 
-  if (loading) return <Id/>;
+  if (loading) return <Id />;
 
-  if (!advice)
+  if (!advice) {
     return (
-      <div className="flex flex-col justify-center items-center h-[70vh] gap-4 p-4">
-        <p className="text-gray-500 text-center text-lg">
-          Advice not found. Please go back and try again.
+      <div className="flex flex-col justify-center items-center h-[70vh] gap-4 p-4 bg-slate-50/50">
+        <p className="text-slate-500 text-center text-sm font-semibold">
+          Advice plan not found. Please try again.
         </p>
         <button
           onClick={() => router.back()}
-          className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-700 transition"
+          className="bg-green-600 text-white px-5 py-2.5 text-xs font-bold rounded-xl shadow-md hover:bg-green-700 transition"
         >
           ← Go Back
         </button>
       </div>
     );
+  }
 
   return (
-    <div className="p-0 md:p-2 w-full bg-gray-50 min-h-screen">
-      {/* --- Back Button --- */}
-      <button
-        onClick={() => router.back()}
-        className="text-green-600 mb-6 flex items-center font-medium hover:text-green-800 transition"
-      >
-        <svg
-          className="w-4 h-4 mr-1"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 font-sans p-4 md:p-6">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* --- Back Button --- */}
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center text-xs font-bold text-slate-500 hover:text-slate-800 transition mb-6"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          ></path>
-        </svg>
-        Back to Smart Advisory
-      </button>
+          <ChevronLeft className="w-4 h-4 mr-0.5" />
+          Back to Smart Advisory
+        </button>
 
-      {/* --- Header --- */}
-      <div className="w-full bg-white rounded-xl shadow-xl p-3 pt-6 md:p-10 border-t-2 border-gray-200">
-        <div className="flex items-center mb-4">
-        {/* <span className="text-4xl mr-4">🌱</span>*/}
+        {/* --- Header --- */}
+        <div className="w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 p-6 md:p-8 relative overflow-hidden">
+          {/* Top color accent */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-green-650" />
+          
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-100 pb-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 capitalize tracking-tight flex items-center gap-2">
+                <Sprout className="h-7 w-7 text-emerald-600" />
+                {advice.produce}
+              </h1>
+              {structuredAdvice && (
+                <p className="text-sm md:text-base text-slate-500 font-semibold mt-1.5">
+                  {structuredAdvice.title}
+                </p>
+              )}
+            </div>
+            
+            <span className="px-3 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg uppercase tracking-wider shrink-0 self-start">
+              {advice.type}
+            </span>
+          </div>
+
+          {/* --- Week Tabs --- */}
+          {structuredAdvice && (
+            <div className="my-6 flex flex-wrap gap-2 border-b border-slate-100 pb-6">
+              {structuredAdvice.body.map((week) => (
+                <button
+                  key={week.week}
+                  onClick={() => setActiveWeek(week.week)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                    activeWeek === week.week
+                      ? "bg-green-600 text-white shadow-md shadow-green-500/10"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50"
+                  }`}
+                >
+                  Week {week.week}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* --- Week Content --- */}
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-green-700 capitalize">
-              {advice.produce}
-            </h1>
-            {structuredAdvice && (
-              <p className="text-lg text-gray-600 font-semibold mt-1">
-                {structuredAdvice.title}
-              </p>
-            )}
+            {renderWeekContent()}
           </div>
         </div>
-        <p className="text-gray-500 mb-6 border-b pb-4">
-          Personalized Advisory for {advice.type}
-        </p>
-
-        {/* --- Week Tabs --- */}
-        {structuredAdvice && (
-          <div className="mb-6 flex flex-wrap gap-3">
-            {structuredAdvice.body.map((week) => (
-              <button
-                key={week.week}
-                onClick={() => setActiveWeek(week.week)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
-                  activeWeek === week.week
-                    ? "bg-green-600 text-white border-green-600"
-                    : "bg-white text-green-700 border-green-600 hover:bg-green-50"
-                }`}
-              >
-                Week {week.week}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* --- Week Content --- */}
-        {renderWeekContent()}
       </div>
     </div>
   );
