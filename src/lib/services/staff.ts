@@ -22,10 +22,19 @@ export const getStaffById = async (id: string): Promise<StaffType> => {
 };
 
 // Create a new staff
-export const createStaff = async (taskData: StaffType): Promise<StaffType> => {
+export const createStaff = async (taskData: StaffType): Promise<any> => {
   const response = await apiClient.post("/api/staff/signup", taskData);
   return response.data;
 };
+
+// Regenerate staff password
+export const regenerateStaffPassword = async (
+  email: string
+): Promise<{ success: boolean; tempPassword: string }> => {
+  const response = await apiClient.post("/api/staff/regenerate-password", { email });
+  return response.data;
+};
+
 
 // Update staff
 export const updateStaff = async (
