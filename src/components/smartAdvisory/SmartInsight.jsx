@@ -118,15 +118,31 @@ export const SmartInsight = () => {
     setIsLoading(true);
 
     try {
-      const advice = await getAdvice(textToSend, selectedRecord);
+      // Use the explicitly selected record, or fall back to all available farm context
+      const context = selectedRecord || {
+        crops: cropRecords.map((r) => ({
+          name: r.cropName,
+          stage: r.currentGrowthStage,
+          health: r.healthStatus,
+        })),
+        livestock: livestockRecords.map((r) => ({
+          name: r.specie,
+          stage: r.currentGrowthStage,
+          health: r.healthStatus,
+        })),
+        note: "Provide general advice based on all farm records listed.",
+      };
+
+      const advice = await getAdvice(textToSend, context);
       const botMessage = { type: "bot", text: advice.advice };
       setChatHistory((prev) => [...prev, botMessage]);
     } catch (error) {
       const errorMessage = {
         type: "bot",
-        text: `Failed to fetch response: ${error.message || "Please check backend availability."}`,
+        text: `Sorry, I couldn't generate a response right now. Please try again in a moment.`,
       };
       setChatHistory((prev) => [...prev, errorMessage]);
+      console.error("[SmartInsight] getAdvice failed:", error.message);
     } finally {
       setIsLoading(false);
       setIsPreview(false);
