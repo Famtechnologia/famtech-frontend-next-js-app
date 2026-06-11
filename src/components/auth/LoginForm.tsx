@@ -34,6 +34,12 @@ const Login: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
+    if (!form.role) {
+      toast.error("Please select a role.");
+      setLoading(false);
+      return;
+    }
+
     try {
       if (form.role === "assignee") {
         const res = await loginStaff(form.email, form.password);
@@ -55,10 +61,10 @@ const Login: React.FC = () => {
         toast.success(message || "Login successful!");
 
         router.replace("/dashboard");
+        return;
       }
 
-      router.replace("/login");
-      // No setLoading(false) here — it’ll unmount naturally after redirect
+      setLoading(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -132,8 +138,9 @@ const Login: React.FC = () => {
             className="w-full p-3 rounded-xl bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-green-400"
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
+            required
           >
-            <option value="" hidden>
+            <option value="" disabled>
               Select Role
             </option>
             <option value="farmer" className="text-black">
