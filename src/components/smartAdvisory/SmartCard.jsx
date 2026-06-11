@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getAdvice } from "@/lib/services/advisory";
 import { MoveRight, Lightbulb, Sprout, PawPrint } from "lucide-react";
 import Link from "next/link";
 
 const TIP_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-/** Read a cached tip, returning null if missing or expired */
 const getCachedTip = (key) => {
   try {
     const raw = localStorage.getItem(`tip_${key}`);
@@ -28,33 +27,74 @@ const setCachedTip = (key, value) => {
   } catch { /* storage quota */ }
 };
 
+/** Static fallbacks shown immediately if API is slow or fails */
+const STATIC_TIPS = {
+  crop: [
+    "Water consistently, avoid overwatering.",
+    "Monitor soil nutrients weekly.",
+    "Rotate crops each season.",
+    "Inspect leaves for early disease.",
+  ],
+  livestock: [
+    "Ensure clean water daily.",
+    "Maintain regular vaccination schedule.",
+    "Monitor feed intake carefully.",
+    "Keep housing well-ventilated.",
+  ],
+};
+
+const getStaticTip = (type, name) => {
+  const pool = STATIC_TIPS[type] || STATIC_TIPS.crop;
+  // Use name length as a stable pseudo-random index so each card gets a different tip
+  return pool[(name?.length || 0) % pool.length];
+};
+
 export const SmartCard = ({ location, type, name, tip, record }) => {
-  // Seed state directly from localStorage — renders instantly without an API call
-  const [advice, setAdvice] = useState(() => getCachedTip(`${name}_${type}`) ?? "");
+  const cacheKey = `${name}_${type}`;
+  const hasFetched = useRef(false);
+
+  const [advice, setAdvice] = useState(() => {
+    try {
+      return getCachedTip(cacheKey) ?? "";
+    } catch {
+      return "";
+    }
+  });
 
   const isCrop = type === "crop";
 
   useEffect(() => {
-    // Cache hit → nothing to fetch
-    if (advice) return;
+    // Already have a cached or fetched tip — skip
+    if (advice || hasFetched.current || !tip) return;
+
+    hasFetched.current = true;
 
     const generateAdvice = async () => {
       const question =
-        "I need a 4 word tip, Note go straight to the point for the tip don't add any unnecessary text, just give me the 4 word tip, no more, no less. Note only the tip.";
+        "Give me a single, practical 4-word farming tip. Reply with only the tip, nothing else.";
       try {
         const res = await getAdvice(question, tip);
-        const text = res?.advice;
+        const text = res?.advice?.trim();
         if (text) {
           setAdvice(text);
-          setCachedTip(`${name}_${type}`, text);
+          setCachedTip(cacheKey, text);
+        } else {
+          // API returned nothing useful — use static fallback
+          setAdvice(getStaticTip(type, name));
         }
-      } catch (err) {
-        console.error("[SmartCard] tip fetch failed:", err);
+      } catch {
+        // Network/API error — use static fallback immediately
+        setAdvice(getStaticTip(type, name));
       }
     };
 
     generateAdvice();
-  }, [tip, name, type, advice]);
+  // Only re-run if the crop/animal changes, not when advice updates
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tip, cacheKey]);
+
+  // While waiting for async tip, show static fallback instantly
+  const displayedTip = advice || getStaticTip(type, name);
 
   return (
     <div className="relative bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/60 hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 overflow-hidden p-6 flex flex-col justify-between">
@@ -117,11 +157,7 @@ export const SmartCard = ({ location, type, name, tip, record }) => {
             <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider mb-0.5">
               Quick Tip
             </span>
-            <span className="leading-relaxed">
-              {advice || (
-                <span className="animate-pulse text-slate-400">Loading tip…</span>
-              )}
-            </span>
+            <span className="leading-relaxed">{displayedTip}</span>
           </div>
         </div>
       </div>

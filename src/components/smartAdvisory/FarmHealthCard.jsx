@@ -108,7 +108,11 @@ export default function FarmHealthCard({ location }) {
             location={location}
             type={smart.type}
             name={smart.type === "crop" ? smart?.cropName : smart?.specie}
-            tip={smart}
+            tip={
+              smart.type === "crop"
+                ? `Crop: ${smart?.cropName}, Stage: ${smart?.currentGrowthStage || "unknown"}, Health: ${smart?.healthStatus || "unknown"}`
+                : `Livestock: ${smart?.specie}, Stage: ${smart?.currentGrowthStage || "adult"}, Health: ${smart?.healthStatus || "unknown"}`
+            }
             record={
               smart.type === "crop"
                 ? getGrowthPercentageFromStage(smart.currentGrowthStage, smart?.type)
