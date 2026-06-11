@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Loader2 } from "lucide-react";
 
 const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
   const [formData, setFormData] = useState({
@@ -112,43 +112,54 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
   };
 
   const inputClass = (hasError) => `
-    w-full px-3 py-2 rounded-md border bg-white text-sm shadow-sm placeholder:text-gray-400
-    focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500
-    ${hasError ? "border-red-500" : "border-gray-300"}
+    w-full px-4 py-2.5 rounded-xl border bg-white text-sm text-slate-800 placeholder-slate-400 shadow-sm transition-all focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600
+    ${hasError ? "border-red-300 focus:border-red-500 focus:ring-red-100/50" : "border-slate-200"}
   `;
 
-  const labelClass = "block text-sm font-medium text-green-800 mb-1";
+  const labelClass = "block text-sm font-semibold text-slate-700 mb-1.5";
 
   if (!isOpen) return null;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full mx-auto max-h-[90vh] flex flex-col">
+    <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-2xl w-full mx-auto max-h-[90vh] flex flex-col border border-slate-100 animate-in zoom-in-95 duration-200 relative">
+      <button
+        onClick={onClose}
+        type="button"
+        className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 hover:bg-slate-50 rounded-xl transition-all"
+        title="Close form"
+      >
+        <X className="h-5 w-5" />
+      </button>
+
       <div className="mb-6 flex-shrink-0">
-        <h2 className="text-2xl font-bold text-green-900">
-          {warehouse ? "Edit Warehouse" : "Add New Warehouse"}
+        <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+          {warehouse ? "Edit Warehouse Details" : "Create New Warehouse"}
         </h2>
+        <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-0.5">
+          {warehouse ? "Modify location settings and inventory" : "Establish a new storage site location"}
+        </p>
       </div>
 
-      <div className="overflow-y-auto flex-1 pr-2">
+      <div className="overflow-y-auto flex-1 pr-2 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1 col-span-2">
               <label htmlFor="name" className={labelClass}>
-                Warehouse Name *
+                Warehouse Name <span className="text-red-500">*</span>
               </label>
               <input
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter warehouse name"
+                placeholder="Alberta Grain Store"
                 className={inputClass(errors.name || apiError)}
               />
               {errors.name && (
-                <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                <p className="text-xs text-red-500 mt-1 font-semibold">{errors.name}</p>
               )}
               {apiError && (
-                <p className="text-sm text-red-600 mt-1 font-medium">
+                <p className="text-xs text-red-600 mt-1 font-bold">
                   {apiError}
                 </p>
               )}
@@ -156,24 +167,24 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
 
             <div className="space-y-1">
               <label htmlFor="location" className={labelClass}>
-                Location *
+                Location <span className="text-red-500">*</span>
               </label>
               <input
                 id="location"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder="e.g., Lagos, Nigeria"
+                placeholder="Edmonton, Alberta"
                 className={inputClass(errors.location)}
               />
               {errors.location && (
-                <p className="text-sm text-red-500 mt-1">{errors.location}</p>
+                <p className="text-xs text-red-500 mt-1 font-semibold">{errors.location}</p>
               )}
             </div>
 
             <div className="space-y-1">
               <label htmlFor="capacity" className={labelClass}>
-                Capacity *
+                Capacity (kg) <span className="text-red-500">*</span>
               </label>
               <input
                 id="capacity"
@@ -181,115 +192,119 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                 type="number"
                 value={formData.capacity}
                 onChange={handleChange}
-                placeholder="Enter storage capacity"
+                placeholder="600"
                 className={inputClass(errors.capacity)}
               />
               {errors.capacity && (
-                <p className="text-sm text-red-500 mt-1">{errors.capacity}</p>
+                <p className="text-xs text-red-500 mt-1 font-semibold">{errors.capacity}</p>
               )}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-semibold text-green-800 mb-3">
-                Products
-              </h3>
-              {formData.products.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  {formData.products.map((product, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-green-900">
-                          {product.name}
-                        </p>
-                        <p className="text-sm text-green-700">
-                          {product.quantity} {product.unit}
-                          {product.description && ` - ${product.description}`}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeProduct(index)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+              Products Stock List
+            </h3>
+            
+            {formData.products.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                {formData.products.map((product, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 text-sm truncate">
+                        {product.name}
+                      </p>
+                      <p className="text-xs font-semibold text-slate-400 mt-0.5">
+                        {product.quantity} {product.unit}
+                        {product.description && ` — ${product.description}`}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="space-y-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <p className="text-sm font-medium text-gray-700">Add Product</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    name="name"
-                    value={productForm.name}
-                    onChange={handleProductChange}
-                    placeholder="Product name"
-                    className={inputClass(false)}
-                  />
-                  <input
-                    name="quantity"
-                    type="number"
-                    value={productForm.quantity}
-                    onChange={handleProductChange}
-                    placeholder="Quantity"
-                    className={inputClass(false)}
-                  />
-                  <input
-                    name="unit"
-                    value={productForm.unit}
-                    onChange={handleProductChange}
-                    placeholder="Unit (e.g., kg)"
-                    className={inputClass(false)}
-                  />
-                  <input
-                    name="description"
-                    value={productForm.description}
-                    onChange={handleProductChange}
-                    placeholder="Description (optional)"
-                    className={inputClass(false)}
-                    autoComplete="off"
-                    spellCheck={false}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={addProduct}
-                  disabled={!productForm.name || !productForm.quantity}
-                  className="w-full flex items-center justify-center py-2 border-2 border-dashed border-green-300 text-green-700 rounded-md hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => removeProduct(index)}
+                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-100 rounded-lg transition-colors ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
+            )}
+
+            <div className="space-y-3 p-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Add Stock Item</p>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  name="name"
+                  value={productForm.name}
+                  onChange={handleProductChange}
+                  placeholder="Maize / Feed Name"
+                  className={inputClass(false)}
+                />
+                <input
+                  name="quantity"
+                  type="number"
+                  value={productForm.quantity}
+                  onChange={handleProductChange}
+                  placeholder="Quantity (e.g., 4000)"
+                  className={inputClass(false)}
+                />
+                <input
+                  name="unit"
+                  value={productForm.unit}
+                  onChange={handleProductChange}
+                  placeholder="Unit (e.g., bags, kg)"
+                  className={inputClass(false)}
+                />
+                <input
+                  name="description"
+                  value={productForm.description}
+                  onChange={handleProductChange}
+                  placeholder="Description (optional)"
+                  className={inputClass(false)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addProduct}
+                disabled={!productForm.name || !productForm.quantity}
+                className="w-full flex items-center justify-center py-2.5 border-2 border-dashed border-green-300 text-green-700 rounded-xl hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product to Warehouse
+              </button>
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+          <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-8">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors text-sm font-semibold disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70"
+              className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors text-sm font-semibold disabled:opacity-70 flex items-center justify-center"
             >
-              {isLoading
-                ? "Saving..."
-                : warehouse
-                ? "Update Warehouse"
-                : "Create Warehouse"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : warehouse ? (
+                "Update Warehouse"
+              ) : (
+                "Create Warehouse"
+              )}
             </button>
           </div>
         </form>

@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from "react";
-import { Plus, Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import WarehouseCard from "@/components/warehouse/WarehouseCard";
 import WarehouseForm from "@/components/warehouse/WarehouseForm";
 import WarehouseDetails from "@/components/warehouse/WarehouseDetails";
+import { toast } from "react-hot-toast";
 
 import { 
   getAllWarehouses, 
@@ -13,31 +14,6 @@ import {
 } from "@/lib/services/warehouse";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
-
-// ✅ Toast component
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3500);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  const isError = type === "error";
-  return (
-    <div
-      className={`fixed top-4 right-4 z-[60] flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 animate-in slide-in-from-right-5 ${
-        isError
-          ? "bg-red-50 border-red-200 text-red-800"
-          : "bg-green-50 border-green-200 text-green-800"
-      }`}
-    >
-      {isError ? <AlertCircle className="h-5 w-5" /> : <CheckCircle className="h-5 w-5" />}
-      <p className="font-medium text-sm">{message}</p>
-      <button onClick={onClose} className="ml-2 opacity-70 hover:opacity-100">
-        <X className="h-4 w-4" />
-      </button>
-    </div>
-  );
-};
 
 const Warehouse = () => {
   const { user, loading: authLoading } = useAuth();
@@ -49,14 +25,6 @@ const Warehouse = () => {
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [viewMode, setViewMode] = useState(null); // "view" or "edit"
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-
-  // Toast helpers
-  const showToast = (message, type = "success") =>
-    setToast({ show: true, message, type });
-  const closeToast = () =>
-    setToast((prev) => ({ ...prev, show: false }));
-
   // Fetch warehouses
   const fetchWarehouses = async () => {
     if (!profile?.id) return;
@@ -66,7 +34,7 @@ const Warehouse = () => {
       setWarehouses(data);
     } catch (error) {
       console.error("Error fetching warehouses:", error);
-      showToast("Failed to load warehouses.", "error");
+      toast.error("Failed to load warehouses.");
     } finally {
       setIsLoading(false);
     }
@@ -105,10 +73,10 @@ const Warehouse = () => {
       if (selectedWarehouse) {
         const warehouseId = selectedWarehouse.id || selectedWarehouse._id;
         await updateWarehouse(warehouseId, formData);
-        showToast("Warehouse updated successfully!");
+        toast.success("Warehouse updated successfully!");
       } else {
         await createWarehouse({ ...formData, manager: profile.id });
-        showToast("Warehouse created successfully!");
+        toast.success("Warehouse created successfully!");
       }
 
       setIsFormOpen(false);
@@ -126,7 +94,7 @@ const Warehouse = () => {
           ? "Warehouse name already exists."
           : "Failed to save warehouse.");
 
-      showToast(errorMsg, "error");
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -135,11 +103,11 @@ const Warehouse = () => {
   const handleDelete = async (id) => {
     try {
       await deleteWarehouse(id);
-      showToast("Warehouse deleted successfully");
+      toast.success("Warehouse deleted successfully");
       fetchWarehouses();
     } catch (error) {
       console.error("Error deleting warehouse:", error);
-      showToast("Failed to delete warehouse.", "error");
+      toast.error("Failed to delete warehouse.");
     }
   };
 
@@ -152,7 +120,7 @@ const Warehouse = () => {
   // Loading screen
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50/50">
         <Loader2 className="h-10 w-10 text-green-600 animate-spin mb-4" />
         <p className="text-gray-500">Checking authentication...</p>
       </div>
@@ -160,28 +128,24 @@ const Warehouse = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans relative">
-      {toast.show && <Toast {...toast} onClose={closeToast} />}
-
-      <div className="container p-0 mx-0 md:mx-auto md:px-4 md:py-8 max-w-7xl">
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                Warehouse Overview
-              </h1>
-              <p className="text-gray-500 mt-1">
-                Manage your inventory locations and stock levels.
-              </p>
-            </div>
-            <button
-              onClick={handleCreateNew}
-              className="inline-flex items-center justify-center md:w-30 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            >
-              <Plus className="h-5 w-5 md:mr-2" />
-              New
-            </button>
+    <div className="min-h-screen bg-slate-50/50 text-gray-900 font-sans relative">
+      <div className="container p-4 mx-auto max-w-7xl">
+        <div className="mb-8 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+              Warehouse Overview
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm font-medium">
+              Manage your inventory locations and stock levels.
+            </p>
           </div>
+          <button
+            onClick={handleCreateNew}
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-green-100/50 w-full sm:w-auto"
+          >
+            <Plus className="h-4.5 w-4.5 mr-2" />
+            Create Warehouse
+          </button>
         </div>
 
         <div className="mb-6">
