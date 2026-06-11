@@ -6,6 +6,7 @@ import React, {
   Dispatch,
   SetStateAction,
   useCallback,
+  useRef,
 } from "react";
 import {
   Plus,
@@ -19,6 +20,7 @@ import {
   CheckCircle,
   ListFilter,
   LayoutGrid,
+  List,
   Download,
   Loader2,
   Trash2,
@@ -26,6 +28,7 @@ import {
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
+import { toast } from "react-hot-toast";
 
 // Assuming these types are defined in '@/types/inventory'
 import { UnifiedInventoryItem, EquipmentPartData } from "@/types/inventory";
@@ -84,6 +87,32 @@ const InventoryManagement = () => {
 
   const [formError, setFormError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // UI / UX Enhancement States
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [stockFilter, setStockFilter] = useState<"all" | "in" | "low" | "out">("all");
+  const [showFilterDropdown, setShowFilterDropdown] = useState<boolean>(false);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close filter dropdown on clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowFilterDropdown(false);
+      }
+    };
+    if (showFilterDropdown) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showFilterDropdown]);
 
   const initialFormData: OptionalUserIdNewInventoryItemData = {
     category: "seeds",
@@ -154,22 +183,112 @@ const InventoryManagement = () => {
     fetchInventoryItems();
   }, [fetchInventoryItems]);
 
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   const handleTabChange = (category: string) => {
     setActiveInventoryTab(category);
     setFormData(getInitialFormData(category));
+    setStockFilter("all");
     setError(null); // Clear main error on tab change
     setFormError(null); // Clear form error on tab change
   };
 
   const filteredItems = useMemo(() => {
-    return inventoryItems.filter(
-      (item) =>
-        item.category === activeInventoryTab &&
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [inventoryItems, activeInventoryTab, searchTerm]);
+    return inventoryItems.filter((item) => {
+      // 1. Category check
+      if (item.category !== activeInventoryTab) return false;
+
+      // 2. Search check
+      if (!item.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+
+      // 3. Stock filter check
+      const qty = item.quantity ?? 0;
+      const reorder = item.reorderLevel ?? 0;
+      let status = "In Stock";
+      if (qty === 0) {
+        status = "Out of Stock";
+      } else if (qty <= reorder) {
+        status = "Low Stock";
+      }
+
+      if (stockFilter === "in" && status !== "In Stock") return false;
+      if (stockFilter === "low" && status !== "Low Stock") return false;
+      if (stockFilter === "out" && status !== "Out of Stock") return false;
+
+      return true;
+    });
+  }, [inventoryItems, activeInventoryTab, searchTerm, stockFilter]);
 
   const getItemsToDisplay = useMemo(() => filteredItems, [filteredItems]);
+
+  const handleExport = () => {
+    const items = getItemsToDisplay;
+    if (items.length === 0) {
+      toast.error("No items to export.");
+      return;
+    }
+
+    let csvContent = "";
+    // Build CSV headers based on activeInventoryTab
+    let headers: string[] = ["Name", "Quantity", "Reorder Level"];
+    if (activeInventoryTab === "fertilizer") {
+      headers.push("Type", "N", "P", "K");
+    } else if (activeInventoryTab === "feed") {
+      headers.push("Type");
+    } else if (activeInventoryTab === "equipment parts") {
+      headers.push("Part Model", "Part Number", "Manufacturer", "Condition", "Price");
+    } else {
+      headers.push("Usage Rate", "Expiry Date");
+    }
+
+    csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
+
+    items.forEach(item => {
+      let row = [
+        item.name,
+        item.quantity,
+        item.reorderLevel ?? 0
+      ];
+
+      if (activeInventoryTab === "fertilizer") {
+        row.push(item.type || "", String(item.n ?? ""), String(item.p ?? ""), String(item.k ?? ""));
+      } else if (activeInventoryTab === "feed") {
+        row.push(item.type || "");
+      } else if (activeInventoryTab === "equipment parts") {
+        row.push(
+          item.equipmentPartData?.model || "",
+          item.equipmentPartData?.partNumber || "",
+          item.equipmentPartData?.manufacturer || "",
+          item.equipmentPartData?.condition || "",
+          String(item.equipmentPartData?.price || "")
+        );
+      } else {
+        row.push(item.usageRate || "", item.expireDate ? formatDate(item.expireDate) : "");
+      }
+
+      csvContent += row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `famtech_${activeInventoryTab}_inventory.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`${activeInventoryTab.charAt(0).toUpperCase() + activeInventoryTab.slice(1)} inventory exported successfully!`);
+  };
 
   const cleanAndParseNumber = (value: string | number): number | string => {
     if (typeof value === "number") return value;
@@ -360,6 +479,7 @@ const InventoryManagement = () => {
       setShowAddItemModal(false);
       setFormData(getInitialFormData(activeInventoryTab));
       setError(null); // Clear main error if successful
+      toast.success(`${newItem.name} added successfully!`);
     } catch (err: unknown) {
       // ✅ FIX: Use 'unknown'
       console.error("Full error object:", err);
@@ -430,6 +550,7 @@ const InventoryManagement = () => {
       setShowUpdateModal(false);
       setUpdateFormData(null);
       setError(null);
+      toast.success(`${updatedItem.name} updated successfully!`);
     } catch (err) {
       console.error("Failed to update item:", err);
       const axiosError = err as
@@ -458,9 +579,11 @@ const InventoryManagement = () => {
     try {
       await deleteInventoryItem(id);
       setInventoryItems((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Item deleted successfully!");
     } catch (err) {
       console.error("Failed to delete item:", err);
       setError("Failed to delete inventory item. Check console for details.");
+      toast.error("Failed to delete item.");
     } finally {
       setIsDeleting((prev) => ({ ...prev, [id]: false }));
     }
@@ -557,17 +680,6 @@ const InventoryManagement = () => {
     }
   };
 
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    // Using a more standard format or locale for better readability
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
 
   type InventoryTab = {
     name: string;
@@ -625,7 +737,7 @@ const InventoryManagement = () => {
       </div>
 
       {/* --- CONTROL BAR --- */}
-      <div className="md:flex justify-between items-center space-y-4 md:space-y-0 mb-8">
+      <div className="md:flex justify-between items-center space-y-4 md:space-y-0 mb-8 relative z-20">
         {/* Search */}
         <div className="relative max-w-xs w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -634,151 +746,312 @@ const InventoryManagement = () => {
             placeholder={`Search ${activeInventoryTab} inventory...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all text-sm"
           />
         </div>
 
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-3">
-          <button className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
-            <ListFilter className="h-4 w-4 mr-2" /> Filter
-          </button>
-          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
-            <LayoutGrid className="h-4 w-4 mr-2" /> Grid
-          </button>
-          <button className=" items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors hidden lg:flex">
+          {/* Filter Dropdown Toggle */}
+          <div className="relative" ref={filterDropdownRef}>
+            <button
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className={`flex items-center px-4 py-2.5 text-sm font-semibold rounded-xl border transition-all ${
+                stockFilter !== "all"
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              <ListFilter className="h-4 w-4 mr-2" />
+              Filter{stockFilter !== "all" ? `: ${stockFilter === "in" ? "In Stock" : stockFilter === "low" ? "Low Stock" : "Out of Stock"}` : ""}
+            </button>
+
+            {showFilterDropdown && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-250">
+                <div className="px-4 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Filter Stock Status
+                </div>
+                {[
+                  { label: "All Statuses", value: "all" },
+                  { label: "In Stock Only", value: "in" },
+                  { label: "Low Stock Only", value: "low" },
+                  { label: "Out of Stock Only", value: "out" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setStockFilter(opt.value as any);
+                      setShowFilterDropdown(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                      stockFilter === opt.value
+                        ? "bg-green-50 text-green-700"
+                        : "text-gray-600 hover:bg-slate-50 hover:text-gray-900"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* View Toggles */}
+          <div className="bg-slate-100 p-0.5 rounded-xl flex items-center">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === "grid"
+                  ? "bg-white text-green-700 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              title="Grid View"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === "list"
+                  ? "bg-white text-green-700 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              title="List View"
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Export Button */}
+          <button
+            onClick={handleExport}
+            className="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+          >
             <Download className="h-4 w-4 mr-2" /> Export
           </button>
+
+          {/* Add Item Button */}
           <button
             onClick={() => {
               setShowAddItemModal(true);
-              setFormError(null); // Clear form error when opening new modal
+              setFormError(null);
             }}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-green-600 hover:bg-green-700 shadow-md transition-colors w-fit md:w-auto justify-center"
+            className="flex items-center px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all w-fit md:w-auto justify-center"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Item
           </button>
         </div>
       </div>
 
-      {/* --- INVENTORY ITEMS GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
-        {getItemsToDisplay.length > 0 ? (
-          getItemsToDisplay.map((item: UnifiedInventoryItem) => {
-            const status = getItemStatus(item);
-            const isItemDeleting = isDeleting[item.id];
-            return (
-              <Card
-                key={item.id}
-                title={item.name}
-                className="flex flex-col justify-between h-full shadow-lg hover:shadow-xl transition-shadow duration-300 min-w-[250px]  "
-              >
-                <div className="space-y-2">
-                  {/* Item Details */}
-                  <p className="flex justify-between text-sm">
-                    <span className="text-gray-500">Quantity:</span>
-                    <span className="font-semibold text-gray-800">
-                      {item.quantity}
-                    </span>
-                  </p>
-                  <p className="flex justify-between text-sm">
-                    <span className="text-gray-500">Reorder Level:</span>
-                    <span className="font-semibold text-gray-800">
-                      {item.reorderLevel ?? 0}
-                    </span>
-                  </p>
-
-                  {item.usageRate && (
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Usage Rate:</span>
-                      <span className="font-semibold text-gray-800">
-                        {item.usageRate}
-                      </span>
-                    </p>
+      {/* --- INVENTORY ITEMS DISPLAY --- */}
+      {viewMode === "list" ? (
+        getItemsToDisplay.length > 0 ? (
+          <div className="overflow-x-auto bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item Name</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Quantity</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Reorder Level</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                  {activeInventoryTab === "fertilizer" && (
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">N-P-K</th>
                   )}
-                  {item.expireDate && (
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Expiry Date:</span>
-                      <span className="font-semibold text-gray-800">
-                        {formatDate(item.expireDate)}
-                      </span>
-                    </p>
+                  {activeInventoryTab === "equipment parts" && (
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Manufacturer / Model</th>
                   )}
-
-                  {item.type && (
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-500">Type:</span>
-                      <span className="font-semibold text-gray-800">
-                        {item.type}
-                      </span>
-                    </p>
-                  )}
-
-                  {item.category === "equipment parts" &&
-                    item.equipmentPartData?.model && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-500">Part Model:</span>
-                        <span className="font-semibold text-gray-800">
-                          {item.equipmentPartData.model}
+                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {getItemsToDisplay.map((item: UnifiedInventoryItem) => {
+                  const status = getItemStatus(item);
+                  const isItemDeleting = isDeleting[item.id];
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">{item.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">{item.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.reorderLevel ?? 0}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(status)}`}>
+                          {getStatusIcon(status)}
+                          <span className="ml-1 capitalize">{status}</span>
                         </span>
-                      </p>
-                    )}
-                  {typeof item.n === "number" &&
-                    typeof item.p === "number" &&
-                    typeof item.k === "number" && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-500">N-P-K:</span>
-                        <span className="font-semibold text-gray-800">
-                          {item.n}-{item.p}-{item.k}
-                        </span>
-                      </p>
-                    )}
-                  {/* Status Badge */}
-                  <div
-                    className={`mb-2 mt-4 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center justify-start ${getStatusColor(status)}`}
-                  >
-                    {getStatusIcon(status)}
-                    <span className="capitalize">{status}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
-                  <button
-                    onClick={() => handleDeleteItem(item.id)}
-                    disabled={isItemDeleting}
-                    className="flex items-center text-sm font-medium text-red-600 hover:text-red-800 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isItemDeleting ? (
-                      <Loader2 className="h-4 w-4 animate-spin inline mr-1" />
-                    ) : (
-                      <Trash2 className="h-4 w-4 mr-1" />
-                    )}
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => handleUpdateClick(item)}
-                    className="flex items-center text-sm font-medium text-green-600 hover:text-green-800 transition-colors"
-                  >
-                    <SquarePen className="h-4 w-4 mr-1" />
-                    Update
-                  </button>
-                </div>
-              </Card>
-            );
-          })
+                      </td>
+                      {activeInventoryTab === "fertilizer" && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">
+                          {typeof item.n === "number" ? `${item.n}-${item.p}-${item.k}` : "-"}
+                        </td>
+                      )}
+                      {activeInventoryTab === "equipment parts" && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">
+                          {item.equipmentPartData?.manufacturer || "-"} {item.equipmentPartData?.model ? `(${item.equipmentPartData.model})` : ""}
+                        </td>
+                      )}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
+                        <div className="flex justify-end items-center gap-3">
+                          <button
+                            onClick={() => handleUpdateClick(item)}
+                            className="text-green-600 hover:text-green-800 transition-colors inline-flex items-center gap-1 font-semibold"
+                          >
+                            <SquarePen className="h-4 w-4" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            disabled={isItemDeleting}
+                            className="text-red-600 hover:text-red-800 transition-colors inline-flex items-center gap-1 font-semibold disabled:text-gray-300"
+                          >
+                            {isItemDeleting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
-          <div className="text-center py-12 col-span-full border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-            <p className="text-gray-500 text-lg font-medium">
+          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+            <p className="text-gray-500 text-lg font-semibold">
               No {activeInventoryTab} items found.
             </p>
             <p className="text-gray-400 text-sm mt-1">
-              Try a different search term or click &apos;Add Item &apos; to get
-              started.
+              Try a different search term or click &apos;Add Item &apos; to get started.
             </p>
           </div>
-        )}
-      </div>
+        )
+      ) : (
+        /* --- GRID VIEW --- */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {getItemsToDisplay.length > 0 ? (
+            getItemsToDisplay.map((item: UnifiedInventoryItem) => {
+              const status = getItemStatus(item);
+              const isItemDeleting = isDeleting[item.id];
+              return (
+                <Card
+                  key={item.id}
+                  title={item.name}
+                  borderless={true}
+                  className="flex flex-col justify-between h-full hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden"
+                >
+                  {/* Status Indicator Bar at the Top */}
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${
+                    status === "Out of Stock" ? "bg-red-500" : status === "Low Stock" ? "bg-yellow-500" : "bg-green-500"
+                  }`} />
+                  
+                  <div className="space-y-3 pt-2">
+                    {/* Item Details */}
+                    <p className="flex justify-between text-sm">
+                      <span className="text-gray-400 font-medium">Quantity:</span>
+                      <span className="font-bold text-gray-800">
+                        {item.quantity}
+                      </span>
+                    </p>
+                    <p className="flex justify-between text-sm">
+                      <span className="text-gray-400 font-medium">Reorder Level:</span>
+                      <span className="font-bold text-gray-800">
+                        {item.reorderLevel ?? 0}
+                      </span>
+                    </p>
+
+                    {item.usageRate && (
+                      <p className="flex justify-between text-sm">
+                        <span className="text-gray-400 font-medium">Usage Rate:</span>
+                        <span className="font-semibold text-gray-800">
+                          {item.usageRate}
+                        </span>
+                      </p>
+                    )}
+                    {item.expireDate && (
+                      <p className="flex justify-between text-sm">
+                        <span className="text-gray-400 font-medium">Expiry Date:</span>
+                        <span className="font-semibold text-gray-800">
+                          {formatDate(item.expireDate)}
+                        </span>
+                      </p>
+                    )}
+
+                    {item.type && (
+                      <p className="flex justify-between text-sm">
+                        <span className="text-gray-400 font-medium">Type:</span>
+                        <span className="font-semibold text-gray-800">
+                          {item.type}
+                        </span>
+                      </p>
+                    )}
+
+                    {item.category === "equipment parts" &&
+                      item.equipmentPartData?.model && (
+                        <p className="flex justify-between text-sm">
+                          <span className="text-gray-400 font-medium">Part Model:</span>
+                          <span className="font-semibold text-gray-800">
+                            {item.equipmentPartData.model}
+                          </span>
+                        </p>
+                      )}
+                    {typeof item.n === "number" &&
+                      typeof item.p === "number" &&
+                      typeof item.k === "number" && (
+                        <p className="flex justify-between text-sm">
+                          <span className="text-gray-400 font-medium">N-P-K:</span>
+                          <span className="font-bold text-gray-800">
+                            {item.n}-{item.p}-{item.k}
+                          </span>
+                        </p>
+                      )}
+                    {/* Status Badge */}
+                    <div
+                      className={`mb-2 mt-4 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-start ${getStatusColor(status)}`}
+                    >
+                      {getStatusIcon(status)}
+                      <span className="capitalize">{status}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <button
+                      onClick={() => handleDeleteItem(item.id)}
+                      disabled={isItemDeleting}
+                      className="flex items-center text-sm font-semibold text-red-500 hover:text-red-700 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isItemDeleting ? (
+                        <Loader2 className="h-4 w-4 animate-spin inline mr-1" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 mr-1" />
+                      )}
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => handleUpdateClick(item)}
+                      className="flex items-center text-sm font-semibold text-green-600 hover:text-green-800 transition-colors"
+                    >
+                      <SquarePen className="h-4 w-4 mr-1" />
+                      Update
+                    </button>
+                  </div>
+                </Card>
+              );
+            })
+          ) : (
+            <div className="text-center py-12 col-span-full border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+              <p className="text-gray-500 text-lg font-semibold">
+                No {activeInventoryTab} items found.
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                Try a different search term or click &apos;Add Item &apos; to get
+                started.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* --- ADD ITEM MODAL --- */}
       <Modal

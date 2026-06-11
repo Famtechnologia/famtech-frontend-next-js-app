@@ -41,8 +41,8 @@ const InputField: React.FC<InputFieldProps> = ({
       : (value ?? "");
 
   return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+    <div className="space-y-1.5">
+      <label htmlFor={name} className="block text-sm font-semibold text-gray-700">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -51,7 +51,7 @@ const InputField: React.FC<InputFieldProps> = ({
         id={name}
         value={displayValue}
         onChange={onChange}
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+        className="block w-full rounded-xl border border-gray-200 shadow-sm px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all"
         required={required}
         placeholder={placeholder}
       />
