@@ -22,48 +22,45 @@ apiClient.interceptors.request.use(
 );
 
 // 🚀 Response Interceptor → refresh token if expired
-// apiClient.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config;
+// 🔄 Response Interceptor → refresh token on 401 and retry
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-//     if (error.response?.status === 401 && !originalRequest._retry) {
-//       originalRequest._retry = true;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-//       try {
-//         const refreshToken = useAuthStore.getState()
+      try {
+        const { token, refreshToken, setToken } = useAuthStore.getState() as {
+          token: string | null;
+          refreshToken?: string | null;
+          setToken: (t: string) => void;
+        };
 
-//         if (!refreshToken) {
-//           throw new Error("No refresh token found");
-//         }
+        if (!refreshToken) throw new Error("No refresh token");
 
-//         // attempt refresh
-//         const { data } = await axios.post(`${API_URL}/auth/refresh`, {
-//           refreshToken,
-//         });
+        const { data } = await axios.post(`${API_URL}/auth/refresh`, {
+          refreshToken,
+        });
 
-//         const newAccessToken = data?.accessToken;
-//         if (newAccessToken) {
-//           useAuthStore.getState().setToken(newAccessToken);
+        const newToken = data?.accessToken;
+        if (newToken) {
+          setToken(newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient(originalRequest);
+        }
+      } catch {
+        // Refresh failed — clear auth and redirect to login
+        const { clearUser } = useAuthStore.getState() as { clearUser?: () => void };
+        if (clearUser) clearUser();
+        else useAuthStore.setState({ token: null, user: null });
+        if (typeof window !== "undefined") window.location.href = "/login";
+      }
+    }
 
-//           // update and retry
-//           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-//           return apiClient(originalRequest);
-//         }
-//       } catch (refreshError) {
-//         console.error("Token refresh failed:", refreshError);
-
-//         // clear store and redirect
-//         const { clearUser } = useAuthStore.getState();
-//         clearUser();
-//         if (typeof window !== "undefined") {
-//           window.location.href = "/login";
-//         }
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   }
-// );
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
