@@ -25,6 +25,10 @@ import {
   Loader2,
   Trash2,
   SquarePen,
+  Sprout,
+  Wheat,
+  Droplets,
+  Wrench,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
@@ -688,17 +692,17 @@ const InventoryManagement = () => {
   };
 
   const inventoryTabs: InventoryTab[] = [
-    { name: "Seeds", icon: <Leaf className="h-4 w-4 mr-2" />, value: "seeds" },
-    { name: "Feed", icon: <Heart className="h-4 w-4 mr-2" />, value: "feed" },
+    { name: "Seeds", icon: <Sprout className="h-4.5 w-4.5 mr-2" />, value: "seeds" },
+    { name: "Feed", icon: <Wheat className="h-4.5 w-4.5 mr-2" />, value: "feed" },
     {
       name: "Fertilizer",
-      icon: <FileText className="h-4 w-4 mr-2" />,
+      icon: <Droplets className="h-4.5 w-4.5 mr-2" />,
       value: "fertilizer",
     },
     {
       // KEEPING ACTIVE: Equipment Parts Tab
       name: "Equipment Parts",
-      icon: <Grid className="h-4 w-4 mr-2" />,
+      icon: <Wrench className="h-4.5 w-4.5 mr-2" />,
       value: "equipment parts",
     },
   ];
@@ -718,16 +722,16 @@ const InventoryManagement = () => {
       )}
 
       {/* --- TABS SECTION --- */}
-      <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-8 -mt-2">
+      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl mb-8 max-w-2xl">
         {inventoryTabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => handleTabChange(tab.value)}
-            className={`flex items-center px-4 py-3 text-base font-semibold transition-colors duration-200 whitespace-nowrap
+            className={`flex items-center justify-center px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 whitespace-nowrap flex-1
                         ${
                           activeInventoryTab === tab.value
-                            ? "border-b-4 border-green-600 text-green-700"
-                            : "text-gray-600 hover:text-gray-800 hover:border-b-4 hover:border-gray-300"
+                            ? "bg-white text-green-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                            : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
                         }`}
           >
             {tab.icon}
@@ -941,73 +945,56 @@ const InventoryManagement = () => {
                   className="flex flex-col justify-between h-full hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden"
                 >
                   {/* Status Indicator Bar at the Top */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 ${
+                  <div className={`absolute top-0 left-0 right-0 h-1.5 ${
                     status === "Out of Stock" ? "bg-red-500" : status === "Low Stock" ? "bg-yellow-500" : "bg-green-500"
                   }`} />
                   
-                  <div className="space-y-3 pt-2">
+                  <div className="space-y-4 pt-2">
                     {/* Item Details */}
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-400 font-medium">Quantity:</span>
-                      <span className="font-bold text-gray-800">
-                        {item.quantity}
-                      </span>
-                    </p>
-                    <p className="flex justify-between text-sm">
-                      <span className="text-gray-400 font-medium">Reorder Level:</span>
-                      <span className="font-bold text-gray-800">
-                        {item.reorderLevel ?? 0}
-                      </span>
-                    </p>
-
-                    {item.usageRate && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-400 font-medium">Usage Rate:</span>
-                        <span className="font-semibold text-gray-800">
-                          {item.usageRate}
-                        </span>
-                      </p>
-                    )}
-                    {item.expireDate && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-400 font-medium">Expiry Date:</span>
-                        <span className="font-semibold text-gray-800">
-                          {formatDate(item.expireDate)}
-                        </span>
-                      </p>
-                    )}
-
-                    {item.type && (
-                      <p className="flex justify-between text-sm">
-                        <span className="text-gray-400 font-medium">Type:</span>
-                        <span className="font-semibold text-gray-800">
-                          {item.type}
-                        </span>
-                      </p>
-                    )}
-
-                    {item.category === "equipment parts" &&
-                      item.equipmentPartData?.model && (
-                        <p className="flex justify-between text-sm">
-                          <span className="text-gray-400 font-medium">Part Model:</span>
-                          <span className="font-semibold text-gray-800">
-                            {item.equipmentPartData.model}
-                          </span>
-                        </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col">
+                        <span className="text-slate-400 font-semibold mb-0.5">Quantity</span>
+                        <span className="font-bold text-slate-800 text-sm">{item.quantity}</span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col">
+                        <span className="text-slate-400 font-semibold mb-0.5">Reorder</span>
+                        <span className="font-bold text-slate-800 text-sm">{item.reorderLevel ?? 0}</span>
+                      </div>
+                      
+                      {item.usageRate && (
+                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
+                          <span className="text-slate-400 font-semibold mb-0.5">Usage Rate</span>
+                          <span className="font-semibold text-slate-700 text-xs">{item.usageRate}</span>
+                        </div>
                       )}
-                    {typeof item.n === "number" &&
-                      typeof item.p === "number" &&
-                      typeof item.k === "number" && (
-                        <p className="flex justify-between text-sm">
-                          <span className="text-gray-400 font-medium">N-P-K:</span>
-                          <span className="font-bold text-gray-800">
-                            {item.n}-{item.p}-{item.k}
-                          </span>
-                        </p>
+                      {item.expireDate && (
+                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
+                          <span className="text-slate-400 font-semibold mb-0.5">Expiry Date</span>
+                          <span className="font-semibold text-slate-700 text-xs">{formatDate(item.expireDate)}</span>
+                        </div>
                       )}
+                      {item.type && (
+                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
+                          <span className="text-slate-400 font-semibold mb-0.5">Type</span>
+                          <span className="font-semibold text-slate-700 text-xs">{item.type}</span>
+                        </div>
+                      )}
+                      {item.category === "equipment parts" && item.equipmentPartData?.model && (
+                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
+                          <span className="text-slate-400 font-semibold mb-0.5">Part Model</span>
+                          <span className="font-semibold text-slate-700 text-xs">{item.equipmentPartData.model}</span>
+                        </div>
+                      )}
+                      {typeof item.n === "number" && typeof item.p === "number" && typeof item.k === "number" && (
+                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
+                          <span className="text-slate-400 font-semibold mb-0.5">N-P-K Ratio</span>
+                          <span className="font-bold text-slate-850 text-xs">{item.n}-{item.p}-{item.k}</span>
+                        </div>
+                      )}
+                    </div>
                     {/* Status Badge */}
                     <div
-                      className={`mb-2 mt-4 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-start ${getStatusColor(status)}`}
+                      className={`mt-4 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 ${getStatusColor(status)}`}
                     >
                       {getStatusIcon(status)}
                       <span className="capitalize">{status}</span>
@@ -1015,24 +1002,24 @@ const InventoryManagement = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
                     <button
                       onClick={() => handleDeleteItem(item.id)}
                       disabled={isItemDeleting}
-                      className="flex items-center text-sm font-semibold text-red-500 hover:text-red-700 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+                      className="px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isItemDeleting ? (
-                        <Loader2 className="h-4 w-4 animate-spin inline mr-1" />
+                        <Loader2 className="h-3 w-3 animate-spin" />
                       ) : (
-                        <Trash2 className="h-4 w-4 mr-1" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       )}
                       Delete
                     </button>
                     <button
                       onClick={() => handleUpdateClick(item)}
-                      className="flex items-center text-sm font-semibold text-green-600 hover:text-green-800 transition-colors"
+                      className="px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
                     >
-                      <SquarePen className="h-4 w-4 mr-1" />
+                      <SquarePen className="h-3.5 w-3.5" />
                       Update
                     </button>
                   </div>
