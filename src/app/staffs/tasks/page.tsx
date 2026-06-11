@@ -158,19 +158,19 @@ export default function TasksPage() {
     switch (priority) {
       case "high":
         return (
-          <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-50 border border-rose-100 text-rose-700 rounded-full">
+          <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-rose-50 text-rose-600 rounded-full">
             High
           </span>
         );
       case "medium":
         return (
-          <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-50 border border-amber-100 text-amber-700 rounded-full">
+          <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-600 rounded-full">
             Medium
           </span>
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-50 border border-slate-100 text-slate-600 rounded-full">
+          <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-600 rounded-full">
             Low
           </span>
         );
@@ -181,13 +181,13 @@ export default function TasksPage() {
     switch (status) {
       case "completed":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full">
-            <CheckCircle className="h-3 w-3" /> Completed
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full">
+            <CheckCircle className="h-3.5 w-3.5" /> Completed
           </span>
         );
       case "ongoing":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 rounded-full">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold text-amber-600 bg-amber-50 rounded-full">
             <span className="relative flex h-1.5 w-1.5 mr-0.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
@@ -197,7 +197,7 @@ export default function TasksPage() {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-100 rounded-full">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold text-slate-550 bg-slate-100 rounded-full">
             Pending
           </span>
         );
@@ -263,60 +263,60 @@ export default function TasksPage() {
 
         {/* stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+          <div className="bg-white p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-4">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
               <ClipboardList className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Total Assigned</p>
-              <h3 className="text-xl font-bold text-gray-800">{totalMyTasks}</h3>
+              <p className="text-xs text-gray-400 font-semibold tracking-wide uppercase">Total Assigned</p>
+              <h3 className="text-2xl font-black text-gray-800 mt-0.5">{totalMyTasks}</h3>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-slate-50 text-slate-600 rounded-lg">
+          <div className="bg-white p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-4">
+            <div className="p-3 bg-slate-100 text-slate-600 rounded-xl">
               <Clock className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Pending</p>
-              <h3 className="text-xl font-bold text-gray-800">{pendingMyTasks}</h3>
+              <p className="text-xs text-gray-400 font-semibold tracking-wide uppercase">Pending</p>
+              <h3 className="text-2xl font-black text-gray-800 mt-0.5">{pendingMyTasks}</h3>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
+          <div className="bg-white p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-4">
+            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
               <RefreshCcw className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Ongoing</p>
-              <h3 className="text-xl font-bold text-gray-800">{ongoingMyTasks}</h3>
+              <p className="text-xs text-gray-400 font-semibold tracking-wide uppercase">Ongoing</p>
+              <h3 className="text-2xl font-black text-gray-800 mt-0.5">{ongoingMyTasks}</h3>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+          <div className="bg-white p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex items-center space-x-4">
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
               <CheckCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Completed</p>
-              <h3 className="text-xl font-bold text-gray-800">{completedMyTasks}</h3>
+              <p className="text-xs text-gray-400 font-semibold tracking-wide uppercase">Completed</p>
+              <h3 className="text-2xl font-black text-gray-800 mt-0.5">{completedMyTasks}</h3>
             </div>
           </div>
         </div>
 
         {/* filter bar */}
-        <div className="bg-white p-4 rounded-xl border border-gray-150 shadow-sm mb-6 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg w-fit">
+        <div className="bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-6 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+          <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl w-fit">
             <button
               onClick={() => setActiveTab("mine")}
-              className={`px-4 py-1.5 rounded-md text-xs md:text-sm font-semibold transition-all ${
+              className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all ${
                 activeTab === "mine"
                   ? "bg-white text-emerald-700 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-650 hover:text-gray-900"
               }`}
             >
               My Assigned Tasks
             </button>
             <button
               onClick={() => setActiveTab("all")}
-              className={`px-4 py-1.5 rounded-md text-xs md:text-sm font-semibold transition-all ${
+              className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all ${
                 activeTab === "all"
                   ? "bg-white text-emerald-700 shadow-sm"
                   : "text-gray-650 hover:text-gray-900"
@@ -334,12 +334,12 @@ export default function TasksPage() {
                 placeholder="Search task title or assignee..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-gray-250 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-transparent rounded-xl text-sm text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
               />
             </div>
             <button
               onClick={fetchTasks}
-              className="flex items-center px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-colors"
+              className="flex items-center px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-colors"
             >
               <RefreshCcw className="h-4 w-4 mr-1.5" />
               Sync
@@ -367,10 +367,10 @@ export default function TasksPage() {
                 return (
                   <div 
                     key={task.id} 
-                    className="bg-white rounded-xl border border-gray-150 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                    className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.07)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
                   >
                     {/* Card Header */}
-                    <div className="p-5 border-b border-gray-100">
+                    <div className="p-5">
                       <div className="flex justify-between items-start mb-3">
                         <span className="text-xs font-semibold text-gray-400 tracking-wide uppercase">
                           {task.type}
@@ -386,32 +386,32 @@ export default function TasksPage() {
                     </div>
 
                     {/* Card Details */}
-                    <div className="p-5 bg-slate-50/50 space-y-3 flex-1">
+                    <div className="p-5 bg-slate-50/40 space-y-3 flex-1">
                       {task.notes && (
-                        <div className="text-xs text-gray-600 bg-white border border-gray-100 p-2.5 rounded-lg italic">
+                        <div className="text-xs text-gray-600 bg-white p-2.5 rounded-xl italic">
                           "{task.notes}"
                         </div>
                       )}
                       <div className="grid grid-cols-2 gap-4 pt-1">
                         <div className="flex items-center gap-1.5 text-xs text-gray-550 font-medium">
-                          <Calendar className="h-4 w-4 text-gray-405" />
+                          <Calendar className="h-4 w-4 text-gray-400" />
                           <div>
                             <span className="block text-[9px] text-gray-400 leading-none mb-0.5">DUE DATE</span>
-                            <span className="text-gray-750 font-semibold">{task.dueDate}</span>
+                            <span className="text-gray-700 font-bold">{task.dueDate}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-gray-550 font-medium">
-                          <Clock className="h-4 w-4 text-gray-405" />
+                          <Clock className="h-4 w-4 text-gray-400" />
                           <div>
                             <span className="block text-[9px] text-gray-400 leading-none mb-0.5">DUE TIME</span>
-                            <span className="text-gray-750 font-semibold">{task.time}</span>
+                            <span className="text-gray-700 font-bold">{task.time}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Card Footer Actions */}
-                    <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-white">
+                    <div className="p-4 flex justify-between items-center bg-white">
                       {getStatusBadge(task.status)}
                       <button
                         onClick={() => {
@@ -420,7 +420,7 @@ export default function TasksPage() {
                           setModalNotes(task.notes || "");
                           setShowConfirm(true);
                         }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200/50"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
                       >
                         <SquarePen className="h-3.5 w-3.5" />
                         Update Progress
@@ -431,9 +431,12 @@ export default function TasksPage() {
               })}
 
               {filteredTasks.length === 0 && (
-                <div className="text-center py-12 col-span-full border-2 border-dashed border-gray-300 rounded-xl bg-white">
-                  <p className="text-gray-500 text-lg font-medium">No tasks found.</p>
-                  <p className="text-gray-400 text-sm mt-1">
+                <div className="text-center py-12 col-span-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] p-8">
+                  <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ClipboardList className="h-8 w-8" />
+                  </div>
+                  <p className="text-gray-800 text-lg font-bold">No tasks found</p>
+                  <p className="text-gray-400 text-sm mt-1 max-w-sm mx-auto">
                     Try a different search term or check with the administrator.
                   </p>
                 </div>
