@@ -32,20 +32,162 @@ import { toast } from "react-hot-toast";
 
 const formatMessage = (text) => {
   if (!text) return { __html: "" };
-  let formattedText = text
-    .replace(/\*\*([^*]+)\*\*/g, "<strong class='font-bold text-slate-800'>$1</strong>")
+  
+  // Clean up any double-escaped backslashes or random backslashes at start of lines
+  let cleaned = text
+    .replace(/\\n/g, "\n")
+    .replace(/\\/g, "")
+    .trim();
+
+  const lines = cleaned.split("\n");
+  let html = [];
+  let inList = false;
+  let inOrderedList = false;
+  let inTable = false;
+  let tableHeaders = [];
+  let tableRows = [];
+
+  const closePendingLists = () => {
+    if (inList) {
+      html.push("</ul>");
+      inList = false;
+    }
+    if (inOrderedList) {
+      html.push("</ol>");
+      inOrderedList = false;
+    }
+  };
+
+  const closePendingTable = () => {
+    if (inTable) {
+      html.push("<div class='overflow-x-auto my-4 border border-slate-100/80 rounded-xl shadow-sm'>");
+      html.push("<table class='min-w-full divide-y divide-slate-100 text-left text-xs font-medium'>");
+      if (tableHeaders.length > 0) {
+        html.push("<thead class='bg-slate-50 text-slate-700 font-bold uppercase tracking-wider'>");
+        html.push("<tr>");
+        tableHeaders.forEach(h => {
+          html.push(`<th class="px-4 py-3 border-b border-slate-150">${h}</th>`);
+        });
+        html.push("</tr>");
+        html.push("</thead>");
+      }
+      html.push("<tbody class='divide-y divide-slate-100 bg-white text-slate-600'>");
+      tableRows.forEach(row => {
+        html.push("<tr class='hover:bg-slate-50/50 transition-colors'>");
+        row.forEach(cell => {
+          html.push(`<td class="px-4 py-2.5 font-semibold">${cell}</td>`);
+        });
+        html.push("</tr>");
+      });
+      html.push("</tbody>");
+      html.push("</table>");
+      html.push("</div>");
+      inTable = false;
+      tableHeaders = [];
+      tableRows = [];
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+
+    // 1. Table support
+    if (line.startsWith("|")) {
+      closePendingLists();
+      inTable = true;
+      const cells = line
+        .split("|")
+        .map(c => c.trim())
+        .filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+      
+      const isSeparator = cells.every(c => /^:?-+:?$/.test(c));
+      if (isSeparator) {
+        continue;
+      }
+      
+      if (tableHeaders.length === 0 && tableRows.length === 0) {
+        tableHeaders = cells;
+      } else {
+        tableRows.push(cells);
+      }
+      continue;
+    } else {
+      closePendingTable();
+    }
+
+    // 2. Headers support
+    if (line.startsWith("### ")) {
+      closePendingLists();
+      const content = line.substring(4);
+      html.push(`<h4 class="text-sm font-extrabold text-slate-800 mt-4 mb-1.5 flex items-center gap-1.5">${content}</h4>`);
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      closePendingLists();
+      const content = line.substring(3);
+      html.push(`<h3 class="text-base font-extrabold text-slate-900 mt-5 mb-2 border-b border-slate-100 pb-1">${content}</h3>`);
+      continue;
+    }
+    if (line.startsWith("# ")) {
+      closePendingLists();
+      const content = line.substring(2);
+      html.push(`<h2 class="text-lg font-extrabold text-slate-900 mt-5 mb-3">${content}</h2>`);
+      continue;
+    }
+
+    // 3. Lists support
+    if (/^\d+\.\s+/.test(line)) {
+      if (inList) {
+        html.push("</ul>");
+        inList = false;
+      }
+      if (!inOrderedList) {
+        html.push("<ol class='list-decimal pl-5 space-y-1 my-2 text-slate-700'>");
+        inOrderedList = true;
+      }
+      const content = line.replace(/^\d+\.\s+/, "");
+      html.push(`<li class="font-semibold text-slate-700">${content}</li>`);
+      continue;
+    }
+
+    if (line.startsWith("- ") || line.startsWith("* ")) {
+      if (inOrderedList) {
+        html.push("</ol>");
+        inOrderedList = false;
+      }
+      if (!inList) {
+        html.push("<ul class='list-disc pl-5 space-y-1 my-2 text-slate-700'>");
+        inList = true;
+      }
+      const content = line.substring(2);
+      html.push(`<li class="font-semibold text-slate-600">${content}</li>`);
+      continue;
+    }
+
+    // Regular line or empty line
+    if (line === "") {
+      closePendingLists();
+      html.push("<div class='h-2'></div>");
+    } else {
+      closePendingLists();
+      html.push(`<p class="leading-relaxed mb-1.5 text-slate-700 font-semibold">${line}</p>`);
+    }
+  }
+
+  closePendingLists();
+  closePendingTable();
+
+  let formattedText = html.join("\n");
+
+  // Inline formatting: Bold, Italic, Code
+  formattedText = formattedText
+    .replace(/\*\*([^*]+)\*\*/g, "<strong class='font-extrabold text-slate-800'>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em class='italic text-slate-700'>$1</em>")
     .replace(/`(.*?)`/g, "<code class='bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono text-emerald-700'>$1</code>");
-  
-  formattedText = formattedText.split("\n").map(line => {
-    if (line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
-      return `<li class="ml-4 list-disc text-slate-700 my-1">${line.substring(2)}</li>`;
-    }
-    return line;
-  }).join("<br />");
 
   return { __html: formattedText };
 };
+
 
 export const SmartInsight = () => {
   const [question, setQuestion] = useState("");
