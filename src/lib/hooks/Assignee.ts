@@ -1,33 +1,11 @@
-import { useAuthStore } from "@/lib/store/authStore";
-
-import { useEffect, useCallback, useState } from "react";
-import { getStaffById, StaffType } from "../services/staff";
+import { useAuth } from "./useAuth";
 
 export const useAssignee = () => {
-  const { token, loading, logout: storeLogout } = useAuthStore();
-  const [user, setUser] = useState<StaffType>({});
-
-  const fetchUser = useCallback(async () => {
-    if (!token) return;
-    try {
-      const userData = await getStaffById(token);
-      setUser(userData);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const logout = () => {
-    storeLogout();
-  };
+  const { token, user, setUser, loading, logout, fetchUser } = useAuth();
 
   return {
     fetchUser,
-    user,
+    user: user || {},
     setUser,
     token,
     loading,

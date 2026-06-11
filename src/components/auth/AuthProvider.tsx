@@ -10,52 +10,63 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setLoading } = useAuthStore();
-  const setToken = useAuthStore((state) => state.setToken);
+  const { token, setToken, user, loading, setLoading } = useAuthStore();
   const cookie = Cookies.get("famtech-auth");
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { fetchUser } = useAuth();
 
+  // 1. Sync cookie to Zustand token
   useEffect(() => {
-    if (cookie) {
-      try {
-        setToken(cookie);
-        const publicRoutes = [
-          "/",
-          "/login",
-          "/register",
-          "/forgot-password",
-          "/reset-password",
-          "/verify-code",
-          "/verify-email",
-        ];
+    if (cookie && cookie !== token) {
+      setToken(cookie);
+    } else if (!cookie && token) {
+      useAuthStore.getState().logout();
+    }
+  }, [cookie, token, setToken]);
 
-        
-        if (user && publicRoutes.includes(pathname)) {
-          
-          if (user?.role === "assignee" || user?.role === "staff") {
-            router.push("/staffs/dashboard");
-            return;
+  // 2. Fetch user if token is present but user is null
+  useEffect(() => {
+    if (token && !user) {
+      setLoading(true);
+      fetchUser().finally(() => {
+        setLoading(false);
+      });
+    } else if (!token) {
+      setLoading(false);
+    }
+  }, [token, user, fetchUser, setLoading]);
+
+  // 3. Perform routing logic based on user role and path
+  useEffect(() => {
+    if (loading) return;
+
+    const publicRoutes = [
+      "/",
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/reset-password",
+      "/verify-code",
+      "/verify-email",
+    ];
+
+    if (token && user) {
+      const isStaff = user.role === "staff" || user.role === "assignee";
+
+      if (publicRoutes.includes(pathname)) {
+        if (isStaff) {
+          router.replace("/staffs/dashboard");
+        } else {
+          if (!user.farmProfile) {
+            router.replace("/complete-farm-profile");
+          } else {
+            router.replace("/dashboard");
           }
-
-         
-          if (!user?.farmProfile) {
-            router.push("/complete-farm-profile");
-            return;
-          }
-
-          
-          router.push("/dashboard");
-          return;
         }
-      } catch (error) {
-        console.error("Failed to parse auth cookie:", error);
       }
     }
-
-    setLoading(false);
-  }, [setToken, setLoading, cookie, router, pathname, user]);
+  }, [loading, token, user, pathname, router]);
 
   return <>{children}</>;
 }

@@ -1,26 +1,9 @@
 import { useAuthStore } from '@/lib/store/authStore';
-
-import { useEffect, useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { getMe } from '../api/auth';
 
 export const useAuth = () => {
-  const { token, loading, logout: storeLogout } = useAuthStore();
-  const [user, setUser] = useState<{
-    _id: string;
-    email: string;
-    role: string;
-    country: string;
-    state: string;
-    lga: string;
-    language: string;
-    farmAssets: [];
-    isVerified: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    farmProfile: string;
-    profileImage?: string;
-  } | null>(null);
-  
+  const { token, user, setUser, loading, logout: storeLogout } = useAuthStore();
 
   const fetchUser = useCallback(async () => {
     if (!token) return;
@@ -28,14 +11,9 @@ export const useAuth = () => {
       const userData = await getMe(token);
       setUser(userData?.data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }, [token])
-
-useEffect(() => {
-  fetchUser();
-}, [fetchUser]);
-
+  }, [token, setUser]);
 
   const logout = () => {
     storeLogout();
@@ -48,5 +26,6 @@ useEffect(() => {
     loading,
     isAuthenticated: !!user && !!token,
     logout,
+    fetchUser,
   };
 };
