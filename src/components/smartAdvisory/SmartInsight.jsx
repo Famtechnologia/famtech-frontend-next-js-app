@@ -27,7 +27,7 @@ import {
 import Modal from "../ui/Modal";
 import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useProfile } from "@/lib/hooks/useProfile";
 import { toast } from "react-hot-toast";
 
 const formatMessage = (text) => {
@@ -61,27 +61,27 @@ export const SmartInsight = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
-  const { user } = useAuth();
+  const { profile } = useProfile();
 
   const fetchCropData = useCallback(async () => {
-    if (!user?._id) return;
+    if (!profile?.id) return;
     try {
-      const data = await getCropRecords(user?._id);
+      const data = await getCropRecords(profile?.id);
       setCropRecords(data || []);
     } catch (err) {
       console.error(err);
     }
-  }, [user?._id]);
+  }, [profile?.id]);
 
   const fetchLivestockData = useCallback(async () => {
-    if (!user?._id) return;
+    if (!profile?.id) return;
     try {
-      const data = await getLivestockRecords(user?._id);
+      const data = await getLivestockRecords(profile?.id);
       setLivestockRecords(data || []);
     } catch (err) {
       console.error(err);
     }
-  }, [user?._id]);
+  }, [profile?.id]);
 
   useEffect(() => {
     fetchCropData();

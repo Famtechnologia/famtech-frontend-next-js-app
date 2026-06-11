@@ -4,7 +4,7 @@ import { SmartCard } from "@/components/smartAdvisory/SmartCard";
 import { getCropRecords, getLivestockRecords } from "@/lib/services/croplivestock";
 import { useAuthStore } from "@/lib/store/authStore";
 import Link from "next/link";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useProfile } from "@/lib/hooks/useProfile";
 import FarmCardSkeleton from "@/components/skeleton/smart-advisory/FarmCardSkeleton"; 
 export default function FarmHealthCard({ location }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,53 +13,38 @@ export default function FarmHealthCard({ location }) {
   const [livestockRecords, setLivestockRecords] = useState([]);
   const [smartProduct, setSmartProduct] = useState([]);
 
-  const { user } = useAuth();
+  const { profile } = useProfile();
 
-  const fetchCropData = useCallback(async () => {
-    if (!user?._id) {
+  const fetchData = useCallback(async () => {
+    if (!profile?.id) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const data = await getCropRecords(user?._id);
-      setCropRecords(data?.map((record) => ({ ...record, type: "crop" })));
+      const [cropsData, livestockData] = await Promise.all([
+        getCropRecords(profile.id),
+        getLivestockRecords(profile.id),
+      ]);
+
+      const mappedCrops = (cropsData || []).map((record) => ({ ...record, type: "crop" }));
+      const mappedLivestock = (livestockData || []).map((record) => ({ ...record, type: "livestock" }));
+
+      setCropRecords(mappedCrops);
+      setLivestockRecords(mappedLivestock);
+      setSmartProduct([...mappedCrops, ...mappedLivestock]);
       setError(null);
     } catch (err) {
       setError(err);
+      console.error("Failed to load health card metrics:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [user?._id]);
-
-  const fetchLivestockData = useCallback(async () => {
-    if (!user?._id) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const data = await getLivestockRecords(user?._id);
-
-      setLivestockRecords(
-        data?.map((record) => ({ ...record, type: "livestock" }))
-      );
-      setError(null);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?._id]);
+  }, [profile?.id]);
 
   useEffect(() => {
-    fetchCropData();
-    fetchLivestockData();
-  }, [fetchCropData, fetchLivestockData]);
-
-  useEffect(() => {
-    setSmartProduct([...cropRecords, ...livestockRecords]);
-  }, [cropRecords, livestockRecords]);
+    fetchData();
+  }, [fetchData]);
 
   const getGrowthPercentageFromStage = (stage, type) => {
     if (!stage || !type) return 0;

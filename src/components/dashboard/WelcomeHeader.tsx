@@ -17,11 +17,11 @@ export default function WelcomeHeader() {
   // Fetch real crops and livestock records from the platform
   useEffect(() => {
     const fetchMetrics = async () => {
-      if (!user?._id) return;
+      if (!profile?.id) return;
       try {
         const [cropRecords, livestockRecords] = await Promise.all([
-          getCropRecords(user._id),
-          getLivestockRecords(user._id),
+          getCropRecords(profile.id),
+          getLivestockRecords(profile.id),
         ]);
         setCrops(cropRecords || []);
         setLivestock(livestockRecords || []);
@@ -31,7 +31,7 @@ export default function WelcomeHeader() {
     };
 
     fetchMetrics();
-  }, [user?._id]);
+  }, [profile?.id]);
 
   // Auto-slide functionality
   useEffect(() => {
