@@ -94,7 +94,8 @@ const DashboardTasks = () => {
     return (
       <Card
         title="Task Planner"
-        headerClassName="bg-green-50"
+        borderless
+        headerClassName="bg-green-50/50"
         bodyClassName="p-6 flex items-center justify-center h-[350px]"
       >
         <Loader2 className="w-8 h-8 animate-spin text-green-600" />
@@ -107,7 +108,8 @@ const DashboardTasks = () => {
     return (
       <Card
         title="Task Planner"
-        headerClassName="bg-red-50"
+        borderless
+        headerClassName="bg-red-50/50"
         bodyClassName="p-6 flex items-center justify-center h-[350px]"
       >
         <AlertTriangle className="w-6 h-6 text-red-600 mr-2" />
@@ -184,8 +186,9 @@ const DashboardTasks = () => {
   return (
     <Card
       title="Task Planner"
-      className="h-[360px] flex flex-col" // Added flex-col to card container
-      headerClassName="bg-green-50 border-b border-green-200"
+      borderless
+      className="h-[360px] flex flex-col hover:shadow-md transition-all duration-300" // Added flex-col to card container
+      headerClassName="bg-green-50/30 py-3.5 px-5"
       bodyClassName="p-6 flex flex-col flex-grow" // Added flex-col and flex-grow to card body
     >
       {/* Main content wrapper with vertical distribution */}
@@ -200,7 +203,7 @@ const DashboardTasks = () => {
         </div>
 
         {/* BOTTOM SECTION: Summary and Button */}
-        <div className="pt-4 border-t border-gray-100 mt-4 space-y-2">
+        <div className="pt-4 mt-4 space-y-2">
           {/* Summary (Completed count or "Ready to plan...") */}
           {summaryContent}
         </div>

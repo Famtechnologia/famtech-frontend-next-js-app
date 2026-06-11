@@ -161,27 +161,27 @@ export default function WeatherCard() {
         </div>
 
         {/* Weather details */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-4 pt-4">
           <div className="text-center">
             <Cloudy className="w-6 h-6 text-gray-500 mx-auto mb-1" />
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-gray-600 font-semibold">
               {Math.round(weatherInfo.clouds?.all || 0)}%
             </div>
-            <div className="text-xs font-medium">Chance of Rain</div>
+            <div className="text-xs font-semibold text-gray-400">Chance of Rain</div>
           </div>
           <div className="text-center">
-            <Wind className="w-6 h-6 text-gray-500 mx-auto mb-1" />
-            <div className="text-xs text-gray-600">
+            <Wind className="w-6 h-6 text-gray-550 mx-auto mb-1" />
+            <div className="text-xs text-gray-600 font-semibold">
               {(weatherInfo.wind?.speed || 0).toFixed(1)} km/h
             </div>
-            <div className="text-xs font-medium">Wind</div>
+            <div className="text-xs font-semibold text-gray-400">Wind</div>
           </div>
           <div className="text-center">
             <Eye className="w-6 h-6 text-orange-500 mx-auto mb-1" />
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-gray-600 font-semibold">
               {estimateUVIndex(weatherInfo) ?? "N/A"} of 10
             </div>
-            <div className="text-xs font-medium">UV Index</div>
+            <div className="text-xs font-semibold text-gray-400">UV Index</div>
           </div>
         </div>
       </div>
@@ -191,8 +191,9 @@ export default function WeatherCard() {
   return (
     <Card
       title="Weather Forecast"
-      className="h-[350px] md:h-[320px]"
-      headerClassName="bg-[#EFF6FF] border-b border-blue-200"
+      borderless
+      className="h-[350px] md:h-[320px] hover:shadow-md transition-all duration-300"
+      headerClassName="bg-[#EFF6FF]/40 py-3.5 px-5"
       bodyClassName="p-6"
     >
       {renderContent()}

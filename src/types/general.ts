@@ -6,4 +6,5 @@ export interface CardProps {
     className?: string;
     headerClassName?: string;
     bodyClassName?: string;
+    borderless?: boolean;
 }

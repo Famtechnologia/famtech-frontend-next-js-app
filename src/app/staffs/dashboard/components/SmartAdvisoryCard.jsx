@@ -10,8 +10,9 @@ const SmartAdvisory = () => {
           <span>Smart Advisory</span>
         </div>
       }
-      className="h-fit"
-      headerClassName="bg-blue-50 border-b border-blue-200"
+      borderless
+      className="h-fit hover:shadow-md transition-all duration-300"
+      headerClassName="bg-blue-50/30 py-3.5 px-5"
       bodyClassName="p-6"
     >
       <div className="flex flex-col justify-between min-h-[180px]">
