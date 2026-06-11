@@ -24,7 +24,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
 
     if (user && (user.role === "staff" || user.role === "assignee")) {
-      router.push("/staffs/dashboard");
+      router.push("/staffs/tasks");
     }
   }, [loading, token, user, router]);
 

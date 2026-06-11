@@ -50,7 +50,7 @@ const Login: React.FC = () => {
         toast.success(message || "Staff Login successful!");
 
         // ⏳ Keep loading true until navigation completes
-        router.replace("/staffs/dashboard");
+        router.replace("/staffs/tasks");
         return;
       } else if (form.role === "farmer") {
         const res = await login(form.email, form.password);

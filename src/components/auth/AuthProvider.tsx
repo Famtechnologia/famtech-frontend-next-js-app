@@ -56,7 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (publicRoutes.includes(pathname)) {
         if (isStaff) {
-          router.replace("/staffs/dashboard");
+          router.replace("/staffs/tasks");
         } else {
           if (!user.farmProfile) {
             router.replace("/complete-farm-profile");

@@ -53,7 +53,7 @@ interface DashboardLayoutProps {
 export default function AssigneeLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(["dashboard"]);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -115,13 +115,6 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
 
   const getNavItems = (): NavItem[] => {
     return [
-      {
-        name: "Dashboard",
-        href: `/staffs/dashboard`,
-        icon: LayoutDashboard,
-        key: "dashboard",
-        expandable: false,
-      },
       {
         name: "Tasks",
         icon: Tractor,
