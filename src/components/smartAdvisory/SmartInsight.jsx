@@ -195,7 +195,7 @@ export const SmartInsight = () => {
   ];
 
   return (
-    <div className="flex h-[80vh] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
+    <div className="flex h-[calc(100vh-210px)] min-h-[460px] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
       
       {/* --- SIDEBAR CHAT PANEL (CLAUDE STYLE) --- */}
       <div className="hidden lg:flex flex-col w-64 bg-slate-50 border-r border-slate-100 p-4 shrink-0">
@@ -238,12 +238,12 @@ export const SmartInsight = () => {
       </div>
 
       {/* --- MAIN CHAT CONTAINER --- */}
-      <div className="flex flex-col flex-1 h-full bg-white relative">
+      <div className="flex flex-col flex-1 h-full bg-white min-w-0">
         
         {/* Messages space */}
         <div
           ref={chatContainerRef}
-          className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 pb-28 max-w-3xl w-full mx-auto"
+          className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-6 max-w-3xl w-full mx-auto"
         >
           {chatHistory.length === 0 ? (
             /* --- BEAUTIFUL CLAUDE-STYLE GREETING LANDING --- */
@@ -369,9 +369,9 @@ export const SmartInsight = () => {
           )}
         </div>
 
-        {/* --- BOTTOM FLOATING INPUT SECTION --- */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none z-10">
-          <div className="max-w-3xl w-full mx-auto pointer-events-auto">
+        {/* --- BOTTOM INPUT COMPOSER PANEL --- */}
+        <div className="p-4 md:p-5 bg-white border-t border-slate-100/80 shrink-0">
+          <div className="max-w-3xl w-full mx-auto">
             
             {/* Attachment preview capsule */}
             {isPreview && selectedRecord && (
