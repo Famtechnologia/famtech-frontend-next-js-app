@@ -21,7 +21,7 @@ import {
   Calendar,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAssignee } from "@/lib/hooks/Assignee";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotification } from "@/lib/services/staff";
@@ -56,13 +56,16 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["dashboard"]);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useAssignee();
+  const { user, logout } = useAssignee();
   const pathname = usePathname();
+  const router = useRouter();
 
   // Close flyout when clicking outside
   useEffect(() => {
@@ -202,6 +205,12 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
       ) {
         setIsDropdownOpen(false);
       }
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -232,7 +241,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
         } fixed inset-y-0 left-0 z-150 ${
           // z-50 is the max index for the main sidebar
           sidebarCollapsed ? "w-16" : "w-64"
-        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 overflow-y-scroll scrollbar-hide`}
+        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 flex flex-col h-screen`}
         onMouseLeave={
           sidebarCollapsed ? () => setHoveredMenuKey(null) : undefined
         }
@@ -257,7 +266,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-4 ">
+        <nav className="flex-1 px-4 py-4 flex flex-col justify-between overflow-y-auto">
           <div className="space-y-2">
             {/* Collapse Button */}
             <div className="hidden md:block">
@@ -446,34 +455,22 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
             })}
           </div>
 
-          {/* Bottom Profile/Logout */}
-          <div className="border-t border-gray-200 p-4">
-            <div
-              className={`flex items-center ${
-                sidebarCollapsed ? "justify-center" : "space-x-3"
-              } mb-3`}
-            >
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <User size={16} className="text-white" />
-              </div>
-              {!sidebarCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 capitalize">
-                    {user?.name?.split(" ")[0]}
-                  </p>
-                </div>
-              )}
-            </div>
-            <Link
-              href="/login"
-              className={`flex items-center w-ful px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors ${
+          {/* Bottom Logout */}
+          <div className="border-t border-gray-200 p-4 mt-auto">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                logout();
+                router.push("/login");
+              }}
+              className={`flex items-center w-full px-3 py-2 text-sm text-gray-650 hover:text-gray-950 rounded-lg hover:bg-gray-100 transition-colors ${
                 sidebarCollapsed ? "justify-center" : ""
               }`}
               title={sidebarCollapsed ? "Sign out" : undefined}
             >
               <LogOut size={16} className={sidebarCollapsed ? "" : "mr-2"} />
               {!sidebarCollapsed && "Sign out"}
-            </Link>
+            </button>
           </div>
         </nav>
       </div>
@@ -575,16 +572,52 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
                       )}
                     </button>
 
-                    {/* 👤 Profile Section (Uses props/state you provided) */}
-                    <div className="flex items-center space-x-2">
-                      <Link
-                        href="/staffs/settings"
-                        className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
+                    {/* 👤 Profile Dropdown */}
+                    <div className="relative" ref={profileDropdownRef}>
+                      <button
+                        onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                        className="flex items-center space-x-2 hover:bg-gray-150 p-1.5 rounded-lg transition-colors focus:outline-none"
                       >
-                        <User size={16} className="text-white" />
-                      </Link>
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <User size={16} className="text-white" />
+                        </div>
+                        <ChevronDown size={16} className="text-gray-500" />
+                      </button>
 
-                      <ChevronDown size={16} className="text-gray-500" />
+                      {isProfileDropdownOpen && (
+                        <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-[110] py-1 overflow-hidden">
+                          <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50">
+                            <p className="text-sm font-semibold text-gray-800 capitalize">
+                              {user?.name || "Staff"}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {user?.email}
+                            </p>
+                          </div>
+                          
+                          <Link
+                            href="/staffs/settings"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings size={16} className="mr-2 text-gray-400" />
+                            Settings
+                          </Link>
+
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsProfileDropdownOpen(false);
+                              logout();
+                              router.push("/login");
+                            }}
+                            className="w-full flex items-center px-4 py-2.5 text-sm text-red-650 hover:text-red-750 hover:bg-red-50/50 transition-colors border-t border-gray-100 text-left"
+                          >
+                            <LogOut size={16} className="mr-2 text-red-500" />
+                            Sign out
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
