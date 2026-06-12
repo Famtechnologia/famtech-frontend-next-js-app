@@ -232,252 +232,224 @@ export default function ReportsPage() {
 
   if (isHydrating) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
-        <Loader2 className="animate-spin h-10 w-10 text-green-600 mb-4" />
-        <p>Loading farm profile and preferences...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4 shadow-lg shadow-green-500/30">
+          <Loader2 className="animate-spin h-8 w-8 text-white" />
+        </div>
+        <p className="text-slate-600 font-semibold">Loading farm profile...</p>
+        <p className="text-slate-400 text-sm mt-1">Preparing your analytics workspace</p>
       </div>
     );
   }
 
   return (
-    <div className="text-slate-900 font-sans p-3 md:p-6 bg-slate-50/30 min-h-screen">
-      
-      {/* Success Toast Banner */}
+    <div className="text-slate-900 font-sans p-3 md:p-6 min-h-screen" style={{background: 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #f0f9ff 100%)'}}>
+
+      {/* Toast */}
       {successToast && (
-        <div className="fixed top-4 right-4 z-200 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg transition-transform duration-300 animate-in fade-in slide-in-from-top-4">
-          <CheckCircle2 className="h-5 w-5 text-green-400" />
+        <div className="fixed top-5 right-5 z-[200] flex items-center gap-3 bg-slate-900 text-white pl-4 pr-5 py-3 rounded-2xl shadow-2xl border border-white/10">
+          <div className="h-8 w-8 rounded-xl bg-green-500/20 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="h-4 w-4 text-green-400" />
+          </div>
           <span className="text-sm font-medium">{successToast}</span>
         </div>
       )}
 
-      {/* Header Block */}
-      <div className="flex mb-6 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Analytics Reporting
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm font-medium">
-            Generate, view, and export detailed PDFs and Excel sheets of your farm operational metrics.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchReports}
-            className="p-2.5 rounded-xl border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-sm"
-            title="Refresh List"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowGenModal(true)}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-md shadow-green-600/10 hover:shadow-green-700/20 scale-105 active:scale-95"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Generate Report</span>
-          </button>
+      {/* Hero Header */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl" style={{background: 'linear-gradient(135deg, #052e16 0%, #14532d 40%, #15803d 100%)'}}>
+        <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(circle at 20% 50%, #86efac 0%, transparent 50%), radial-gradient(circle at 80% 20%, #4ade80 0%, transparent 40%)'}} />
+        <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                <FileText className="h-4 w-4 text-green-300" />
+              </div>
+              <span className="text-green-300 text-xs font-bold uppercase tracking-widest">Analytics Suite</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Farm Reports</h1>
+            <p className="text-green-200/70 mt-1.5 text-sm font-medium max-w-md">
+              Generate, view, and export detailed PDFs and Excel sheets of your farm operational metrics.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button onClick={fetchReports} title="Refresh" className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-colors">
+              <RefreshCw className="h-4 w-4 text-white" />
+            </button>
+            <button onClick={() => setShowGenModal(true)} className="flex items-center gap-2 bg-white text-green-800 hover:bg-green-50 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-black/20 active:scale-95">
+              <Plus className="h-4 w-4" />
+              <span>Generate Report</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Reports</span>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-slate-800">{metrics.total}</span>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)'}}>
+            <FileText className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total</p>
+            <p className="text-3xl font-extrabold text-slate-800">{metrics.total}</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Completed</span>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-green-600">{metrics.completed}</span>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)'}}>
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Completed</p>
+            <p className="text-3xl font-extrabold text-green-600">{metrics.completed}</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Generating</span>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-amber-500">{metrics.pending}</span>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #fef9c3, #fef08a)'}}>
+            <Loader2 className="h-5 w-5 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Generating</p>
+            <p className="text-3xl font-extrabold text-amber-500">{metrics.pending}</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Downloads</span>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-blue-600">{metrics.totalDownloads}</span>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #fce7f3, #fbcfe8)'}}>
+            <Download className="h-5 w-5 text-pink-600" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Downloads</p>
+            <p className="text-3xl font-extrabold text-pink-600">{metrics.totalDownloads}</p>
           </div>
         </div>
       </div>
 
-      {/* Controls & Table Container */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.01)] overflow-hidden">
-        
+      {/* Controls & Reports Container */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
         {/* Filter Toolbar */}
         <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl max-w-xl">
-            {["all", "performance", "financial", "crop_analysis", "livestock_report", "comprehensive"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSelectedTypeFilter(tab)}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all capitalize
-                  ${
-                    selectedTypeFilter === tab
-                      ? "bg-white text-green-700 shadow-sm"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-              >
-                {tab === "all" ? "All Formats" : tab.replace("_", " ")}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/70 rounded-xl">
+            {[{id:"all",label:"All"},{id:"performance",label:"Performance"},{id:"financial",label:"Financial"},{id:"crop_analysis",label:"Crop Analysis"},{id:"livestock_report",label:"Livestock"},{id:"comprehensive",label:"Full Report"}].map((tab) => (
+              <button key={tab.id} onClick={() => setSelectedTypeFilter(tab.id)}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${selectedTypeFilter === tab.id ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                {tab.label}
               </button>
             ))}
           </div>
-
-          <div className="relative w-full md:w-80">
+          <div className="relative w-full md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search reports by title..."
-              value={searchQuery}
+            <input type="text" placeholder="Search reports..." value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 text-sm"
-            />
+              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 text-sm bg-slate-50 focus:bg-white transition-colors" />
           </div>
         </div>
 
-        {/* Reports History List */}
+        {/* Reports List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-500 font-medium">
-            <Loader2 className="animate-spin h-8 w-8 text-green-600 mb-4" />
-            <p>Loading your reports history...</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
+              <Loader2 className="animate-spin h-6 w-6 text-green-600" />
+            </div>
+            <p className="text-slate-600 font-semibold text-sm">Loading reports history...</p>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-slate-500 font-medium text-center">
-            <AlertCircle className="h-12 w-12 text-rose-500 mb-4" />
-            <p className="max-w-md">{error}</p>
-            <button
-              onClick={fetchReports}
-              className="mt-4 text-green-600 hover:text-green-700 font-semibold inline-flex items-center gap-1.5 text-sm"
-            >
-              <RefreshCw className="h-4 w-4" /> Retry Loading
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center gap-3">
+            <div className="h-14 w-14 rounded-2xl bg-rose-50 flex items-center justify-center">
+              <AlertCircle className="h-6 w-6 text-rose-500" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800">Failed to load reports</p>
+              <p className="text-slate-500 text-sm mt-1 max-w-sm">{error}</p>
+            </div>
+            <button onClick={fetchReports} className="flex items-center gap-1.5 text-green-600 hover:text-green-700 font-bold text-sm bg-green-50 hover:bg-green-100 px-4 py-2 rounded-xl transition-colors">
+              <RefreshCw className="h-3.5 w-3.5" /> Retry
             </button>
           </div>
         ) : filteredReports.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
-            <div className="h-16 w-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
-              <FileText className="h-8 w-8" />
+            <div className="h-20 w-20 rounded-3xl flex items-center justify-center mb-5" style={{background:'linear-gradient(135deg,#f0fdf4,#dcfce7)'}}>
+              <FileText className="h-9 w-9 text-green-500" />
             </div>
-            <h3 className="text-lg font-bold text-slate-800">No reports generated</h3>
-            <p className="text-slate-500 text-sm mt-1 max-w-sm">
-              {searchQuery || selectedTypeFilter !== "all"
-                ? "No reports match your current search queries or filters."
-                : "Choose a template and select a custom range to generate your first agricultural PDF or Excel document."}
+            <h3 className="text-xl font-bold text-slate-800">No reports yet</h3>
+            <p className="text-slate-500 text-sm mt-2 max-w-xs leading-relaxed">
+              {searchQuery || selectedTypeFilter !== "all" ? "No reports match your filters." : "Generate your first agricultural analytics report to get started."}
             </p>
             {!searchQuery && selectedTypeFilter === "all" && (
-              <button
-                onClick={() => setShowGenModal(true)}
-                className="mt-6 bg-green-50 text-green-700 hover:bg-green-100 px-5 py-2 rounded-xl font-bold transition-all text-sm"
-              >
-                Create a Report
+              <button onClick={() => setShowGenModal(true)} className="mt-6 flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md shadow-green-600/20">
+                <Plus className="h-4 w-4" /> Generate First Report
               </button>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-slate-150">
-                  <th className="p-4 pl-6">Report Title</th>
-                  <th className="p-4">Template Type</th>
-                  <th className="p-4">Range Period</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Format</th>
-                  <th className="p-4 text-center">Downloads</th>
-                  <th className="p-4 pr-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
-                {filteredReports.map((report) => (
-                  <tr key={report._id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 pl-6 font-semibold text-slate-800">
-                      {report.title}
-                    </td>
-                    <td className="p-4 text-slate-500 capitalize">
-                      {report.type.replace("_", " ")}
-                    </td>
-                    <td className="p-4 text-slate-500 text-xs tabular">
-                      {new Date(report.config?.period?.startDate).toLocaleDateString()} – {new Date(report.config?.period?.endDate).toLocaleDateString()}
-                    </td>
-                    <td className="p-4">
-                      {report.status === "completed" && (
-                        <span className="inline-flex px-2 py-1 bg-green-50 border border-green-200 text-green-700 text-xs font-bold rounded-lg uppercase tracking-wider">
-                          Ready
-                        </span>
-                      )}
-                      {report.status === "generating" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 border border-amber-250 text-amber-700 text-xs font-bold rounded-lg uppercase tracking-wider">
-                          <Loader2 className="animate-spin h-3 w-3" />
-                          <span>Building</span>
-                        </span>
-                      )}
-                      {report.status === "failed" && (
-                        <span className="inline-flex px-2 py-1 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg uppercase tracking-wider">
-                          Failed
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold uppercase text-slate-500">
-                        {report.format === "pdf" ? (
-                          <>
-                            <FileText className="h-4 w-4 text-rose-500" />
-                            <span>PDF</span>
-                          </>
-                        ) : (
-                          <>
-                            <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                            <span>XLSX</span>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-center text-slate-500 tabular font-medium">
-                      {report.downloadCount || 0}
-                    </td>
-                    <td className="p-4 pr-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {report.status === "completed" ? (
-                          <button
-                            onClick={() => handleDownload(report)}
-                            disabled={downloadingId !== null}
-                            className="flex items-center gap-1.5 text-xs font-bold text-green-600 hover:text-green-750 bg-green-50 border border-green-200/50 hover:bg-green-100/55 px-3 py-1.5 rounded-lg transition-all"
-                          >
-                            {downloadingId === report._id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Download className="h-3 w-3" />
-                            )}
-                            <span>Download</span>
-                          </button>
-                        ) : (
-                          <div className="h-7 w-20 flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                            —
-                          </div>
-                        )}
-                        <button
-                          onClick={() => setReportToDelete(report)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100"
-                          title="Delete Report"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="divide-y divide-slate-50">
+            {filteredReports.map((report) => (
+              <div key={report._id} className="group p-5 sm:p-6 hover:bg-slate-50/60 transition-all flex flex-col sm:flex-row sm:items-center gap-4">
+                {/* Icon + Title */}
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${report.format === 'pdf' ? 'bg-rose-50' : 'bg-green-50'}`}>
+                    {report.format === 'pdf' ? <FileText className="h-5 w-5 text-rose-500" /> : <FileSpreadsheet className="h-5 w-5 text-green-600" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-800 text-sm truncate">{report.title}</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                      <span className="text-xs text-slate-400 font-medium capitalize">{report.type.replace(/_/g,' ')}</span>
+                      <span className="text-slate-200">·</span>
+                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(report.config?.period?.startDate).toLocaleDateString()} – {new Date(report.config?.period?.endDate).toLocaleDateString()}
+                      </span>
+                      <span className="text-slate-200">·</span>
+                      <span className="text-xs text-slate-400">{report.downloadCount || 0} downloads</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status + Format + Actions */}
+                <div className="flex items-center gap-3 shrink-0 sm:justify-end flex-wrap">
+                  {report.status === "completed" && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 text-xs font-bold rounded-lg">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />READY
+                    </span>
+                  )}
+                  {report.status === "generating" && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-lg">
+                      <Loader2 className="animate-spin h-3 w-3" />BUILDING
+                    </span>
+                  )}
+                  {report.status === "failed" && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg">
+                      <AlertCircle className="h-3 w-3" />FAILED
+                    </span>
+                  )}
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg ${report.format==='pdf' ? 'bg-rose-50 text-rose-600' : 'bg-green-50 text-green-600'}`}>
+                    {report.format === 'pdf' ? <FileText className="h-3 w-3" /> : <FileSpreadsheet className="h-3 w-3" />}
+                    {report.format === 'pdf' ? 'PDF' : 'XLSX'}
+                  </span>
+                  {report.status === "completed" ? (
+                    <button onClick={() => handleDownload(report)} disabled={downloadingId !== null}
+                      className="flex items-center gap-1.5 text-xs font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 px-4 py-2 rounded-xl transition-all shadow-sm shadow-green-600/20 active:scale-95">
+                      {downloadingId === report._id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                      {downloadingId === report._id ? 'Downloading...' : 'Download'}
+                    </button>
+                  ) : (
+                    <div className="px-4 py-2 text-xs text-slate-300 font-bold">—</div>
+                  )}
+                  <button onClick={() => setReportToDelete(report)}
+                    className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100"
+                    title="Delete">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
+
       {/* Generate Report Modal */}
       <Modal
+
         show={showGenModal}
         onClose={() => !generating && setShowGenModal(false)}
         title="Generate New Report"
