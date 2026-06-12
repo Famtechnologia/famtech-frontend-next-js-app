@@ -17,7 +17,7 @@ export default function ModernFarmRegistration() {
   const { token } = useAuthStore();
   const [farmProfile, setFarmProfile] = useState({});
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, setProfile } = useProfile();
 
   useEffect(() => {
     setFarmProfile(profile);
@@ -148,6 +148,10 @@ export default function ModernFarmRegistration() {
       );
 
       const result = await response.data;
+
+      if (result?.data?.farmProfile) {
+        setProfile(result.data.farmProfile);
+      }
 
       toast.success(result?.message);
     } catch (error) {
