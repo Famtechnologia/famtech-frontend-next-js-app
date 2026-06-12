@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/lib/store/authStore';
 import { useCallback } from 'react';
-import apiClient from '../api/apiClient';
+import { getMe } from '../api/auth';
 
 export const useAuth = () => {
   const { token, user, setUser, loading, logout: storeLogout, _hasHydrated } = useAuthStore();
@@ -11,9 +11,9 @@ export const useAuth = () => {
   const fetchUser = useCallback(async () => {
     if (!token) return;
     try {
-      // /auth/me uses the Authorization header (set by apiClient interceptor)
-      const { data } = await apiClient.get('/auth/me');
-      setUser(data?.data ?? data);
+      // Backend decodes the JWT from the URL param server-side
+      const userData = await getMe(token);
+      setUser(userData?.data);
     } catch (error) {
       console.log(error);
     }
