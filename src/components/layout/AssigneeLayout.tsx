@@ -234,7 +234,7 @@ export default function AssigneeLayout({ children }: DashboardLayoutProps) {
         } fixed inset-y-0 left-0 z-[150] ${
           // z-50 is the max index for the main sidebar
           sidebarCollapsed ? "w-16" : "w-64"
-        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 flex flex-col h-screen relative`}
+        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:relative border-r border-gray-200 flex flex-col h-screen`}
         onMouseLeave={
           sidebarCollapsed ? () => setHoveredMenuKey(null) : undefined
         }
