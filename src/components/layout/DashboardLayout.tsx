@@ -204,14 +204,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           name: "Reports",
           icon: FileText,
           key: "reports",
-          expandable: true,
-          comingSoon: true,
+          expandable: false,
+          href: "/reports",
           section: "Insights",
-          children: [
-            { name: "Production", href: "#" },
-            { name: "Financial", href: "##", comingSoon: true },
-            { name: "Analytics", href: "/analytics" },
-          ],
         },
         {
           name: "Mapping & Geo Tools",

@@ -35,12 +35,16 @@ export const getReports = async (params?: ReportQuery) => {
 
 //  Download Report
 export const downloadReport = async (id: string) => {
-  // Request binary data (blob) from the server
-  const response = await analytics.get(`${API_BASE_URL}/${id}/download`, {
+  // 1. Get the download URL from the JSON API
+  const response = await analytics.get(`${API_BASE_URL}/${id}/download`);
+  const { downloadUrl, fileName } = response.data.data;
+
+  // 2. Request the actual binary data (blob) from the static server route
+  const fileResponse = await analytics.get(`${API_URL}${downloadUrl}`, {
     responseType: "blob",
   });
-  // Return both data and headers so callers can extract filename from Content-Disposition
-  return { data: response.data, headers: response.headers };
+
+  return { data: fileResponse.data, fileName };
 };
 
 //  Delete Report
