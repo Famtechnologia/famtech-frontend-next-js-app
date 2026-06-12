@@ -920,7 +920,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </Link>
 
                     <Link
-                      href="/settings/profile"
+                      href="/settings/farm-setting"
                       onClick={() => setIsProfileDropdownOpen(false)}
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
