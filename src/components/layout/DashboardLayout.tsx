@@ -411,7 +411,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-150 ${
+        } fixed inset-y-0 left-0 z-[150] ${
           // z-50 is the max index for the main sidebar
           sidebarCollapsed ? "w-16" : "w-64"
         } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 flex flex-col relative`}
@@ -688,7 +688,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {sidebarCollapsed && activeParentItem && activeParentItem.children && (
         <div
           ref={flyoutRef}
-          className="fixed left-16 top-0 h-full overflow-y-auto bg-white shadow-xl z-60 border-l border-gray-200 transition-opacity duration-150 ease-in-out"
+          className="fixed left-16 top-0 h-full overflow-y-auto bg-white shadow-xl z-[160] border-l border-gray-200 transition-opacity duration-150 ease-in-out"
           style={{
             width: "200px",
             paddingTop: "64px", // Space for the top header
@@ -949,7 +949,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          <div className="p-6">{children}</div>
+          <div className="p-4 md:p-6">{children}</div>
         </main>
       </div>
 

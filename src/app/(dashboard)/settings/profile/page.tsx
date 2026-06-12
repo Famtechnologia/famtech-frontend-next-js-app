@@ -106,15 +106,15 @@ const Settings: React.FC = () => {
   const farmSizeDisplay = `${farmSize} ${farmSizeUnit}`;
 
   return (
-    <div className="md:p-8 space-y-8 bg-slate-50/50 min-h-screen">
+    <div className="p-4 md:p-8 space-y-8 bg-slate-50/50 min-h-screen">
       {/* HEADER BANNER */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-800 to-emerald-600 rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-emerald-900/10">
+      <div className="relative overflow-hidden bg-gradient-to-r from-green-800 to-emerald-600 rounded-2xl md:rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-emerald-900/10">
         <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute left-1/3 bottom-0 translate-y-1/2 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center text-2xl md:text-3xl font-extrabold uppercase text-white shadow-inner">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center text-2xl md:text-3xl font-extrabold uppercase text-white shadow-inner flex-shrink-0">
               {farmName ? farmName.substring(0, 2) : "FM"}
             </div>
             <div className="space-y-1">
@@ -127,7 +127,7 @@ const Settings: React.FC = () => {
           </div>
           
           <Link href="/settings/edit-farm-profile" passHref>
-            <button className="self-start md:self-auto px-5 py-2.5 bg-white text-emerald-800 rounded-xl font-bold hover:bg-emerald-50 transition duration-150 text-sm shadow-md flex items-center gap-2">
+            <button className="self-center md:self-auto px-5 py-2.5 bg-white text-emerald-800 rounded-xl font-bold hover:bg-emerald-50 transition duration-150 text-sm shadow-md flex items-center gap-2">
               Edit Farm Profile
               <ArrowUpRight className="h-4 w-4" />
             </button>
