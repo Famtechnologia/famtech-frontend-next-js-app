@@ -20,18 +20,19 @@ export const useProfile = () => {
   useEffect(() => {
     if (!_hasHydrated || !token || isFetching.current) return;
 
-    // user._id is the reliable source of truth; use it directly
     const userId = user?._id;
     if (!userId) return;
 
-    // If the stored profile belongs to a different user, clear it first
-    const storedId = useProfileStore.getState().id;
+    // Read fresh store state — not the stale closure values
+    const { id: storedId, profile: storedProfile } = useProfileStore.getState();
+
+    // If profile belongs to a different user, clear it
     if (storedId && storedId !== userId) {
       useProfileStore.setState({ profile: null, id: null });
+    } else if (storedProfile && storedId === userId) {
+      // Already have the correct user's profile — nothing to do
+      return;
     }
-
-    // Already have the right user's profile
-    if (profile && storedId === userId) return;
 
     const hydrate = async () => {
       isFetching.current = true;
