@@ -45,8 +45,9 @@ const Login: React.FC = () => {
         const res = await loginStaff(form.email, form.password);
         const { token, message } = res;
 
-        useAuthStore.getState().setToken(token);
+        // Set cookie BEFORE Zustand token — AuthProvider checks cookie on re-render
         Cookies.set("famtech-auth", token, { expires: 3 });
+        useAuthStore.getState().setToken(token);
         toast.success(message || "Staff Login successful!");
 
         // ⏳ Keep loading true until navigation completes
@@ -56,8 +57,9 @@ const Login: React.FC = () => {
         const res = await login(form.email, form.password);
         const { token, message } = res;
 
-        useAuthStore.getState().setToken(token);
+        // Set cookie BEFORE Zustand token — AuthProvider checks cookie on re-render
         Cookies.set("famtech-auth", token, { expires: 3 });
+        useAuthStore.getState().setToken(token);
         toast.success(message || "Login successful!");
 
         router.replace("/dashboard");
