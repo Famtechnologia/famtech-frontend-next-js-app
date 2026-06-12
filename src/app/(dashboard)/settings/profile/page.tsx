@@ -13,7 +13,7 @@ import {
   Clock, 
   ShieldAlert, 
   ArrowUpRight, 
-  Sparkles,
+  Settings as SettingsIcon,
   Layers,
   Sprout
 } from "lucide-react";
@@ -51,7 +51,7 @@ interface FarmProfileData {
   location: Location;
   currency: string;
   timezone: string;
-  primaryCrop?: string[];
+  primaryCrops?: string[];
   farmingMethods?: string[];
   seasonalPattern: string;
   language: string;
@@ -92,7 +92,7 @@ const Settings: React.FC = () => {
     establishedYear,
     currency = "NGN",
     timezone = "Africa/Lagos",
-    primaryCrop = [],
+    primaryCrops = [],
     farmingMethods = [],
     seasonalPattern = "year-round",
     language = "en"
@@ -119,7 +119,7 @@ const Settings: React.FC = () => {
             </div>
             <div className="space-y-1">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold text-green-100 border border-white/10 uppercase tracking-wide">
-                <Sparkles className="h-3 w-3 text-amber-300" /> Farm Settings
+                <SettingsIcon className="h-3 w-3 text-emerald-100 animate-spin-slow" /> Farm Settings
               </span>
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">{farmName}</h1>
               <p className="text-sm text-green-100 font-medium">Owned by {farmOwnerName}</p>
@@ -311,9 +311,9 @@ const Settings: React.FC = () => {
                 {/* Primary Crops */}
                 <div className="space-y-2">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Primary Crops</p>
-                  {primaryCrop && primaryCrop.length > 0 ? (
+                  {primaryCrops && primaryCrops.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {primaryCrop.map((crop, index) => (
+                      {primaryCrops.map((crop, index) => (
                         <span key={index} className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-800 text-xs font-bold rounded-lg border border-blue-100 capitalize">
                           <Sprout className="h-3 w-3 text-blue-500" /> {crop}
                         </span>

@@ -8,7 +8,7 @@ import {
     Layers,
     PencilRuler,
     ArrowRight,
-    Sparkles
+    Settings as SettingsIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import SettingsNavigationSkeleton from '@/components/skeleton/settings/FarmSetting'; 
@@ -97,7 +97,7 @@ const Settings: React.FC = () => {
         <div className="md:p-8 space-y-8 bg-slate-50/50 min-h-screen">
             <div className="space-y-1">
                 <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-emerald-600" /> Settings Panel
+                    <SettingsIcon className="h-6 w-6 text-emerald-600 animate-spin-slow" /> Settings Panel
                 </h1>
                 <p className="text-sm font-medium text-slate-400">Configure operational parameters and account details</p>
             </div>
