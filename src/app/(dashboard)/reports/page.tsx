@@ -285,7 +285,7 @@ export default function ReportsPage() {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)'}}>
             <FileText className="h-5 w-5 text-blue-600" />
           </div>
@@ -294,7 +294,7 @@ export default function ReportsPage() {
             <p className="text-3xl font-extrabold text-slate-800">{metrics.total}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)'}}>
             <CheckCircle2 className="h-5 w-5 text-green-600" />
           </div>
@@ -303,7 +303,7 @@ export default function ReportsPage() {
             <p className="text-3xl font-extrabold text-green-600">{metrics.completed}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #fef9c3, #fef08a)'}}>
             <Loader2 className="h-5 w-5 text-amber-500" />
           </div>
@@ -312,7 +312,7 @@ export default function ReportsPage() {
             <p className="text-3xl font-extrabold text-amber-500">{metrics.pending}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #fce7f3, #fbcfe8)'}}>
             <Download className="h-5 w-5 text-pink-600" />
           </div>
