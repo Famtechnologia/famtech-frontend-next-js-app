@@ -16,11 +16,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const pathname = usePathname();
   const { fetchUser } = useAuth();
 
-  // 1. Sync cookie to Zustand token
+  // 1. Sync cookie to Zustand token; on logout also wipe the profile store
   useEffect(() => {
     if (cookie && cookie !== token) {
       setToken(cookie);
     } else if (!cookie && token) {
+      // This clears auth + profile localStorage so no stale data bleeds to next user
       useAuthStore.getState().logout();
     }
   }, [cookie, token, setToken]);

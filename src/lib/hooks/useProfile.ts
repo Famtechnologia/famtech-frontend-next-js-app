@@ -1,14 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useProfileStore } from "@/lib/store/farmStore";
 import apiClient from "../api/apiClient";
-import { getMe } from "../api/auth";
-
-// Module-level guard: prevents duplicate in-flight fetches across all hook instances
-let isFetching = false;
 
 export const useProfile = () => {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { profile, _hasHydrated, setId } = useProfileStore() as {
     profile: Record<string, unknown> | null;
     _hasHydrated: boolean;
@@ -18,17 +14,28 @@ export const useProfile = () => {
   // isHydrating = store hasn't finished reading from localStorage yet
   const isHydrating = !_hasHydrated;
 
+  // Per-component fetch guard — avoids the module-level singleton that gets stuck
+  const isFetching = useRef(false);
+
   useEffect(() => {
-    // Not ready yet, or already have profile data, or a fetch is running
-    if (!_hasHydrated || profile || !token || isFetching) return;
+    if (!_hasHydrated || !token || isFetching.current) return;
+
+    // user._id is the reliable source of truth; use it directly
+    const userId = user?._id;
+    if (!userId) return;
+
+    // If the stored profile belongs to a different user, clear it first
+    const storedId = useProfileStore.getState().id;
+    if (storedId && storedId !== userId) {
+      useProfileStore.setState({ profile: null, id: null });
+    }
+
+    // Already have the right user's profile
+    if (profile && storedId === userId) return;
 
     const hydrate = async () => {
-      isFetching = true;
+      isFetching.current = true;
       try {
-        const userData = await getMe(token);
-        const userId = userData?.data?._id;
-        if (!userId) return;
-
         setId(userId);
 
         const response = await apiClient.get(`/api/get-profile/${userId}`);
@@ -40,13 +47,13 @@ export const useProfile = () => {
       } catch (error) {
         console.error("[useProfile] Failed to hydrate profile:", error);
       } finally {
-        isFetching = false;
+        isFetching.current = false;
       }
     };
 
     hydrate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, _hasHydrated]);
+  }, [token, user?._id, _hasHydrated]);
 
   return {
     profile: profile as {

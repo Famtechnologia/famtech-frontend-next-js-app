@@ -2,6 +2,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import Cookies from "js-cookie";
 
+const clearAllPersistedStores = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("famtech-auth-storage");
+    localStorage.removeItem("profile-storage");
+  }
+  Cookies.remove("famtech-auth");
+};
+
 export const useAuthStore = create()(
   persist(
     (set) => ({
@@ -18,16 +26,15 @@ export const useAuthStore = create()(
       setHasHydrated: (val) => set({ _hasHydrated: val }),
       logout: () => {
         set({ token: null, claims: null, user: null });
-        Cookies.remove("famtech-auth");
+        clearAllPersistedStores();
       },
       clearUser: () => {
         set({ token: null, claims: null, user: null });
-        Cookies.remove("famtech-auth");
+        clearAllPersistedStores();
       },
     }),
     {
       name: "famtech-auth-storage",
-      // ✅ Signal when localStorage data has been restored
       onRehydrateStorage: () => (state) => {
         if (state) state.setHasHydrated(true);
       },

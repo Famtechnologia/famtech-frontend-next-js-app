@@ -129,6 +129,19 @@ export default function ReportsPage() {
     });
   }, [reports, searchQuery, selectedTypeFilter]);
 
+  // Dynamically derive available filter tabs from real backend data
+  const availableTypes = useMemo(() => {
+    const typeMap: Record<string, number> = {};
+    reports.forEach(r => {
+      typeMap[r.type] = (typeMap[r.type] || 0) + 1;
+    });
+    return Object.entries(typeMap).map(([type, count]) => ({ type, count }));
+  }, [reports]);
+
+  // Human-readable label for a report type
+  const typeLabel = (type: string) =>
+    type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
   // Summary Metrics
   const metrics = useMemo(() => {
     const total = reports.length;
@@ -329,10 +342,29 @@ export default function ReportsPage() {
         {/* Filter Toolbar */}
         <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/70 rounded-xl">
-            {[{id:"all",label:"All"},{id:"performance",label:"Performance"},{id:"financial",label:"Financial"},{id:"crop_analysis",label:"Crop Analysis"},{id:"livestock_report",label:"Livestock"},{id:"comprehensive",label:"Full Report"}].map((tab) => (
-              <button key={tab.id} onClick={() => setSelectedTypeFilter(tab.id)}
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${selectedTypeFilter === tab.id ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-                {tab.label}
+            {/* "All" tab always shown */}
+            <button
+              onClick={() => setSelectedTypeFilter("all")}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                selectedTypeFilter === "all" ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              }`}>
+              All
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                selectedTypeFilter === "all" ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-500"
+              }`}>{reports.length}</span>
+            </button>
+            {/* Dynamic tabs from backend data */}
+            {availableTypes.map(({ type, count }) => (
+              <button
+                key={type}
+                onClick={() => setSelectedTypeFilter(type)}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                  selectedTypeFilter === type ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                }`}>
+                {typeLabel(type)}
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                  selectedTypeFilter === type ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-500"
+                }`}>{count}</span>
               </button>
             ))}
           </div>
