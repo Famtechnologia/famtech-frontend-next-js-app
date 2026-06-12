@@ -1,62 +1,66 @@
 'use client';
-import React, { useState, useEffect } from 'react'; // <-- Ensure useEffect is imported
+import React, { useState, useEffect } from 'react';
 import {
     Pencil,
     Bell,
     Shield,
     Briefcase,
     Layers,
-    PencilRuler
+    PencilRuler,
+    ArrowRight,
+    Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
-
-// Assuming this path is correct for your skeleton component
 import SettingsNavigationSkeleton from '@/components/skeleton/settings/FarmSetting'; 
 
-
 const settingsSections = [
-    // Your static data array remains the same
     {
         title: 'Farm Information',
         items: [
             {
-                icon: <Layers className="h-6 w-6 text-green-600" />,
+                icon: <Layers className="h-5 w-5 text-emerald-600" />,
                 label: 'Farm Profile',
-                description: 'Edit information about the farm',
-                action: 'Edit',
-                href: '/settings/edit-farm-profile'
+                description: 'Edit information, timezone, language, and primary crop layouts',
+                action: 'Edit Details',
+                href: '/settings/edit-farm-profile',
+                bg: 'bg-emerald-50/50 hover:bg-emerald-50'
             },
             {
-                icon: <PencilRuler className="h-6 w-6 text-blue-600" />,
+                icon: <PencilRuler className="h-5 w-5 text-blue-600" />,
                 label: 'Land Mapping',
                 description: 'Re-map farming area to get accurate data on farm produce and livestock',
-                action: 'Re-map',
-
+                action: 'Re-map Area',
+                href: '#',
+                bg: 'bg-blue-50/50 hover:bg-blue-50'
             },
         ],
     },
     {
-        title: 'General Setting',
+        title: 'Security & Preferences',
         items: [
             {
-                icon: <Pencil className="h-6 w-6 text-green-600" />,
+                icon: <Pencil className="h-5 w-5 text-indigo-600" />,
                 label: 'Edit Profile',
-                description: 'Change personal information',
-                action: 'Edit',
-                href: '/settings/edit-farm-profile'
+                description: 'Change personal information and owner credentials',
+                action: 'Edit Profile',
+                href: '/settings/edit-farm-profile',
+                bg: 'bg-indigo-50/50 hover:bg-indigo-50'
             },
             {
-                icon: <Bell className="h-6 w-6 text-blue-600" />,
+                icon: <Bell className="h-5 w-5 text-amber-600" />,
                 label: 'Alarm Notification',
-                description: 'Set customized alarm notification',
-                action: 'Edit',
+                description: 'Set customized alarm notifications for critical updates',
+                action: 'Configure',
+                href: '#',
+                bg: 'bg-amber-50/50 hover:bg-amber-50'
             },
             {
-                icon: <Shield className="h-6 w-6 text-blue-600" />,
+                icon: <Shield className="h-5 w-5 text-rose-600" />,
                 label: 'Security',
                 description: 'Set two-factor verification to keep your account secure',
-                action: 'Edit',
-
+                action: 'Set 2FA',
+                href: '#',
+                bg: 'bg-rose-50/50 hover:bg-rose-50'
             },
         ],
     },
@@ -64,74 +68,70 @@ const settingsSections = [
         title: 'Plan & Billing',
         items: [
             {
-                icon: <Briefcase className="h-6 w-6 text-blue-600" />,
-                label: 'Enterprise Plan - $150 (Current plan)',
-                description: 'Customizable and scalable solutions for enterprises',
+                icon: <Briefcase className="h-5 w-5 text-violet-600" />,
+                label: 'Enterprise Plan - $150',
+                description: 'Customizable and scalable solutions for enterprise farms (Current plan)',
                 action: 'Change Plan',
                 href: '/settings/billing',
+                bg: 'bg-violet-50/50 hover:bg-violet-50'
             },
         ],
     },
 ];
 
 const Settings: React.FC = () => {
-    // 1. Correctly initialize the loading state with the setter function
     const [isLoading, setIsLoading] = useState(true); 
 
-    // 2. Use useEffect to run the loading logic once after mount
     useEffect(() => {
-        // In a real application, you would put your data fetching logic here.
-        // For static data like this, we simulate the network delay.
-        
         const timer = setTimeout(() => {
-            // After the delay, set isLoading to false to show content
             setIsLoading(false); 
-        }, 1000); // 1 second delay
-
-        // Cleanup function to clear the timeout if the component unmounts
+        }, 1000);
         return () => clearTimeout(timer);
-    }, []); // Empty dependency array means it runs only on mount
+    }, []);
 
-    // 3. Conditional rendering to show skeleton or content
     if (isLoading) {
         return <SettingsNavigationSkeleton />;
     }
     
-    // 4. Actual component rendering
     return (
-        <div className="md:p-8 space-y-8 bg-gray-50 min-h-screen">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-                <p className="text-gray-500">Personalize your account</p>
+        <div className="md:p-8 space-y-8 bg-slate-50/50 min-h-screen">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+                    <Sparkles className="h-6 w-6 text-emerald-600" /> Settings Panel
+                </h1>
+                <p className="text-sm font-medium text-slate-400">Configure operational parameters and account details</p>
             </div>
 
             {settingsSections.map((section, sectionIndex) => (
-                <div key={sectionIndex} className="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div className="p-6 border-b border-gray-200">
-                        <h2 className="text-xl font-semibold text-gray-800">{section.title}</h2>
-                    </div>
-                    <div className="px-2 py-4 md:p-6 space-y-4">
+                <div key={sectionIndex} className="space-y-4">
+                    <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider pl-1">{section.title}</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {section.items.map((item, itemIndex) => (
                             <div
                                 key={itemIndex}
-                                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+                                className={`group p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-100/50 transition-all duration-300 flex flex-col justify-between`}
                             >
-                                <div className="flex items-start justify-start space-x-4">
-                                    <div className="p-2 rounded-full text-blue-600">
+                                <div className="space-y-4">
+                                    <div className={`p-2.5 rounded-xl w-fit ${item.bg.split(' ')[0]}`}>
                                         {item.icon}
                                     </div>
-                                    <div>
-                                        <p className="text-base md:text-lg font-medium text-gray-800">{item.label}</p>
-                                        <p className="text-gray-600 text-sm md:text-base">{item.description}</p>
+                                    <div className="space-y-1">
+                                        <h3 className="text-base font-bold text-slate-700 group-hover:text-emerald-800 transition-colors">
+                                            {item.label}
+                                        </h3>
+                                        <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                            {item.description}
+                                        </p>
                                     </div>
                                 </div>
-                                {/* Use item.href if available, otherwise default to a known path */}
-                                <Link 
-                                    href={item.href || ''} 
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-200 focus:outline-none bg-gray-100"
-                                >
-                                    {item.action}
-                                </Link>
+                                
+                                <div className="pt-5 flex justify-end">
+                                    <Link href={item.href} className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-600 rounded-xl bg-slate-50 border border-slate-150 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all duration-300">
+                                        {item.action}
+                                        <ArrowRight className="h-3.5 w-3.5" />
+                                    </Link>
+                                </div>
                             </div>
                         ))}
                     </div>
