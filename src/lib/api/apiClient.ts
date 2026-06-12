@@ -34,6 +34,17 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        // If the 401 is specifically about email verification, redirect there
+        // instead of logging the user out
+        const errMessage = error.response?.data?.message || "";
+        if (
+          typeof errMessage === "string" &&
+          errMessage.toLowerCase().includes("verify your email")
+        ) {
+          if (typeof window !== "undefined") window.location.href = "/verify-email";
+          return Promise.reject(error);
+        }
+
         const { token, refreshToken, setToken } = useAuthStore.getState() as {
           token: string | null;
           refreshToken?: string | null;
