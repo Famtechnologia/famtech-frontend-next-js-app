@@ -96,10 +96,10 @@ export default function Page() {
     }
   
   return (
-    <div className="text-slate-900 font-sans p-4 md:p-6 bg-slate-50/30">
+    <div className="text-slate-900 font-sans p-3 md:p-6 bg-slate-50/30">
       
       {/* Header Block */}
-      <div className="mb-6 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="hidden md:flex mb-6 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             Advisory Workspace
@@ -124,7 +124,7 @@ export default function Page() {
       </div>
 
       {/* --- SEGMENTED TABS SECTION --- */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 max-w-2xl">
+      <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl md:rounded-2xl mb-4 md:mb-6 max-w-2xl scrollbar-none">
         {tabsConfig.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTabKey === tab.key;
@@ -133,14 +133,14 @@ export default function Page() {
             <button
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
-              className={`flex items-center justify-center gap-2 px-5 py-2.5 text-xs md:text-sm font-bold rounded-xl transition-all duration-200 whitespace-nowrap flex-1
+              className={`flex items-center justify-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold rounded-lg md:rounded-xl transition-all duration-200 whitespace-nowrap flex-1 shrink-0
                         ${
                           isActive
                             ? "bg-white text-green-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                             : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
                         }`}
             >
-              <Icon size={16} />
+              <Icon size={15} />
               <span>{tab.label}</span>
             </button>
           );

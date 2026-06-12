@@ -353,7 +353,7 @@ export const SmartInsight = () => {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-330px)] min-h-[420px] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
+    <div className="flex h-[calc(100vh-170px)] md:h-[calc(100vh-330px)] min-h-[460px] md:min-h-[500px] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
       
       {/* --- SIDEBAR CHAT PANEL (CLAUDE STYLE) --- */}
       <div className="hidden lg:flex flex-col w-64 bg-slate-50 border-r border-slate-100 p-4 shrink-0">
@@ -405,28 +405,28 @@ export const SmartInsight = () => {
         >
           {chatHistory.length === 0 ? (
             /* --- BEAUTIFUL CLAUDE-STYLE GREETING LANDING --- */
-            <div className="flex flex-col items-center justify-center py-12 md:py-16 text-center space-y-8 animate-in fade-in duration-350">
-              <div className="p-3.5 bg-gradient-to-tr from-green-500 to-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-500/10">
-                <BotMessageSquare className="h-8 w-8" />
+            <div className="flex flex-col items-center justify-center py-4 md:py-16 text-center space-y-4 md:space-y-8 animate-in fade-in duration-350">
+              <div className="p-2.5 md:p-3.5 bg-gradient-to-tr from-green-500 to-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-500/10">
+                <BotMessageSquare className="h-6 w-6 md:h-8 md:w-8" />
               </div>
-              <div className="space-y-2 max-w-lg">
-                <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
+              <div className="space-y-1 md:space-y-2 max-w-lg">
+                <h1 className="text-xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
                   How can I assist you today?
                 </h1>
-                <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed">
                   I can analyze soil conditions, review crop logs, optimize feed allocations, and provide diagnostic recommendations for your farm.
                 </p>
               </div>
 
               {/* Quick Prompts cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 w-full max-w-2xl mt-2 md:mt-4">
                 {quickPrompts.map((card, i) => (
                   <div
                     key={i}
                     onClick={() => handlePromptCardClick(card.prompt)}
-                    className={`p-4 rounded-xl border border-slate-100/80 cursor-pointer text-left transition-all hover:scale-[1.01] hover:shadow-md ${card.bg}`}
+                    className={`p-3 md:p-4 rounded-xl border border-slate-100/80 cursor-pointer text-left transition-all hover:scale-[1.01] hover:shadow-md ${card.bg}`}
                   >
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-1.5">
                       <div className="p-1.5 bg-white rounded-lg shadow-sm">{card.icon}</div>
                       <h4 className="font-bold text-slate-800 text-sm">{card.title}</h4>
                     </div>
@@ -528,7 +528,7 @@ export const SmartInsight = () => {
         </div>
 
         {/* --- BOTTOM INPUT COMPOSER PANEL --- */}
-        <div className="p-4 md:p-5 bg-white border-t border-slate-100/80 shrink-0">
+        <div className="p-2.5 md:p-4 bg-white border-t border-slate-100/80 shrink-0">
           <div className="max-w-3xl w-full mx-auto">
             
             {/* Attachment preview capsule */}
@@ -552,7 +552,7 @@ export const SmartInsight = () => {
 
             <form
               onSubmit={handleChat}
-              className="bg-white border border-slate-200 rounded-2xl shadow-[0_12px_45px_rgba(0,0,0,0.06)] p-2 relative flex flex-col focus-within:border-emerald-600 transition-colors"
+              className="bg-white border border-slate-200 rounded-xl md:rounded-2xl shadow-[0_12px_45px_rgba(0,0,0,0.06)] p-1.5 md:p-2 relative flex flex-col focus-within:border-emerald-600 transition-colors"
             >
               <textarea
                 rows={1}
@@ -565,36 +565,36 @@ export const SmartInsight = () => {
                     handleChat(e);
                   }
                 }}
-                className="w-full px-3 py-2 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none resize-none font-medium"
+                className="w-full px-2.5 py-1.5 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none resize-none font-medium"
                 disabled={isLoading}
               />
 
-              <div className="flex justify-between items-center pt-2 border-t border-slate-100 mt-2 px-1">
-                <div className="flex gap-2">
+              <div className="flex justify-between items-center pt-1.5 border-t border-slate-100 mt-1.5 px-1">
+                <div className="flex gap-1.5">
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-1 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-bold text-slate-600 rounded-lg md:rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
                     disabled={isLoading}
                     onClick={() => setIsCropRecord(true)}
                   >
-                    <Plus className="h-3.5 w-3.5" /> Crop
+                    <Plus className="h-3 w-3" /> Crop
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-1 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-bold text-slate-600 rounded-lg md:rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
                     disabled={isLoading}
                     onClick={() => setIsLivestockRecord(true)}
                   >
-                    <Plus className="h-3.5 w-3.5" /> Livestock
+                    <Plus className="h-3 w-3" /> Livestock
                   </button>
                 </div>
 
                 <button
                   type="submit"
-                  className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/10 disabled:opacity-50 disabled:shadow-none flex items-center justify-center"
+                  className="p-1.5 md:p-2 bg-emerald-600 text-white rounded-lg md:rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/10 disabled:opacity-50 disabled:shadow-none flex items-center justify-center"
                   disabled={isLoading || !question.trim()}
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-3.5 w-3.5" />
                 </button>
               </div>
             </form>

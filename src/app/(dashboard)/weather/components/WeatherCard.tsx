@@ -298,9 +298,9 @@ export default function WeatherCard() {
     return (
         <Card
             title="Weather & Smart Advisory"
-            className={`h-[350px] md:h-[320px] transition-all duration-300 hover:shadow-md ${cardTheme.bg}`}
+            className={`h-fit md:h-[360px] transition-all duration-300 hover:shadow-md ${cardTheme.bg}`}
             headerClassName={`border-b ${cardTheme.headerBg}`}
-            bodyClassName="p-5 flex flex-col justify-between"
+            bodyClassName="p-3 sm:p-5 flex flex-col justify-between"
         >
             <div className="flex-1">
                 {/* Custom Tab Selector */}
