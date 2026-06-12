@@ -1,64 +1,51 @@
-// ChatWithOfficerPage.tsx
-import React, { useState } from 'react';
-//import OfficerList from './chatwithofficer/OfficerList';
-import DefaultChatView from './chatwithofficer/DefaultChatView';
-import OfficerProfile from './chatwithofficer/OfficerProfile1';
-import ChatWindow from './chatwithofficer/ChatWindow';
-import { Officer } from './chatwithofficer/OfficerProfile1';
-// Import from the single source
+'use client';
 
-const ChatWithOfficerPage: React.FC = () => {
+import React, { useState } from 'react';
+import OfficerList from './chatwithofficer/OfficerList';
+import DefaultChatView from './chatwithofficer/DefaultChatView';
+import OfficerProfile, { Officer } from './chatwithofficer/OfficerProfile1';
+import ChatWindow from './chatwithofficer/ChatWindow';
+import { MessageSquare, UserCheck, ShieldAlert } from 'lucide-react';
+
+export default function ChatWithOfficerPage() {
   const [activeScreen, setActiveScreen] = useState<'default' | 'chat' | 'profile'>('default');
   const [selectedOfficer, setSelectedOfficer] = useState<Officer | null>(null);
-  
-{/*}  const officers: Officer[] = [
+
+  const officers: Officer[] = [
     {
       id: 1,
       name: 'Grace Adebayo',
-      specialty: 'Crop Science & Pest Management Specialist',
+      specialty: 'Crop Science & Pest Management',
       photo: '/images/help/officer 2.png',
-      status: '46 m',
+      status: 'Online',
       hasUnread: true,
-      location: 'Kaduna North, Nigeria',
-      bio: 'An Agricultural Extension Officer specializing in Livestock & Veterinary Services plays a crucial role in supporting farmers, livestock-keepers, and rural communities by providing expert advice, veterinary support, and technical training. Their primary focus is improving animal health, productivity, and sustainable livestock practices through education, diagnostics, disease control, and resource management.',
+      location: 'Oyo State, Nigeria',
+      bio: 'A certified Crop Science Specialist with over 8 years of field experience helping smallholder farmers identify crop diseases, optimize soil inputs, and adopt integrated pest management practices.',
       responsibilities: {
-        health: ['Diagnose and treat common animal diseases.', 'Administer vaccines, dewormers, and medications.', 'Monitor herd/flock health and advise on biosecurity practices.'],
-        training: ['Educate farmers on best practices in animal husbandry, feeding, breeding, and housing.', 'Conduct workshops, training sessions, and materials for outreach programs.', 'Promote the adoption of modern livestock management techniques.'],
-        vet: ['Conduct field visits to assess animal health and farm conditions.', 'Provide on-the-spot veterinary interventions during disease outbreaks.', 'Assist in implementing government animal health campaigns (e.g., foot-and-mouth disease eradication).'],
-        breed: ['Advise on selecting improved breeds.', 'Guide artificial insemination programs.', 'Promote genetic improvement strategies for cattle, goats, poultry, sheep, etc.'],
-        nutrition: ['Offer recommendations on cost-effective and nutritious feed formulations.', 'Train farmers on forage conservation, silage making, and proper feed storage.'],
-        data: ['Maintain farmer animal health interventions, vaccinations, and disease patterns.', 'Help farmers establish farm logs for production monitoring and business decision-making.'],
-        compliance: ['Ensure farms comply with animal welfare, food safety, and veterinary public health regulations.', 'Assist with livestock movement permits and vaccination certifications.'],
-        community: ['Act as a liaison between farmers and cooperatives focused on livestock development.', 'Serve as a bridge between government agencies and local communities.', 'Contribute to food security, income generation, and rural empowerment.'],
+        diagnostics: ['Identify fungal, bacterial, and pest crop infestations.', 'Recommend organic and safe chemical treatment regimens.'],
+        soilPrep: ['Advise on pre-planting soil preparations and companion planting techniques.'],
       },
       contact: {
-        email: 'graceadebayo@gmail.com',
-        phone: '+2348100466728'
+        email: 'grace.adebayo@famtech.llc',
+        phone: '+234 803 111 2222'
       }
-    
     },
     {
       id: 2,
       name: 'Ibrahim Musa',
       specialty: 'Livestock & Veterinary Services',
       photo: '/images/help/officer 1.png',
-      status: '1 h',
-      hasUnread: true,
-      location: 'Kaduna North, Nigeria',
-      bio: 'An Agricultural Extension Officer specializing in Livestock & Veterinary Services plays a crucial role in supporting farmers, livestock-keepers, and rural communities by providing expert advice, veterinary support, and technical training. Their primary focus is improving animal health, productivity, and sustainable livestock practices through education, diagnostics, disease control, and resource management.',
+      status: 'Away',
+      hasUnread: false,
+      location: 'Kaduna State, Nigeria',
+      bio: 'Veterinary expert focused on livestock health, poultry nutrition, breeding guidelines, and farm biosecurity controls across sub-Saharan pastoral systems.',
       responsibilities: {
-        health: ['Diagnose and treat common animal diseases.', 'Administer vaccines, dewormers, and medications.', 'Monitor herd/flock health and advise on biosecurity practices.'],
-        training: ['Educate farmers on best practices in animal husbandry, feeding, breeding, and housing.', 'Conduct workshops, training sessions, and materials for outreach programs.', 'Promote the adoption of modern livestock management techniques.'],
-        vet: ['Conduct field visits to assess animal health and farm conditions.', 'Provide on-the-spot veterinary interventions during disease outbreaks.', 'Assist in implementing government animal health campaigns (e.g., foot-and-mouth disease eradication).'],
-        breed: ['Advise on selecting improved breeds.', 'Guide artificial insemination programs.', 'Promote genetic improvement strategies for cattle, goats, poultry, sheep, etc.'],
-        nutrition: ['Offer recommendations on cost-effective and nutritious feed formulations.', 'Train farmers on forage conservation, silage making, and proper feed storage.'],
-        data: ['Maintain farmer animal health interventions, vaccinations, and disease patterns.', 'Help farmers establish farm logs for production monitoring and business decision-making.'],
-        compliance: ['Ensure farms comply with animal welfare, food safety, and veterinary public health regulations.', 'Assist with livestock movement permits and vaccination certifications.'],
-        community: ['Act as a liaison between farmers and cooperatives focused on livestock development.', 'Serve as a bridge between government agencies and local communities.', 'Contribute to food security, income generation, and rural empowerment.'],
+        healthcare: ['Diagnose livestock diseases and direct vaccine calendars.', 'Provide animal husbandry best practices.'],
+        nutrition: ['Offer feeding ratios and forage preservation recommendations.'],
       },
       contact: {
-        email: 'ibrahimmusa@gmail.com',
-        phone: '+2348100466728'
+        email: 'ibrahim.musa@famtech.llc',
+        phone: '+234 809 333 4444'
       }
     },
     {
@@ -66,82 +53,113 @@ const ChatWithOfficerPage: React.FC = () => {
       name: 'Ngozi Chukwuma',
       specialty: 'Soil Health & Organic Farming',
       photo: '/images/help/officer 3.png',
-      status: '22 h',
-      hasUnread: true,
-      location: 'Kaduna North, Nigeria',
-      bio: 'An Agricultural Extension Officer specializing in Livestock & Veterinary Services plays a crucial role in supporting farmers, livestock-keepers, and rural communities by providing expert advice, veterinary support, and technical training. Their primary focus is improving animal health, productivity, and sustainable livestock practices through education, diagnostics, disease control, and resource management.',
+      status: 'Online',
+      hasUnread: false,
+      location: 'Enugu State, Nigeria',
+      bio: 'Soil microbiologist promoting sustainable organic agriculture, organic waste composting, and natural fertilizer alternatives to rebuild depleted topsoil.',
       responsibilities: {
-        health: ['Diagnose and treat common animal diseases.', 'Administer vaccines, dewormers, and medications.', 'Monitor herd/flock health and advise on biosecurity practices.'],
-        training: ['Educate farmers on best practices in animal husbandry, feeding, breeding, and housing.', 'Conduct workshops, training sessions, and materials for outreach programs.', 'Promote the adoption of modern livestock management techniques.'],
-        vet: ['Conduct field visits to assess animal health and farm conditions.', 'Provide on-the-spot veterinary interventions during disease outbreaks.', 'Assist in implementing government animal health campaigns (e.g., foot-and-mouth disease eradication).'],
-        breed: ['Advise on selecting improved breeds.', 'Guide artificial insemination programs.', 'Promote genetic improvement strategies for cattle, goats, poultry, sheep, etc.'],
-        nutrition: ['Offer recommendations on cost-effective and nutritious feed formulations.', 'Train farmers on forage conservation, silage making, and proper feed storage.'],
-        data: ['Maintain farmer animal health interventions, vaccinations, and disease patterns.', 'Help farmers establish farm logs for production monitoring and business decision-making.'],
-        compliance: ['Ensure farms comply with animal welfare, food safety, and veterinary public health regulations.', 'Assist with livestock movement permits and vaccination certifications.'],
-        community: ['Act as a liaison between farmers and cooperatives focused on livestock development.', 'Serve as a bridge between government agencies and local communities.', 'Contribute to food security, income generation, and rural empowerment.'],
+        soilHealth: ['Conduct virtual soil structure analysis.', 'Formulate compost teas and organic NPK substitutes.'],
+        sustainability: ['Train farmers on crop rotation and soil water retention.'],
       },
       contact: {
-        email: 'ngozichukwuma@gmail.com',
-        phone: '+2348100466728'
+        email: 'ngozi.chukwuma@famtech.llc',
+        phone: '+234 812 555 6666'
       }
-    
-    },
-  ]; */}
+    }
+  ];
 
- {/* const handleViewProfileClick = (officer: Officer) => {
+  const handleViewProfileClick = (officer: Officer) => {
     setSelectedOfficer(officer);
     setActiveScreen('profile');
-  };*/}
+  };
 
   const handleStartChatClick = (officer: Officer) => {
     setSelectedOfficer(officer);
     setActiveScreen('chat');
   };
 
+  const handleBackToList = () => {
+    setActiveScreen('default');
+    setSelectedOfficer(null);
+  };
+
   const renderContent = () => {
     switch (activeScreen) {
       case 'default':
-        return <DefaultChatView />;
+        return (
+          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[450px]">
+            <DefaultChatView />
+          </div>
+        );
       case 'profile':
         if (!selectedOfficer) return null;
-        return <OfficerProfile officer={selectedOfficer} onStartChat={handleStartChatClick} />;
+        return (
+          <OfficerProfile 
+            officer={selectedOfficer} 
+            onStartChat={handleStartChatClick} 
+          />
+        );
       case 'chat':
         if (!selectedOfficer) return null;
-        return <ChatWindow officer={selectedOfficer} />;
+        return (
+          <ChatWindow 
+            officer={selectedOfficer} 
+            onBack={handleBackToList}
+          />
+        );
       default:
         return null;
     }
   };
 
   return (
-    <>
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          Your farming concerns deserve expert answers 
-        </h3>
-        <p className="text-gray-600 mb-4">
-          Get real-time support from Certified Extension Officers. <br />
-          Ask questions about pests or farm plannings on your next season for practical guidance on crops, livestock, fertilizer use or climate-smart farming and field issues. <br />
-          Share photos or voice notes for accurate diagnosis and fast solutions — right from your farm.
-          <br />One message at a time! 
-        </p>
+    <div className="space-y-6">
+      
+      {/* Intro Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold text-emerald-100 border border-white/10 uppercase tracking-wide">
+            <UserCheck className="h-3.5 w-3.5" /> Certified Support
+          </div>
+          <h2 className="text-xl md:text-2xl font-extrabold tracking-tight">
+            Consult Agricultural Extension Officers
+          </h2>
+          <p className="text-sm text-emerald-100 font-medium max-w-xl leading-relaxed">
+            Get personalized field guidance on pests, livestock feeding, soil analysis, and organic cultivation systems directly from certified regional experts.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 text-xs font-semibold text-white">
+          <MessageSquare className="h-4 w-4 text-emerald-300" /> Responses: Within 2hr
+        </div>
       </div>
-      <div className="lg:flex space-x-2  lg:h-full pt-6">
-        {/* Left section: Conversation/Default View (3/5 width) */}
-        <div className="w-full  rounded-lg flex items-center justify-center">
+
+      {/* Main Split Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* Left column: Officers List */}
+        <div className={`lg:col-span-1 ${activeScreen !== 'default' && activeScreen !== 'profile' ? 'hidden lg:block' : 'block'}`}>
+          <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Available Experts</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Select an officer to consult or view profile</p>
+            </div>
+            <div className="p-2">
+              <OfficerList 
+                officers={officers} 
+                onViewProfile={handleViewProfileClick} 
+                onStartChat={handleStartChatClick} 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Active Detail Panel */}
+        <div className={`lg:col-span-2 ${activeScreen === 'default' && 'hidden lg:block'} ${activeScreen === 'profile' && 'block'} lg:block`}>
           {renderContent()}
         </div>
 
-        {/* Right section: Officer List (2/5 width)
-        <OfficerList 
-          officers={officers} 
-          onViewProfile={handleViewProfileClick} 
-          onStartChat={handleStartChatClick} 
-          
-        /> */}
       </div>
-    </>
-  );
-};
 
-export default ChatWithOfficerPage;
+    </div>
+  );
+}

@@ -1,183 +1,236 @@
-import React from 'react';
+'use client';
 
-const App = () => {
-  const SmartDiaryPage = () => {
-    return (
-      <div className="p-0 lg:p-4 bg-gray-100 min-h-screen font-sans">
-        {/* Purpose Section */}
-        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4">
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            Purpose of a Smart Diary
-          </h3>
-          <p className="text-gray-600">
-            This is a transformational module that enhances agricultural service delivery by digitizing
-            record-keeping and improving communication between officers, farmers, and government bodies.
-            It boosts accountability, improves planning with recommendations, and allows
-            faster decision-making for both routine care and emergency interventions in agriculture.
-          </p>
-        </div>
-        
-        {/* Main Content Sections */}
-        <div className="flex flex-col md:flex-row md:space-x-3 lg:space-x-6 mt-4">
-          {/* Left section: Smart Diary - Saved Advice */}
-          <div className="w-full md:w-3/5 mb-4 md:mb-0">
-            <div className="bg-white rounded-lg shadow-md p-6 h-full flex flex-col">
-              <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Smart Diary - Saved Advice</h2>
-                <div className="flex space-x-2 mt-2 sm:mt-0">
-                  <button className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors">
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Share
-                  </button>
-                  <button className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors">
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0L8 12m4 4V4" />
-                    </svg>
-                    Export
-                  </button>
-                </div>
-              </div>
-              <p className="text-gray-600 text-sm mb-6">Your personalized collection of agricultural advice and recommendations.</p>
+import React, { useState } from 'react';
+import { Share2, Download, Search, Calendar, Tag, AlertCircle, Droplets, CloudRain, Cpu, Award } from 'lucide-react';
 
-              <div className="space-y-6">
-                {/* Cattle Advice */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center">
-                      <span className="text-2xl mr-2">🐄</span>
-                      <div>
-                        <h3 className="font-semibold text-gray-800">Cattle</h3>
-                        <p className="text-sm text-gray-500">June 18, 2025 - 08:00 AM</p>
-                      </div>
-                    </div>
-                    <span className="px-3 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">Nutrition Plan</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Advice:</p>
-                  <p className="text-sm text-gray-600">Increase protein content to 16% during lactation period. Add mineral supplements containing zinc and copper</p>
-                  <p className="text-sm font-medium text-gray-700 mt-2 mb-1">Reminder:</p>
-                  <p className="text-sm text-gray-600">Observe or inspect your animal to see development</p>
-                </div>
+interface AdviceItem {
+  id: string;
+  category: 'Cattle' | 'Wheat' | 'Tomato';
+  icon: string;
+  date: string;
+  type: string;
+  advice: string;
+  reminder: string;
+}
 
-                {/* Wheat Advice */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center">
-                      <span className="text-2xl mr-2">🌿</span>
-                      <div>
-                        <h3 className="font-semibold text-gray-800">Wheat</h3>
-                        <p className="text-sm text-gray-500">June 19, 2025 - 08:00 AM</p>
-                      </div>
-                    </div>
-                    <span className="px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Harvest Timing</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Advice:</p>
-                  <p className="text-sm text-gray-600">Monitor moisture content - harvest when grain moisture is between 12-14% for optimal storage</p>
-                  <p className="text-sm font-medium text-gray-700 mt-2 mb-1">Reminder:</p>
-                  <p className="text-sm text-gray-600">Check fields daily starting June 28th</p>
-                </div>
+export default function SmartDiaryPage() {
+  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-                {/* Tomato Advice */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center">
-                      <span className="text-2xl mr-2">🍅</span>
-                      <div>
-                        <h3 className="font-semibold text-gray-800">Tomato</h3>
-                        <p className="text-sm text-gray-500">June 20, 2025 - 08:00 AM</p>
-                      </div>
-                    </div>
-                    <span className="px-3 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">Blight Prevention</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Advice:</p>
-                  <p className="text-sm text-gray-600">Apply copper-based fungicide every 7-10 days during humid conditions. Ensure proper spacing between plants for air circulation.</p>
-                  <p className="text-sm font-medium text-gray-700 mt-2 mb-1">Follow-up:</p>
-                  <p className="text-sm text-gray-600">Video call scheduled for June 25th</p>
-                </div>
-              </div>
-            </div>
-          </div>
+  const adviceList: AdviceItem[] = [
+    {
+      id: '1',
+      category: 'Cattle',
+      icon: '🐄',
+      date: 'June 18, 2026 - 08:00 AM',
+      type: 'Nutrition Plan',
+      advice: 'Increase protein content to 16% during lactation period. Add mineral supplements containing zinc and copper.',
+      reminder: 'Observe or inspect your animal daily to track digestion and milk yield developments.',
+    },
+    {
+      id: '2',
+      category: 'Wheat',
+      icon: '🌾',
+      date: 'June 19, 2026 - 09:30 AM',
+      type: 'Harvest Timing',
+      advice: 'Monitor moisture content. Harvest when grain moisture is between 12-14% for optimal warehouse storage and minimal mold risk.',
+      reminder: 'Check test fields daily starting next Monday.',
+    },
+    {
+      id: '3',
+      category: 'Tomato',
+      icon: '🍅',
+      date: 'June 20, 2026 - 11:15 AM',
+      type: 'Blight Prevention',
+      advice: 'Apply organic copper-based fungicide every 7-10 days during high-humidity periods. Ensure proper plant spacing for air circulation.',
+      reminder: 'Follow-up field diagnostic call scheduled for next Thursday.',
+    }
+  ];
 
-          {/* Right section: Smart Farming Tips */}
-          <div className="w-full md:w-2/5">
-            <div className="bg-white rounded-lg shadow-md p-3 pt-6 pb-6 md:p-6 h-full">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-800">Smart Farming Tips</h3>
-                <span className="px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">recommendations</span>
-              </div>
-              <p className="text-gray-600 text-sm mb-6">Never miss a task - get notified about farm events, treatments, and field visits.</p>
+  const filteredAdvice = adviceList.filter(item => {
+    const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+    const matchesSearch = item.advice.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          item.type.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-              <div className="space-y-6">
-                {/* Tip 1 */}
-                <div className="flex items-start">
-                  <svg className="w-10 md:w-5 h-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <div>
-                    <h4 className="font-medium text-gray-800">Monitor Weather with Digital Tools</h4>
-                    <ul className="list-disc list-inside text-gray-600 text-sm pl-4 mt-2">
-                      <li>Plan planting, irrigation, and harvesting around the forecast</li>
-                      <li>Avoid rain during fertilizer or chemical application</li>
-                    </ul>
-                    <p className="text-sm text-gray-500 italic mt-2">&#34;Let weather guide your farm calendar.&#34;</p>
-                  </div>
-                </div>
-                
-                {/* Tip 2 */}
-                <div className="flex items-start">
-                  <svg className="w-10 md:w-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <div>
-                    <h4 className="font-medium text-gray-800">Adopt Precision Farming Techniques</h4>
-                    <ul className="list-disc list-inside text-gray-600 text-sm pl-4 mt-2">
-                      <li>Apply fertilizers or seeds only where needed.</li>
-                      <li>Reduce waste and increase yield.</li>
-                      <li>Install soil moisture sensors to water crops only when required.</li>
-                    </ul>
-                    <p className="text-sm text-gray-500 italic mt-2">&#34;Farm smarter, not harder.&#34;</p>
-                  </div>
-                </div>
-
-                {/* Tip 3 */}
-                <div className="flex items-start">
-                  <svg className="w-10 md:w-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <div>
-                    <h4 className="font-medium text-gray-800">Automate Irrigation</h4>
-                    <ul className="list-disc list-inside text-gray-600 text-sm pl-4 mt-2">
-                      <li>Use timers or moisture sensors to: Irriate crops automatically.</li>
-                      <li>Prevent overwatering and reduce water bills.</li>
-                    </ul>
-                    <p className="text-sm text-gray-500 italic mt-2">&#34;Smart water = smart yields.&#34;</p>
-                  </div>
-                </div>
-
-                {/* Tip 4 (The last tip in the image) */}
-                <div className="flex items-start">
-                  <svg className="w-10 md:w-5 mr-3 mt-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <div>
-                    <h4 className="font-medium text-gray-800">Use Certified Inputs</h4>
-                    <ul className="list-disc list-inside text-gray-600 text-sm pl-4 mt-2">
-                      <li>Buy from certified seed sellers and digital agro-dealers.</li>
-                      <li>Use barcode or QR code apps to verify authenticity.</li>
-                    </ul>
-                    <p className="text-sm text-gray-500 italic mt-2">&#34;Good seeds = good harvest.&#34;</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  return (
+    <div className="space-y-6">
+      
+      {/* Purpose Banner */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-3">
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Purpose of Smart Diary</h3>
+        <p className="text-xs font-semibold text-slate-500 leading-relaxed">
+          The Smart Diary enhances agricultural operations by digitizing record-keeping and preserving communication between certified extension officers and your farm teams. It boosts planning accuracy, facilitates historical lookups, and secures expert prescriptions in one unified archive.
+        </p>
       </div>
-    );
-  };
-  
-  return <SmartDiaryPage />;
-};
 
-export default App;
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* Left Column: Saved Advice (2/3 width) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-6">
+            
+            {/* Header controls */}
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-800">Saved Advice & Recommendations</h3>
+                <p className="text-[11px] font-semibold text-slate-400">Your curated logs of advice and treatment protocols.</p>
+              </div>
+              <div className="flex gap-2">
+                <button className="px-4 py-2 border border-slate-100 hover:border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                  <Share2 className="h-3.5 w-3.5 text-slate-400" /> Share
+                </button>
+                <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-emerald-600/10">
+                  <Download className="h-3.5 w-3.5" /> Export PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Filter tags & Search */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="flex flex-wrap gap-1.5">
+                {['All', 'Cattle', 'Wheat', 'Tomato'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border transition ${
+                      activeCategory === cat 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                        : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search prescriptions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-xs font-semibold bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition"
+                />
+              </div>
+            </div>
+
+            {/* Advice Grid */}
+            <div className="space-y-4 pt-2">
+              {filteredAdvice.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-slate-200 rounded-xl">
+                  <p className="text-xs text-slate-400 font-bold">No diary entries found.</p>
+                </div>
+              ) : (
+                filteredAdvice.map(item => (
+                  <div key={item.id} className="p-4 border border-slate-100 bg-slate-50/20 rounded-xl space-y-3.5 hover:border-slate-200 transition">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl p-1.5 bg-white border border-slate-100 rounded-xl shadow-sm leading-none">{item.icon}</span>
+                        <div>
+                          <h4 className="font-bold text-slate-800 text-sm">{item.category} Advice</h4>
+                          <span className="flex items-center gap-1 text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                            <Calendar className="h-3 w-3" /> {item.date}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-100/50 uppercase tracking-wide">
+                        {item.type}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Expert Advice</p>
+                        <p className="font-semibold text-slate-700 leading-relaxed mt-0.5">{item.advice}</p>
+                      </div>
+                      <div className="flex items-start gap-1.5 bg-amber-50/40 border border-amber-100/35 px-3 py-2 rounded-lg mt-1 text-amber-900">
+                        <AlertCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-wide">Reminder</p>
+                          <p className="text-[11px] font-semibold leading-relaxed mt-0.5">{item.reminder}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        {/* Right Column: Smart Farming Tips (1/3 width) */}
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-6">
+            
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Smart Recommendations</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Best practices to optimize yield and resource use.</p>
+            </div>
+
+            <div className="space-y-6">
+              
+              {/* Tip 1 */}
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600 flex-shrink-0 mt-0.5">
+                  <CloudRain className="h-4.5 w-4.5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-slate-800">Weather-Driven Scheduling</h4>
+                  <p className="text-[11px] font-semibold text-slate-500 leading-relaxed">
+                    Always align seeding, spraying, and harvest tasks with local radar. Avoid fertilizer application if heavy rain is forecast within 24 hours.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tip 2 */}
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2 bg-blue-50 rounded-xl text-blue-600 flex-shrink-0 mt-0.5">
+                  <Cpu className="h-4.5 w-4.5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-slate-800">Precision Soil Sensors</h4>
+                  <p className="text-[11px] font-semibold text-slate-500 leading-relaxed">
+                    Install soil moisture monitors at key crop quadrants to schedule irrigation. This prevents dry-stress and avoids nitrogen leaching.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tip 3 */}
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2 bg-teal-50 rounded-xl text-teal-600 flex-shrink-0 mt-0.5">
+                  <Droplets className="h-4.5 w-4.5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-slate-800">Automate Drip Systems</h4>
+                  <p className="text-[11px] font-semibold text-slate-500 leading-relaxed">
+                    Use automatic timers to irrigate early in the morning, which cuts water loss through midday evaporation by up to 40%.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tip 4 */}
+              <div className="flex gap-3.5 items-start">
+                <div className="p-2 bg-amber-50 rounded-xl text-amber-600 flex-shrink-0 mt-0.5">
+                  <Award className="h-4.5 w-4.5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-slate-800">Certified Seed Inputs</h4>
+                  <p className="text-[11px] font-semibold text-slate-500 leading-relaxed">
+                    Procure seeds only from licensed digital distributors. Verify security QR codes to confirm viability rate and blight-resistance.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
