@@ -33,6 +33,7 @@ import { usePathname } from "next/navigation";
 // import { useLogout } from "@/lib/api/auth";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
+import FloatingChatbot from "./FloatingChatbot";
 // --- Interface Definitions for clarity ---
 
 interface NavChild {
@@ -1001,6 +1002,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
       </Modal>
+      <FloatingChatbot />
     </div>
   );
 }
