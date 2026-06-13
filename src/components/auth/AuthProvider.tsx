@@ -66,14 +66,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // User is on a public route but already logged in — send them where they belong
         if (isStaff) {
           router.replace("/staffs/tasks");
-        } else if (!user.farmProfile) {
-          router.replace("/complete-farm-profile");
         } else {
           router.replace("/dashboard");
         }
-      } else if (!isStaff && !user.farmProfile && !skipRedirectRoutes.includes(pathname)) {
-        // User is on a private route but has no farm profile — send to setup
-        router.replace("/complete-farm-profile");
       }
     }
 

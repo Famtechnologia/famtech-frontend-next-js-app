@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 
 interface OnboardingGuardProps {
@@ -9,6 +9,7 @@ interface OnboardingGuardProps {
 
 export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, _hasHydrated, loading } = useAuthStore();
 
   // Wait for hydration and auth to resolve before blocking
@@ -20,6 +21,9 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // If the user has no farm profile, block the UI with an onboarding prompt
   if (user && !user.farmProfile) {
+    if (pathname === "/dashboard") {
+      return <>{children}</>;
+    }
     return (
       <>
         {/* Dim the dashboard behind the modal */}
