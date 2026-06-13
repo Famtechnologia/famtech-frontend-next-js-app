@@ -22,32 +22,35 @@ export default function ModernFarmRegistration() {
   const [registrationError, setRegistrationError] = useState("");
   const { user } = useAuth();
 
-  // Read synchronously from the store so fields are pre-filled on first render,
-  // even before the useAuth hook has triggered a re-render.
+  // Read location from three sources in priority order:
+  // 1. famtech-signup-location (saved at signup, survives email verification)
+  // 2. user object in auth store (available if getMe returns it)
+  // 3. empty string fallback
   const [formData, setFormData] = useState(() => {
     const u = useAuthStore.getState().user;
+    let savedLocation = { country: "", state: "", lga: "" };
+    try {
+      const raw = typeof window !== "undefined"
+        ? localStorage.getItem("famtech-signup-location")
+        : null;
+      if (raw) savedLocation = JSON.parse(raw);
+    } catch (_) { /* ignore */ }
+
     return {
-      // Personal Information — not collected at signup, always blank
       firstName: "",
       lastName: "",
       phoneNumber: "",
-
-      // Farm Information
       farmName: "",
       farmType: "crop",
       farmSize: "",
       farmSizeUnit: "hectares",
       establishedYear: "",
-
-      // Location — pre-fill from signup data
-      country: u?.country?.toLowerCase() || "",
-      state:   u?.state?.toLowerCase()   || "",
-      lga:     u?.lga?.toLowerCase()     || "",
+      country: savedLocation.country || u?.country?.toLowerCase() || "",
+      state:   savedLocation.state   || u?.state?.toLowerCase()   || "",
+      lga:     savedLocation.lga     || u?.lga?.toLowerCase()     || "",
       city: "",
       address: "",
       coordinates: { latitude: "", longitude: "" },
-
-      // Farm Settings
       currency: "NGN",
       timezone: "Africa/Lagos",
       farmingMethods: [],
@@ -57,16 +60,16 @@ export default function ModernFarmRegistration() {
     };
   });
 
-  // Fallback: if user wasn't in the store on mount, fill once when it arrives
+  // Fallback: fill once from user object if store wasn't ready on mount
   const prefilled = useRef(false);
   useEffect(() => {
     if (user && !prefilled.current) {
       prefilled.current = true;
       setFormData(prev => ({
         ...prev,
-        country: user.country ? user.country.toLowerCase() : prev.country,
-        state:   user.state   ? user.state.toLowerCase()   : prev.state,
-        lga:     user.lga     ? user.lga.toLowerCase()     : prev.lga,
+        country: prev.country || (user.country ? user.country.toLowerCase() : ""),
+        state:   prev.state   || (user.state   ? user.state.toLowerCase()   : ""),
+        lga:     prev.lga     || (user.lga     ? user.lga.toLowerCase()     : ""),
       }));
     }
   }, [user]);
@@ -337,6 +340,8 @@ export default function ModernFarmRegistration() {
 
       const result = response.data;
 
+      // Clean up the signup location now that the profile is complete
+      localStorage.removeItem("famtech-signup-location");
       router.push("/dashboard");
     } catch (error) {
       console.error("Registration error:", error);

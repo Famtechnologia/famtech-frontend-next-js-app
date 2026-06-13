@@ -94,6 +94,15 @@ export default function SignupPage() {
 
       if (!responseUser) throw new Error("No user returned from server");
 
+      // Persist signup location so complete-farm-profile can pre-fill it
+      if (typeof window !== "undefined") {
+        localStorage.setItem("famtech-signup-location", JSON.stringify({
+          country: data.country.toLowerCase(),
+          state: data.state.toLowerCase(),
+          lga: (data.lga || "").toLowerCase(),
+        }));
+      }
+
       toast.success(
         message || "Signup successful! Please check your email for verification."
       );
