@@ -59,6 +59,9 @@ export default function ModernFarmRegistration() {
         firstName: user.firstName || nameParts[0] || prev.firstName,
         lastName: user.lastName || nameParts.slice(1).join(" ") || prev.lastName,
         phoneNumber: user.phone || user.phoneNumber || prev.phoneNumber,
+        country: user.country ? user.country.toLowerCase() : prev.country,
+        state: user.state ? user.state.toLowerCase() : prev.state,
+        lga: user.lga ? user.lga.toLowerCase() : prev.lga,
       }));
     }
   }, [user]);
