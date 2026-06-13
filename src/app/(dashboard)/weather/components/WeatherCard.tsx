@@ -125,22 +125,22 @@ const getCardTheme = (description: string) => {
     const desc = description.toLowerCase();
     if (desc.includes("sun") || desc.includes("clear")) {
         return {
-            bg: "bg-gradient-to-br from-amber-50/30 via-sky-50/20 to-blue-50/30 border-amber-100",
-            headerBg: "bg-amber-100/20 border-amber-200/50",
-            accentText: "text-amber-700"
+            bg: "bg-gradient-to-br from-amber-50/30 via-sky-50/20 to-blue-50/30 border-amber-100 dark:from-[#1a1500] dark:via-[#0d1117] dark:to-[#0d1f36] dark:border-[#30363d]",
+            headerBg: "bg-amber-100/20 border-amber-200/50 dark:bg-[#1c1500]/40 dark:border-[#30363d]",
+            accentText: "text-amber-700 dark:text-amber-400"
         };
     }
     if (desc.includes("rain") || desc.includes("drizzle") || desc.includes("shower") || desc.includes("thunder") || desc.includes("storm")) {
         return {
-            bg: "bg-gradient-to-br from-slate-100/40 via-blue-50/20 to-slate-200/40 border-blue-100",
-            headerBg: "bg-blue-100/20 border-blue-200/50",
-            accentText: "text-blue-700"
+            bg: "bg-gradient-to-br from-slate-100/40 via-blue-50/20 to-slate-200/40 border-blue-100 dark:from-[#0d1117] dark:via-[#0d1f36] dark:to-[#0d1117] dark:border-[#30363d]",
+            headerBg: "bg-blue-100/20 border-blue-200/50 dark:bg-[#0d1f36]/40 dark:border-[#30363d]",
+            accentText: "text-blue-700 dark:text-blue-400"
         };
     }
     return {
-        bg: "bg-gradient-to-br from-gray-50/40 via-slate-50/20 to-blue-50/40 border-slate-100",
-        headerBg: "bg-slate-100/20 border-slate-200/50",
-        accentText: "text-slate-700"
+        bg: "bg-gradient-to-br from-gray-50/40 via-slate-50/20 to-blue-50/40 border-slate-100 dark:from-[#161b22] dark:via-[#0d1117] dark:to-[#161b22] dark:border-[#30363d]",
+        headerBg: "bg-slate-100/20 border-slate-200/50 dark:bg-[#1c2128]/40 dark:border-[#30363d]",
+        accentText: "text-slate-700 dark:text-slate-300"
     };
 };
 
@@ -218,48 +218,48 @@ export default function WeatherCard() {
                     {/* Main weather display */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3.5">
-                            <div className="p-2.5 bg-white/60 rounded-xl shadow-sm border border-white/80">
+                            <div className="p-2.5 bg-white/60 dark:bg-[#1c2128] rounded-xl shadow-sm border border-white/80 dark:border-[#30363d]">
                                 {getWeatherIcon(weatherCondition, "w-12 h-12")}
                             </div>
                             <div>
-                                <div className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                                <div className="text-3xl font-extrabold text-gray-900 dark:text-[#e6edf3] tracking-tight">
                                     {temp}°C
                                 </div>
-                                <div className="text-sm font-semibold text-gray-700 capitalize">
+                                <div className="text-sm font-semibold text-gray-700 dark:text-[#adbac7] capitalize">
                                     {weatherCondition}
                                 </div>
-                                <div className="flex items-center text-xs text-gray-500 mt-1 font-medium">
-                                    <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                                <div className="flex items-center text-xs text-gray-500 dark:text-[#8b949e] mt-1 font-medium">
+                                    <MapPin className="w-3.5 h-3.5 mr-1 text-gray-400 dark:text-[#6e7681]" />
                                     {displayLocation} 
                                 </div>
                             </div>
                         </div>
-                        <div className="text-[10px] bg-white/80 border border-gray-100 rounded-full px-2.5 py-1 text-gray-500 font-medium shadow-sm">
+                        <div className="text-[10px] bg-white/80 dark:bg-[#21262d] border border-gray-100 dark:border-[#30363d] rounded-full px-2.5 py-1 text-gray-500 dark:text-[#8b949e] font-medium shadow-sm">
                             Realtime Data
                         </div>
                     </div>
 
                     {/* Weather details */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-gray-100">
-                        <div className="bg-white/50 border border-gray-100 rounded-xl p-2.5 text-center transition-all hover:bg-white/80">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-gray-100 dark:border-[#30363d]">
+                        <div className="bg-white/50 dark:bg-[#1c2128] border border-gray-100 dark:border-[#30363d] rounded-xl p-2.5 text-center transition-all hover:bg-white/80 dark:hover:bg-[#21262d]">
                             <Thermometer className="w-4 h-4 text-orange-500 mx-auto mb-1" />
-                            <div className="text-xs font-bold text-gray-800">{feelsLike}°C</div>
-                            <div className="text-[10px] text-gray-500 font-medium">Feels Like</div> 
+                            <div className="text-xs font-bold text-gray-800 dark:text-[#e6edf3]">{feelsLike}°C</div>
+                            <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">Feels Like</div>
                         </div>
-                        <div className="bg-white/50 border border-gray-100 rounded-xl p-2.5 text-center transition-all hover:bg-white/80">
+                        <div className="bg-white/50 dark:bg-[#1c2128] border border-gray-100 dark:border-[#30363d] rounded-xl p-2.5 text-center transition-all hover:bg-white/80 dark:hover:bg-[#21262d]">
                             <Droplets className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-                            <div className="text-xs font-bold text-gray-800">{humidity}%</div>
-                            <div className="text-[10px] text-gray-500 font-medium">Humidity</div> 
+                            <div className="text-xs font-bold text-gray-800 dark:text-[#e6edf3]">{humidity}%</div>
+                            <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">Humidity</div>
                         </div>
-                        <div className="bg-white/50 border border-gray-100 rounded-xl p-2.5 text-center transition-all hover:bg-white/80">
+                        <div className="bg-white/50 dark:bg-[#1c2128] border border-gray-100 dark:border-[#30363d] rounded-xl p-2.5 text-center transition-all hover:bg-white/80 dark:hover:bg-[#21262d]">
                             <Wind className="w-4 h-4 text-teal-500 mx-auto mb-1" />
-                            <div className="text-xs font-bold text-gray-800">{windSpeed.toFixed(1)} km/h</div>
-                            <div className="text-[10px] text-gray-500 font-medium">Wind Speed</div>
+                            <div className="text-xs font-bold text-gray-800 dark:text-[#e6edf3]">{windSpeed.toFixed(1)} km/h</div>
+                            <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">Wind Speed</div>
                         </div>
-                        <div className="bg-white/50 border border-gray-100 rounded-xl p-2.5 text-center transition-all hover:bg-white/80">
+                        <div className="bg-white/50 dark:bg-[#1c2128] border border-gray-100 dark:border-[#30363d] rounded-xl p-2.5 text-center transition-all hover:bg-white/80 dark:hover:bg-[#21262d]">
                             <Eye className="w-4 h-4 text-purple-500 mx-auto mb-1" />
-                            <div className="text-xs font-bold text-gray-800">{uvIndex} / 10</div>
-                            <div className="text-[10px] text-gray-500 font-medium">UV Index</div>
+                            <div className="text-xs font-bold text-gray-800 dark:text-[#e6edf3]">{uvIndex} / 10</div>
+                            <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">UV Index</div>
                         </div>
                     </div>
                 </div>
@@ -275,11 +275,11 @@ export default function WeatherCard() {
                     <div 
                         key={idx} 
                         className={`flex items-start p-2.5 rounded-xl border text-xs leading-relaxed transition-all ${
-                            adv.status === 'warning' 
-                                ? 'bg-amber-50/80 border-amber-100 text-amber-900' 
+                            adv.status === 'warning'
+                                ? 'bg-amber-50/80 dark:bg-[#2a1f0a] border-amber-100 dark:border-[#3a2c0d] text-amber-900 dark:text-amber-300'
                                 : adv.status === 'optimal'
-                                ? 'bg-green-50/80 border-green-100 text-green-900'
-                                : 'bg-blue-50/80 border-blue-100 text-blue-900'
+                                ? 'bg-green-50/80 dark:bg-[#0d2a1a] border-green-100 dark:border-[#1a3a2a] text-green-900 dark:text-green-300'
+                                : 'bg-blue-50/80 dark:bg-[#0d1f36] border-blue-100 dark:border-[#1a2f4a] text-blue-900 dark:text-blue-300'
                         }`}
                     >
                         {adv.status === 'warning' && <AlertTriangle className="w-4 h-4 mr-2 text-amber-600 shrink-0 mt-0.5" />}
@@ -305,13 +305,13 @@ export default function WeatherCard() {
             <div className="flex-1">
                 {/* Custom Tab Selector */}
                 {!isLoading && weatherInfo && (
-                    <div className="flex bg-gray-100/80 p-0.75 rounded-lg mb-4 text-xs font-semibold">
+                    <div className="flex bg-gray-100/80 dark:bg-[#21262d] p-0.75 rounded-lg mb-4 text-xs font-semibold">
                         <button
                           onClick={() => setActiveTab('weather')}
                           className={`flex-1 py-1.5 rounded-md text-center transition-all ${
-                            activeTab === 'weather' 
-                              ? 'bg-white text-gray-950 shadow-sm' 
-                              : 'text-gray-500 hover:text-gray-800'
+                            activeTab === 'weather'
+                              ? 'bg-white dark:bg-[#30363d] text-gray-950 dark:text-[#e6edf3] shadow-sm'
+                              : 'text-gray-500 dark:text-[#8b949e] hover:text-gray-800 dark:hover:text-[#e6edf3]'
                           }`}
                         >
                             Live Weather
@@ -319,9 +319,9 @@ export default function WeatherCard() {
                         <button
                           onClick={() => setActiveTab('advisory')}
                           className={`flex-1 py-1.5 rounded-md text-center transition-all ${
-                            activeTab === 'advisory' 
-                              ? 'bg-white text-gray-950 shadow-sm' 
-                              : 'text-gray-500 hover:text-gray-800'
+                            activeTab === 'advisory'
+                              ? 'bg-white dark:bg-[#30363d] text-gray-950 dark:text-[#e6edf3] shadow-sm'
+                              : 'text-gray-500 dark:text-[#8b949e] hover:text-gray-800 dark:hover:text-[#e6edf3]'
                           }`}
                         >
                             Farming Advisory
