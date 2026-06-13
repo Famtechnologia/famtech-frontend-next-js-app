@@ -27,6 +27,7 @@ import {
   Calendar,
   StoreIcon,
   Cpu,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -207,6 +208,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "reports",
           expandable: false,
           href: "/reports",
+          section: "Insights",
+        },
+        {
+          name: "Market Prices",
+          icon: TrendingUp,
+          key: "market-prices",
+          expandable: false,
+          href: "/market-prices",
           section: "Insights",
         },
         {
