@@ -57,15 +57,14 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
               Complete Your Farm Profile
             </h2>
             <p className="mb-6 text-gray-500">
-              Set up your farm profile in Settings to unlock all features and
-              start managing your farm.
+              To unlock all features, please complete your farm setup first.
             </p>
 
             <button
-              onClick={() => router.push("/settings/profile")}
+              onClick={() => router.push("/complete-farm-profile")}
               className="w-full rounded-xl bg-green-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
             >
-              Go to Settings &rarr;
+              Set Up Farm Profile &rarr;
             </button>
           </div>
         </div>

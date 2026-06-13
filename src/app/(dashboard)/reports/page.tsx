@@ -194,6 +194,7 @@ export default function ReportsPage() {
 
   // Handle report download
   const handleDownload = async (report: Report) => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
     try {
       setDownloadingId(report._id);
       const { data, fileName } = await downloadReport(report._id);

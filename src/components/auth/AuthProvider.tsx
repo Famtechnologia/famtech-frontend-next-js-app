@@ -41,6 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 3. Perform routing logic based on user role and path
   useEffect(() => {
     if (loading) return;
+    if (!user) return; // Wait until user is fully loaded before routing
 
     const publicRoutes = [
       "/",
@@ -48,7 +49,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       "/register",
       "/forgot-password",
       "/reset-password",
-      "/verify-code",
       "/verify-email",
       "/post-signup",
     ];

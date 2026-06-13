@@ -6,11 +6,8 @@ import { toast } from "react-hot-toast";
 import { countries } from "@/lib/services/countries";
 import apiClient from "@/lib/api/apiClient";
 import { generateStrongPassword } from "@/lib/utils/passwordGenerator";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-
 import { useAuth } from "@/lib/hooks/useAuth";
-
-//const API_BASE_URL = `http://localhost:4000/api/auth`;
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 // --- Types ---
 interface State {

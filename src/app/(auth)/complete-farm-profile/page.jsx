@@ -21,19 +21,6 @@ export default function ModernFarmRegistration() {
   const [registrationError, setRegistrationError] = useState("");
   const {user} = useAuth();
 
-  // Pre-fill personal info from auth user to avoid asking twice
-  useEffect(() => {
-    if (user) {
-      const nameParts = (user.name || "").split(" ");
-      setFormData(prev => ({
-        ...prev,
-        firstName: user.firstName || nameParts[0] || prev.firstName,
-        lastName: user.lastName || nameParts.slice(1).join(" ") || prev.lastName,
-        phoneNumber: user.phone || user.phoneNumber || prev.phoneNumber,
-      }));
-    }
-  }, [user]);
-
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: "",
@@ -58,9 +45,23 @@ export default function ModernFarmRegistration() {
     currency: "NGN",
     timezone: "Africa/Lagos",
     farmingMethods: [],
-    seasonalPattern: "year-round",
+    seasonalPattern: "wet",
+    primaryCrops: [],
     language: "en",
   });
+
+  // Pre-fill personal info from auth user to avoid asking twice
+  useEffect(() => {
+    if (user) {
+      const nameParts = (user.name || "").split(" ");
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName || nameParts[0] || prev.firstName,
+        lastName: user.lastName || nameParts.slice(1).join(" ") || prev.lastName,
+        phoneNumber: user.phone || user.phoneNumber || prev.phoneNumber,
+      }));
+    }
+  }, [user]);
 
   const [errors, setErrors] = useState({});
 
@@ -638,6 +639,7 @@ export default function ModernFarmRegistration() {
                 value={formData.country}
                 onChange={(e) => updateFormData("country", e.target.value)}
               >
+                <option value="" disabled>Select Country</option>
                 {countryData.map((country) => (
                   <option key={country.name} value={country.name.toLowerCase()}>
                     {country.name}

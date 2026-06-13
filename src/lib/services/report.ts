@@ -23,7 +23,11 @@ export interface ReportQuery {
 
 //  Generate Report
 export const generateReport = async (data: ReportPayload) => {
-  const response = await analytics.post(`${API_BASE_URL}/generate`, data);
+  const payload = {
+    ...data,
+    format: data.format === ("xlsx" as any) ? "excel" : data.format
+  };
+  const response = await analytics.post(`${API_BASE_URL}/generate`, payload);
   return response.data;
 };
 
@@ -37,6 +41,9 @@ export const getReports = async (params?: ReportQuery) => {
 export const downloadReport = async (id: string) => {
   // 1. Get the download URL from the JSON API
   const response = await analytics.get(`${API_BASE_URL}/${id}/download`);
+  if (!response?.data?.data) {
+    throw new Error("Invalid or empty response data from download API");
+  }
   const { downloadUrl, fileName } = response.data.data;
 
   // 2. Request the actual binary data (blob) from the static server route

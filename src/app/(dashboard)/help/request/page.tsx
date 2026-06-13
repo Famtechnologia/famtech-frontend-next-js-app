@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import toast from 'react-hot-toast';
 import FeatureRequestForm from '@/components/help/FeatureRequestForm';
 import { FeatureRequest } from '@/types/feature';
 
@@ -19,7 +20,7 @@ const FeatureRequestPage: React.FC = () => {
     };
 
     console.log('Sending feature request to server:', newRequest);
-    alert('Thank you! Your feature request has been submitted.');
+    toast.success('Thank you! Your feature request has been submitted.');
   };
 
   return (
