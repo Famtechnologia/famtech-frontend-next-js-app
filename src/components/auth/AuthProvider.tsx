@@ -54,12 +54,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     ];
 
     // Pages that are authenticated but should not trigger further redirects
-    const skipRedirectRoutes = ["/complete-farm-profile"];
+    const skipRedirectRoutes = ["/complete-farm-profile", "/verify-email"];
 
     if (token && user) {
       const isStaff = user.role === "staff" || user.role === "assignee";
 
       if (publicRoutes.includes(pathname)) {
+        if (skipRedirectRoutes.includes(pathname)) {
+          return;
+        }
         // User is on a public route but already logged in — send them where they belong
         if (isStaff) {
           router.replace("/staffs/tasks");
