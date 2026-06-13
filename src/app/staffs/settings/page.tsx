@@ -9,6 +9,7 @@ import {
   StaffType,
 } from "@/lib/services/staff";
 import Modal from "@/components/ui/Modal";
+import { generateStrongPassword } from "@/lib/utils/passwordGenerator";
 
 // Assuming this path is correct for your skeleton component
 import SettingsNavigationSkeleton from "@/components/skeleton/settings/FarmSetting";
@@ -31,6 +32,25 @@ const Settings: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [error, setError] = useState("");
+  const [suggestedPassword, setSuggestedPassword] = useState("");
+  const [pwdCopied, setPwdCopied] = useState(false);
+
+  const handleSuggestPassword = () => {
+    const pwd = generateStrongPassword();
+    setSuggestedPassword(pwd);
+    setPasswordFormData((prev) => ({
+      ...prev,
+      newPassword: pwd,
+      confirmPassword: pwd,
+    }));
+  };
+
+  const handleCopyPassword = async () => {
+    if (!suggestedPassword) return;
+    await navigator.clipboard.writeText(suggestedPassword);
+    setPwdCopied(true);
+    setTimeout(() => setPwdCopied(false), 2000);
+  };
 
   const { user, fetchUser } = useAssignee();
 
@@ -499,12 +519,35 @@ const Settings: React.FC = () => {
           </div>
 
           <div>
-            <label
-              htmlFor="newPassword"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              New Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                htmlFor="newPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
+                New Password
+              </label>
+              <button
+                type="button"
+                onClick={handleSuggestPassword}
+                className="text-xs text-green-600 hover:text-green-700 font-medium underline underline-offset-2"
+              >
+                Suggest a password
+              </button>
+            </div>
+            {suggestedPassword && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-2 text-sm">
+                <span className="flex-1 font-mono text-gray-800 truncate select-all">
+                  {suggestedPassword}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyPassword}
+                  className="text-xs text-green-600 hover:text-green-700 whitespace-nowrap font-medium"
+                >
+                  {pwdCopied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            )}
             <input
               type="password"
               id="newPassword"

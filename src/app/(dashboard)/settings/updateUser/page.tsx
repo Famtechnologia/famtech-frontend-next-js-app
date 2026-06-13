@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { countries } from "@/lib/services/countries";
 import apiClient from "@/lib/api/apiClient";
+import { generateStrongPassword } from "@/lib/utils/passwordGenerator";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { useAuth } from "@/lib/hooks/useAuth";
 
@@ -33,6 +35,56 @@ const countryList = countries as Country[];
 export default function UpdateDetailsForm() {
   const { user, setUser } = useAuth();
   const [isFormInitialized, setIsFormInitialized] = useState(false);
+
+  // Change-password state
+  const [pwdForm, setPwdForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  const [isChangingPwd, setIsChangingPwd] = useState(false);
+  const [suggestedPassword, setSuggestedPassword] = useState("");
+  const [pwdCopied, setPwdCopied] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleSuggestPassword = () => {
+    const pwd = generateStrongPassword();
+    setSuggestedPassword(pwd);
+    setPwdForm((prev) => ({ ...prev, newPassword: pwd, confirmPassword: pwd }));
+    setShowNew(true);
+    setShowConfirm(true);
+  };
+
+  const handleCopyPassword = async () => {
+    if (!suggestedPassword) return;
+    await navigator.clipboard.writeText(suggestedPassword);
+    setPwdCopied(true);
+    setTimeout(() => setPwdCopied(false), 2000);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+    if (!user) return;
+    setIsChangingPwd(true);
+    try {
+      await apiClient.put("/auth/change-password", {
+        id: user._id,
+        oldPassword: pwdForm.oldPassword,
+        newPassword: pwdForm.newPassword,
+        confirmPassword: pwdForm.confirmPassword,
+      });
+      toast.success("Password changed successfully!");
+      setPwdForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setSuggestedPassword("");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to change password.";
+      toast.error(msg);
+    } finally {
+      setIsChangingPwd(false);
+    }
+  };
 
   const {
     register,
@@ -215,20 +267,6 @@ export default function UpdateDetailsForm() {
           </p>
         </div>
 
-        {/* Password - Read-only */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <div className="mt-1 p-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 tracking-widest font-bold">
-            ********
-          </div>
-          <p className="mt-1 text-xs text-gray-500">
-            To change your password, please use the dedicated &quot;Change
-            Password&quot; section.
-          </p>
-        </div>
-
         <hr className="border-gray-200" />
 
         {/* Country */}
@@ -321,6 +359,92 @@ export default function UpdateDetailsForm() {
           {isSubmitting ? "Updating..." : "Update Details"}
         </button>
       </form>
+
+      {/* Change Password */}
+      <div className="mt-8 p-4 md:p-6 bg-white rounded-xl shadow-md">
+        <h2 className="text-3xl font-bold mb-6 text-start text-green-700">Change Password</h2>
+        <form onSubmit={handleChangePassword} className="space-y-5 max-w-lg">
+          {/* Current password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+            <div className="relative">
+              <input
+                type={showOld ? "text" : "password"}
+                value={pwdForm.oldPassword}
+                onChange={(e) => setPwdForm((p) => ({ ...p, oldPassword: e.target.value }))}
+                placeholder="Enter current password"
+                required
+                className="w-full p-3 border border-gray-300 rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <button type="button" onClick={() => setShowOld((v) => !v)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                {showOld ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* New password */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">New Password</label>
+              <button type="button" onClick={handleSuggestPassword}
+                className="text-xs text-green-600 hover:text-green-700 font-medium underline underline-offset-2">
+                Suggest a password
+              </button>
+            </div>
+            {suggestedPassword && (
+              <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2 mb-2 text-sm">
+                <span className="flex-1 font-mono text-gray-800 truncate select-all">{suggestedPassword}</span>
+                <button type="button" onClick={handleCopyPassword}
+                  className="text-xs text-green-600 hover:text-green-700 whitespace-nowrap font-medium">
+                  {pwdCopied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            )}
+            <div className="relative">
+              <input
+                type={showNew ? "text" : "password"}
+                value={pwdForm.newPassword}
+                onChange={(e) => setPwdForm((p) => ({ ...p, newPassword: e.target.value }))}
+                placeholder="Enter new password"
+                required
+                className="w-full p-3 border border-gray-300 rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <button type="button" onClick={() => setShowNew((v) => !v)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                {showNew ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm new password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={pwdForm.confirmPassword}
+                onChange={(e) => setPwdForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                placeholder="Confirm new password"
+                required
+                className="w-full p-3 border border-gray-300 rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <button type="button" onClick={() => setShowConfirm((v) => !v)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                {showConfirm ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isChangingPwd}
+            className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {isChangingPwd ? "Changing..." : "Change Password"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
