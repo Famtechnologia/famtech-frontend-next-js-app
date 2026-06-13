@@ -146,8 +146,8 @@ export default function FloatingChatbot() {
 
       {/* Chat window panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] h-[550px] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl flex flex-col z-[200] overflow-hidden transition-all duration-300 transform scale-100 opacity-100 border border-gray-100">
-          
+        <div className="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-1rem)] h-[550px] max-h-[calc(100vh-8rem)] bg-white dark:bg-[#161b22] rounded-2xl shadow-2xl flex flex-col z-[200] overflow-hidden transition-all duration-300 transform scale-100 opacity-100 border border-gray-100 dark:border-[#30363d]">
+
           {/* Header */}
           <div className="bg-gradient-to-r from-green-600 to-emerald-700 p-4 text-white flex items-center justify-between shadow-md">
             <div className="flex items-center gap-2.5">
@@ -173,29 +173,29 @@ export default function FloatingChatbot() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-[#0d1117]">
             {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex gap-2.5 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.sender === "bot" && (
-                  <div className="w-8 h-8 rounded-xl bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-green-100 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] flex items-center justify-center shrink-0">
                     <Sparkles size={14} />
                   </div>
                 )}
-                
+
                 <div
                   className={`max-w-[75%] rounded-2xl p-3.5 text-sm shadow-sm ${
                     msg.sender === "user"
                       ? "bg-green-600 text-white rounded-tr-none"
-                      : "bg-white text-gray-800 border border-gray-100 rounded-tl-none"
+                      : "bg-white dark:bg-[#21262d] text-gray-800 dark:text-[#e6edf3] border border-gray-100 dark:border-[#30363d] rounded-tl-none"
                   }`}
                 >
                   <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
                   <span
                     className={`block text-[9px] mt-1.5 text-right ${
-                      msg.sender === "user" ? "text-green-200" : "text-gray-450"
+                      msg.sender === "user" ? "text-green-200" : "text-gray-400 dark:text-[#8b949e]"
                     }`}
                   >
                     {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -203,7 +203,7 @@ export default function FloatingChatbot() {
                 </div>
 
                 {msg.sender === "user" && (
-                  <div className="w-8 h-8 rounded-xl bg-gray-200 text-gray-600 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-[#30363d] text-gray-600 dark:text-[#8b949e] flex items-center justify-center shrink-0">
                     <User size={14} />
                   </div>
                 )}
@@ -213,27 +213,27 @@ export default function FloatingChatbot() {
             {/* Simulated Typing Indicator */}
             {isTyping && (
               <div className="flex gap-2.5 justify-start">
-                <div className="w-8 h-8 rounded-xl bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-green-100 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] flex items-center justify-center shrink-0">
                   <Sparkles size={14} />
                 </div>
-                <div className="bg-white text-gray-500 border border-gray-100 rounded-2xl rounded-tl-none p-3.5 text-sm shadow-sm flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                <div className="bg-white dark:bg-[#21262d] text-gray-500 dark:text-[#8b949e] border border-gray-100 dark:border-[#30363d] rounded-2xl rounded-tl-none p-3.5 text-sm shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-[#4ade80] rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-[#4ade80] rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-[#4ade80] rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
           {/* Quick Actions / Suggestions */}
-          <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-1.5">
+          <div className="px-4 py-2 bg-gray-50 dark:bg-[#161b22] border-t border-gray-100 dark:border-[#30363d] flex flex-wrap gap-1.5">
             {SUGGESTED_QUESTIONS.map((q) => (
               <button
                 key={q}
                 onClick={() => handleSendMessage(q)}
-                className="text-xs bg-white hover:bg-green-50 text-gray-600 hover:text-green-700 border border-gray-200 hover:border-green-200 rounded-full px-3 py-1 transition-all cursor-pointer font-medium"
+                className="text-xs bg-white dark:bg-[#21262d] hover:bg-green-50 dark:hover:bg-[#1a3a2a] text-gray-600 dark:text-[#8b949e] hover:text-green-700 dark:hover:text-[#4ade80] border border-gray-200 dark:border-[#30363d] hover:border-green-200 rounded-full px-3 py-1 transition-all cursor-pointer font-medium"
               >
                 {q}
               </button>
@@ -241,14 +241,14 @@ export default function FloatingChatbot() {
           </div>
 
           {/* Input Panel */}
-          <div className="p-3 border-t border-gray-100 flex items-center gap-2 bg-white">
+          <div className="p-3 border-t border-gray-100 dark:border-[#30363d] flex items-center gap-2 bg-white dark:bg-[#161b22]">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Ask a question..."
-              className="flex-1 bg-gray-55/40 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder-gray-400"
+              className="flex-1 bg-gray-50 dark:bg-[#0d1117] border border-gray-200 dark:border-[#30363d] rounded-xl px-4 py-2.5 text-sm dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder-gray-400 dark:placeholder-[#8b949e]"
             />
             <button
               onClick={() => handleSendMessage(inputValue)}

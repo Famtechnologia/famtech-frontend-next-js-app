@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   Calendar,
   Clock,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import Modal from "../ui/Modal";
 import {
@@ -309,6 +311,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<Error | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [modalMode, setModalMode] = useState<"new" | "edit">("new");
@@ -583,89 +586,117 @@ const App: React.FC = () => {
     return <TaskSkeleton />;
   }
 
+  // Filter sidebar content extracted for reuse between desktop sidebar and mobile sheet
+  const FilterContent = () => (
+    <>
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-[#8b949e] mb-3">
+          FILTER TASKS
+        </h3>
+        <div className="space-y-1">
+          {["All", "This Week", "Overdue", "Completed"].map((filter) => (
+            <button
+              key={filter}
+              onClick={() => { setActiveFilter(filter); setFilterOpen(false); }}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                activeFilter === filter
+                  ? "bg-green-100 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] font-semibold"
+                  : "text-gray-600 dark:text-[#8b949e] hover:bg-gray-100 dark:hover:bg-[#21262d]"
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-[#8b949e] mb-3">
+          TASK TYPES
+        </h3>
+        <div className="space-y-1">
+          {(Object.keys(taskTypeIcons) as (keyof typeof taskTypeIcons)[]).map((type) => {
+            const label = taskTypeIcons[type].label;
+            const IconComponent = taskTypeIcons[type].icon;
+            const tasksCount = tasks.filter((t) => t.type === type).length;
+            return (
+              <button
+                key={type}
+                onClick={() => { setActiveFilter(type); setFilterOpen(false); }}
+                className={`w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  activeFilter === type
+                    ? "bg-green-100 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] font-semibold"
+                    : "text-gray-600 dark:text-[#8b949e] hover:bg-gray-100 dark:hover:bg-[#21262d]"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <IconComponent className="h-4 w-4 text-green-500" />
+                  <span>{label}</span>
+                </div>
+                <span className="text-gray-400 dark:text-[#8b949e] text-xs">({tasksCount})</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="p-2 lg:p-6 bg-white min-h-screen">
+    <div className="p-2 lg:p-6 bg-white dark:bg-[#0d1117] min-h-screen">
       <div className="container mx-auto max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 w-full">
-          <h1 className="text-2xl font-bold text-gray-800 hidden md:block">
+        <div className="flex justify-between items-center mb-4 w-full">
+          <h1 className="text-xl font-bold text-gray-800 dark:text-[#e6edf3] hidden md:block">
             Task Dashboard
           </h1>
-          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+            {/* Mobile filter toggle */}
             <button
-              className="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md border bg-green-600 hover:bg-green-700 transition-transform duration-200 scale-100 hover:scale-105"
-              onClick={openNewTaskModal}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#e6edf3] rounded-lg border border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] hover:bg-gray-50 dark:hover:bg-[#21262d] md:hidden transition-colors"
+              onClick={() => setFilterOpen((p) => !p)}
             >
-              <Plus className="h-4 w-4 mr-2" /> New Task
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter
+              {activeFilter !== "All" && (
+                <span className="ml-1 h-2 w-2 rounded-full bg-green-500 inline-block" />
+              )}
             </button>
-            <button
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors duration-200"
-              onClick={fetchTasks}
-            >
-              <RefreshCcw className="h-4 w-4 mr-2" /> Sync
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                className="flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-green-600 hover:bg-green-700 transition-colors"
+                onClick={openNewTaskModal}
+              >
+                <Plus className="h-4 w-4 mr-1.5" /> New Task
+              </button>
+              <button
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-[#e6edf3] rounded-lg border border-gray-200 dark:border-[#30363d] hover:bg-gray-100 dark:hover:bg-[#21262d] transition-colors"
+                onClick={fetchTasks}
+              >
+                <RefreshCcw className="h-4 w-4 mr-1.5" /> Sync
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6 md:space-y-0 md:flex md:space-x-6 ">
-          <div className="w-full md:w-64 space-y-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                FILTER TASKS
-              </h3>
-              <div className="space-y-2">
-                {["All", "This Week", "Overdue", "Completed"].map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setActiveFilter(filter)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                      activeFilter === filter
-                        ? "bg-green-100 text-green-700 font-semibold"
-                        : "text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
+        {/* Mobile filter sheet */}
+        {filterOpen && (
+          <div className="md:hidden mb-4 p-4 bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] shadow-md space-y-5 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm font-semibold text-gray-700 dark:text-[#e6edf3]">Filters</span>
+              <button onClick={() => setFilterOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-[#e6edf3]">
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-                TASK TYPES
-              </h3>
-              <div className="space-y-2">
-                {(
-                  Object.keys(taskTypeIcons) as (keyof typeof taskTypeIcons)[]
-                ).map((type) => {
-                  const label = taskTypeIcons[type].label;
-                  const IconComponent = taskTypeIcons[type].icon;
-                  const tasksCount = tasks.filter(
-                    (t) => t.type === type
-                  ).length;
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => setActiveFilter(type)}
-                      className={`w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                        activeFilter === type
-                          ? "bg-green-100 text-green-700 font-semibold"
-                          : "text-gray-600 hover:bg-gray-100"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <IconComponent className="h-4 w-4 text-green-500" />
-                        <span>{label}</span>
-                      </div>
-                      <span className="text-gray-400 text-xs">
-                        ({tasksCount})
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <FilterContent />
+          </div>
+        )}
+
+        <div className="space-y-6 md:space-y-0 md:flex md:space-x-6">
+          {/* Desktop sidebar */}
+          <div className="hidden md:block w-64 space-y-6 p-4 bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm flex-shrink-0">
+            <FilterContent />
           </div>
 
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-4 min-w-0">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -673,7 +704,7 @@ const App: React.FC = () => {
                 placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#e6edf3] dark:placeholder-[#8b949e] rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow"
               />
             </div>
             {loading && <TaskSkeleton />}
@@ -684,25 +715,25 @@ const App: React.FC = () => {
               </div>
             )}
             {!loading && !error && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8b949e]">
                   {getTaskTypeLabel(activeFilter)} ({filteredTasks.length})
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {filteredTasks.map((task) => {
                     const isCrop = task.type.toLowerCase().includes("crop");
                     const isLivestock = task.type.toLowerCase().includes("livestock");
                     const typeColor = isCrop
-                      ? "text-emerald-700 bg-emerald-50 border-emerald-100"
+                      ? "text-emerald-700 bg-emerald-50 border-emerald-100 dark:bg-[#0d2a1a] dark:text-emerald-400 dark:border-emerald-900"
                       : isLivestock
-                      ? "text-purple-700 bg-purple-50 border-purple-100"
-                      : "text-blue-700 bg-blue-50 border-blue-100";
+                      ? "text-purple-700 bg-purple-50 border-purple-100 dark:bg-[#1a0d2a] dark:text-purple-400 dark:border-purple-900"
+                      : "text-blue-700 bg-blue-50 border-blue-100 dark:bg-[#0d1f36] dark:text-blue-400 dark:border-blue-900";
 
                     return (
                       <div
                         key={task.id}
-                        className={`group relative flex flex-col justify-between p-5 bg-gradient-to-br from-white to-slate-50/40 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-300 cursor-pointer ${
-                          task.completed ? "opacity-75" : ""
+                        className={`group relative flex flex-col justify-between p-4 bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] shadow-sm hover:shadow-md hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 cursor-pointer ${
+                          task.completed ? "opacity-70" : ""
                         }`}
                         onClick={() => openEditTaskModal(task)}
                       >
@@ -712,64 +743,63 @@ const App: React.FC = () => {
                           }`}
                         />
 
-                        <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
                           <div className="flex items-start space-x-3 min-w-0">
                             <CheckCircle
                               className={`h-5 w-5 shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 ${
-                                task.completed ? "text-green-600" : "text-slate-300"
+                                task.completed ? "text-green-600" : "text-slate-300 dark:text-[#30363d]"
                               }`}
                             />
                             <div className="min-w-0">
                               <h4
-                                className={`text-base font-semibold truncate capitalize tracking-tight ${
+                                className={`text-sm font-semibold truncate capitalize tracking-tight ${
                                   task.completed
-                                    ? "line-through text-slate-400 font-medium"
-                                    : "text-slate-800"
+                                    ? "line-through text-slate-400 dark:text-[#8b949e]"
+                                    : "text-slate-800 dark:text-[#e6edf3]"
                                 }`}
                               >
                                 {task.name}
                               </h4>
                               {task.description && (
-                                <p className="text-xs text-slate-400 mt-1 line-clamp-1 italic">
+                                <p className="text-xs text-slate-400 dark:text-[#8b949e] mt-1 line-clamp-1 italic">
                                   {task.description}
                                 </p>
                               )}
                             </div>
                           </div>
-                          
-                          <ChevronRight className="h-5 w-5 text-slate-300 shrink-0 transition-all duration-200 group-hover:text-green-600 group-hover:translate-x-1" />
+
+                          <ChevronRight className="h-4 w-4 text-slate-300 dark:text-[#8b949e] shrink-0 transition-all duration-200 group-hover:text-green-600 group-hover:translate-x-1" />
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <div className="flex flex-wrap items-center gap-1.5 mb-3">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${typeColor}`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${typeColor}`}
                           >
                             {task.type}
                           </span>
-                          <span className="text-slate-300 text-xs font-semibold">•</span>
-                          <span className="inline-flex items-center text-xs text-slate-500 font-medium gap-1 bg-slate-100 px-2 py-0.5 rounded-md">
-                            <Calendar className="w-3.5 h-3.5" />
+                          <span className="inline-flex items-center text-[11px] text-slate-500 dark:text-[#8b949e] font-medium gap-1 bg-slate-100 dark:bg-[#21262d] px-2 py-0.5 rounded-md">
+                            <Calendar className="w-3 h-3" />
                             {task.dueDate} · {task.time}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100/80">
+                        <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-[#30363d]">
                           <div className="flex items-center space-x-2 min-w-0">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 text-xs font-bold uppercase text-green-700 shadow-inner">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-emerald-100 dark:from-[#1a3a2a] dark:to-[#0d2a1a] border border-green-200 dark:border-green-800 text-[10px] font-bold uppercase text-green-700 dark:text-[#4ade80]">
                               {task.user?.charAt(0) || "?"}
                             </span>
-                            <span className="truncate text-xs font-semibold text-slate-600">
+                            <span className="truncate text-[11px] font-semibold text-slate-600 dark:text-[#8b949e]">
                               {task.user || "Unassigned"}
                             </span>
                           </div>
 
                           <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold capitalize border ${
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold capitalize border ${
                               task.priority === "high"
-                                ? "bg-red-50 text-red-700 border-red-100"
+                                ? "bg-red-50 text-red-700 border-red-100 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900"
                                 : task.priority === "medium"
-                                ? "bg-amber-50 text-amber-700 border-amber-100"
-                                : "bg-green-50 text-green-700 border-green-100"
+                                ? "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900"
+                                : "bg-green-50 text-green-700 border-green-100 dark:bg-[#0d2a1a] dark:text-[#4ade80] dark:border-green-900"
                             }`}
                           >
                             <span
@@ -788,7 +818,7 @@ const App: React.FC = () => {
                     );
                   })}
                   {filteredTasks.length === 0 && (
-                    <div className="col-span-full text-center py-8 text-slate-400 font-medium">
+                    <div className="col-span-full text-center py-10 text-slate-400 dark:text-[#8b949e] font-medium">
                       No tasks found
                     </div>
                   )}
