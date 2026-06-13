@@ -39,6 +39,16 @@ export default function MarketPricesPage() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  const normaliseCategories = (raw: any): CropCategory[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    // backend may return { grains: [...], legumes: [...] }
+    return Object.entries(raw).map(([category, crops]) => ({
+      category,
+      crops: Array.isArray(crops) ? crops : [],
+    }));
+  };
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -48,10 +58,22 @@ export default function MarketPricesPage() {
         getAvailableCrops(),
         getMarketAlerts(),
       ]);
-      if (dashRes.status === "fulfilled") setCrops(dashRes.value?.data?.crops ?? []);
+      if (dashRes.status === "fulfilled") {
+        const raw = dashRes.value?.data;
+        // backend may return { crops: [...] } or an array directly or { marketData: [...] }
+        const anyRaw = raw as any;
+        const cropsArr = Array.isArray(anyRaw) ? anyRaw
+          : Array.isArray(anyRaw?.crops) ? anyRaw.crops
+          : Array.isArray(anyRaw?.marketData) ? anyRaw.marketData
+          : [];
+        setCrops(cropsArr);
+      }
       if (summaryRes.status === "fulfilled") setSummary(summaryRes.value?.data ?? null);
-      if (cropsRes.status === "fulfilled") setCategories(cropsRes.value?.data ?? []);
-      if (alertsRes.status === "fulfilled") setAlerts(alertsRes.value?.data ?? []);
+      if (cropsRes.status === "fulfilled") setCategories(normaliseCategories(cropsRes.value?.data));
+      if (alertsRes.status === "fulfilled") {
+        const rawAlerts = alertsRes.value?.data;
+        setAlerts(Array.isArray(rawAlerts) ? rawAlerts : []);
+      }
       setLastUpdated(new Date());
     } finally {
       setLoading(false);
