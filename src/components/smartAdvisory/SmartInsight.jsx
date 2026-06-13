@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Send, 
   Plus, 
@@ -205,38 +205,21 @@ export const SmartInsight = () => {
 
   const { profile, isHydrating } = useProfile();
 
-  const fetchCropData = useCallback(async () => {
-    if (isHydrating || !profile?.id) return;
-    try {
-      const data = await getCropRecords(profile?.id);
-      setCropRecords(data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [profile?.id, isHydrating]);
-
-  const fetchLivestockData = useCallback(async () => {
-    if (isHydrating || !profile?.id) return;
-    try {
-      const data = await getLivestockRecords(profile?.id);
-      setLivestockRecords(data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [profile?.id, isHydrating]);
-
   useEffect(() => {
-    fetchCropData();
-    fetchLivestockData();
+    if (isHydrating || !profile?.id) return;
+    getCropRecords(profile.id)
+      .then((data) => setCropRecords(data || []))
+      .catch((err) => console.error(err));
+    getLivestockRecords(profile.id)
+      .then((data) => setLivestockRecords(data || []))
+      .catch((err) => console.error(err));
     try {
       const savedHistory = localStorage.getItem("smartAdvisoryHistory");
-      if (savedHistory) {
-        setChatHistory(JSON.parse(savedHistory));
-      }
+      if (savedHistory) setChatHistory(JSON.parse(savedHistory));
     } catch (error) {
       setError(error.message);
     }
-  }, [fetchCropData, fetchLivestockData]);
+  }, [profile?.id, isHydrating]);
 
   useEffect(() => {
     try {
