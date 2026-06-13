@@ -193,7 +193,6 @@ export default function MarketPricesPage() {
         setHistLoading(false);
         return;
       }
-      const prices = raw.map((r) => r.price);
       const sma7s  = calcSMA(raw, 7);
       const sma14s = calcSMA(raw, 14);
       const enriched: ChartPoint[] = raw.map((r, i) => ({
@@ -233,10 +232,10 @@ export default function MarketPricesPage() {
     if (allCrops.length > 0) fetchAllPrices(allCrops, region);
   }, [allCrops, region, fetchAllPrices]);
 
-  /* ── Load history when activeCrop or timeframe changes ── */
+  /* ── Load history when activeCrop changes (always fetch 30d; timeframe just slices) ── */
   useEffect(() => {
-    if (activeCrop) loadHistory(activeCrop, timeframe);
-  }, [activeCrop, timeframe, loadHistory]);
+    if (activeCrop) loadHistory(activeCrop, 30);
+  }, [activeCrop, loadHistory]);
 
   /* ── Auto-refresh active crop price every 90s ── */
   useEffect(() => {
@@ -656,11 +655,11 @@ export default function MarketPricesPage() {
                     Price
                   </span>
                   <span className="flex items-center gap-1.5 font-semibold text-orange-500">
-                    <span className="w-5 h-0.5 rounded bg-orange-500" style={{ borderTop: "2px dashed #f97316" }} />
+                    <svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#f97316" strokeWidth="2" strokeDasharray="4 2" /></svg>
                     MA7
                   </span>
                   <span className="flex items-center gap-1.5 font-semibold text-blue-400">
-                    <span className="w-5 h-0.5 rounded bg-blue-400" style={{ borderTop: "2px dashed #60a5fa" }} />
+                    <svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="#60a5fa" strokeWidth="2" strokeDasharray="4 2" /></svg>
                     MA14
                   </span>
                 </div>
