@@ -3,16 +3,23 @@ import { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Minus, ArrowRight, RefreshCw, AlertTriangle } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Link from 'next/link';
-import { getMarketSummary } from '@/lib/services/pricingAPI';
+import { getMarketSummary, getCropPrice } from '@/lib/services/pricingAPI';
+import {
+  PieChart, Pie, Cell, Tooltip as ReTooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+} from 'recharts';
 
-const OVERALL_CONFIG = {
-  bullish: { label: 'Bullish Market',  icon: '📈', bar: 'bg-emerald-500', badge: 'text-emerald-700 dark:text-[#4ade80] bg-emerald-50 dark:bg-[#0d2a1a] border-emerald-100 dark:border-green-900' },
-  bearish: { label: 'Bearish Market',  icon: '📉', bar: 'bg-red-500',     badge: 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' },
-  mixed:   { label: 'Mixed Sentiment', icon: '〰️', bar: 'bg-amber-500',   badge: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' },
+const SENTIMENT_CONFIG = {
+  bullish: { label: 'Bullish Market',  icon: '📈', badge: 'text-emerald-700 dark:text-[#4ade80] bg-emerald-50 dark:bg-[#0d2a1a] border-emerald-100 dark:border-green-900' },
+  bearish: { label: 'Bearish Market',  icon: '📉', badge: 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' },
+  mixed:   { label: 'Mixed Sentiment', icon: '〰️', badge: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' },
 };
+
+const TOP_CROPS = ['rice', 'maize', 'yam', 'cassava', 'beans', 'tomato'];
 
 const MarketTrends = () => {
   const [summary, setSummary] = useState(null);
+  const [cropPrices, setCropPrices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -22,30 +29,45 @@ const MarketTrends = () => {
       const res = await getMarketSummary();
       setSummary(res?.data ?? null);
       setLastUpdated(new Date());
-    } catch {
-      /* show stale data if any */
-    } finally {
+    } catch { /* show stale */ } finally {
       setLoading(false);
     }
+    // Load top crop prices in background for bar chart
+    const results = await Promise.allSettled(
+      TOP_CROPS.map(crop => getCropPrice(crop, 'lagos'))
+    );
+    const prices = results
+      .map((r, i) => ({
+        name: TOP_CROPS[i].charAt(0).toUpperCase() + TOP_CROPS[i].slice(1),
+        price: r.status === 'fulfilled' ? (r.value?.data?.adjustedPrice ?? r.value?.data?.price ?? null) : null,
+        trend: r.status === 'fulfilled' ? (r.value?.data?.marketTrend ?? 'stable') : 'stable',
+      }))
+      .filter(p => p.price != null);
+    setCropPrices(prices);
   };
 
   useEffect(() => { load(); }, []);
 
   const overall = summary?.marketSentiment?.overall ?? summary?.sentiment ?? null;
-  const cfg = overall ? OVERALL_CONFIG[overall] : null;
+  const cfg = overall ? SENTIMENT_CONFIG[overall] : null;
 
   const bullish = summary?.marketSentiment?.bullish ?? 0;
   const bearish = summary?.marketSentiment?.bearish ?? 0;
   const stable  = summary?.marketSentiment?.stable  ?? 0;
   const total   = bullish + bearish + stable || 1;
 
-  const bullPct = Math.round((bullish / total) * 100);
-  const bearPct = Math.round((bearish / total) * 100);
-  const stabPct = 100 - bullPct - bearPct;
+  const donutData = [
+    { name: 'Bullish', value: bullish, color: '#10b981' },
+    { name: 'Stable',  value: stable,  color: '#6b7280' },
+    { name: 'Bearish', value: bearish, color: '#ef4444' },
+  ].filter(d => d.value > 0);
 
   const avgPrice       = summary?.averagePrice ?? null;
-  const highVolatility = summary?.highVolatility?.count ?? summary?.highVolatilityCrops?.length ?? 0;
+  const highVolatility = summary?.highVolatility?.count ?? 0;
   const totalTracked   = summary?.totalCropsTracked ?? 0;
+
+  const barColor = (trend) =>
+    trend === 'bullish' ? '#10b981' : trend === 'bearish' ? '#ef4444' : '#6b7280';
 
   return (
     <Card
@@ -69,77 +91,118 @@ const MarketTrends = () => {
       bodyClassName="p-4"
     >
       {loading && !summary ? (
-        <div className="space-y-3 min-h-[160px] animate-pulse">
+        <div className="space-y-3 min-h-[220px] animate-pulse">
           <div className="h-4 w-32 bg-gray-200 dark:bg-[#30363d] rounded" />
-          <div className="h-3 w-full bg-gray-200 dark:bg-[#30363d] rounded-full" />
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-12 bg-gray-200 dark:bg-[#30363d] rounded-xl" />)}
-          </div>
+          <div className="h-32 bg-gray-100 dark:bg-[#21262d] rounded-xl" />
+          <div className="h-24 bg-gray-100 dark:bg-[#21262d] rounded-xl" />
         </div>
       ) : (
         <>
-          {/* Sentiment breakdown bar */}
-          <div className="mb-4">
-            <div className="flex justify-between text-[10px] font-bold text-gray-400 dark:text-[#8b949e] mb-1.5 uppercase tracking-wider">
-              <span>Sentiment Breakdown</span>
-              <span>{totalTracked} crops</span>
-            </div>
-            <div className="flex h-2.5 rounded-full overflow-hidden gap-0.5">
-              {bullPct > 0 && <div className="bg-emerald-500 rounded-l-full" style={{ width: `${bullPct}%` }} title={`Bullish ${bullPct}%`} />}
-              {stabPct > 0 && <div className="bg-gray-300 dark:bg-[#30363d]" style={{ width: `${stabPct}%` }} title={`Stable ${stabPct}%`} />}
-              {bearPct > 0 && <div className="bg-red-500 rounded-r-full" style={{ width: `${bearPct}%` }} title={`Bearish ${bearPct}%`} />}
-            </div>
-            <div className="flex justify-between text-[10px] text-gray-400 dark:text-[#8b949e] mt-1">
-              <span className="text-emerald-600 dark:text-[#4ade80] font-semibold">▲ {bullPct}% bullish</span>
-              <span className="font-semibold">{stabPct}% stable</span>
-              <span className="text-red-500 font-semibold">▼ {bearPct}% bearish</span>
-            </div>
-          </div>
-
-          {/* Stat cards */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <div className="bg-emerald-50 dark:bg-[#0d2a1a] rounded-xl p-2.5 text-center">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-[#4ade80] mx-auto mb-1" />
-              <p className="text-lg font-bold text-emerald-700 dark:text-[#4ade80]">{bullish}</p>
-              <p className="text-[9px] font-bold uppercase text-emerald-600 dark:text-[#4ade80] opacity-80">Rising</p>
-            </div>
-            <div className="bg-gray-100 dark:bg-[#21262d] rounded-xl p-2.5 text-center">
-              <Minus className="w-3.5 h-3.5 text-gray-500 mx-auto mb-1" />
-              <p className="text-lg font-bold text-gray-700 dark:text-[#e6edf3]">{stable}</p>
-              <p className="text-[9px] font-bold uppercase text-gray-400 dark:text-[#8b949e]">Stable</p>
-            </div>
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-2.5 text-center">
-              <TrendingDown className="w-3.5 h-3.5 text-red-500 mx-auto mb-1" />
-              <p className="text-lg font-bold text-red-600">{bearish}</p>
-              <p className="text-[9px] font-bold uppercase text-red-400">Falling</p>
-            </div>
-          </div>
-
-          {/* Extra stats row */}
-          <div className="flex items-center justify-between py-2.5 border-t border-gray-100 dark:border-[#30363d]">
-            <div>
-              <p className="text-[10px] text-gray-400 dark:text-[#8b949e] font-bold uppercase tracking-wider">Avg. Price</p>
-              <p className="text-sm font-bold text-gray-800 dark:text-[#e6edf3]">
-                {avgPrice != null ? `₦${Number(avgPrice).toLocaleString()}` : '—'}
-              </p>
-            </div>
-            {highVolatility > 0 && (
-              <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-2 py-1 rounded-lg">
-                <AlertTriangle className="w-3 h-3" />
-                {highVolatility} high volatility
+          {/* Donut + stats row */}
+          <div className="flex items-center gap-4 mb-4">
+            {donutData.length > 0 ? (
+              <div className="shrink-0">
+                <ResponsiveContainer width={90} height={90}>
+                  <PieChart>
+                    <Pie
+                      data={donutData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={28}
+                      outerRadius={42}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {donutData.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ReTooltip
+                      formatter={(v, name) => [`${v} crops`, name]}
+                      contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
+            ) : (
+              <div className="w-[90px] h-[90px] shrink-0 rounded-full bg-gray-100 dark:bg-[#21262d] animate-pulse" />
             )}
+
+            <div className="flex-1 space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-[#4ade80]">
+                  <TrendingUp className="w-3 h-3" /> {bullish} Rising
+                </span>
+                <span className="flex items-center gap-1 font-semibold text-gray-500">
+                  <Minus className="w-3 h-3" /> {stable} Stable
+                </span>
+                <span className="flex items-center gap-1 font-semibold text-red-500">
+                  <TrendingDown className="w-3 h-3" /> {bearish} Falling
+                </span>
+              </div>
+              <div className="flex h-2 rounded-full overflow-hidden gap-0.5">
+                {bullish > 0 && <div className="bg-emerald-500 rounded-l-full" style={{ width: `${(bullish/total)*100}%` }} />}
+                {stable  > 0 && <div className="bg-gray-300 dark:bg-[#30363d]" style={{ width: `${(stable/total)*100}%` }} />}
+                {bearish > 0 && <div className="bg-red-500 rounded-r-full"    style={{ width: `${(bearish/total)*100}%` }} />}
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-gray-400 dark:text-[#8b949e] uppercase font-bold tracking-wide">Avg Price</p>
+                  <p className="text-sm font-bold text-gray-800 dark:text-[#e6edf3]">
+                    {avgPrice ? `₦${Number(avgPrice).toLocaleString()}` : '—'}
+                  </p>
+                </div>
+                <p className="text-[10px] text-gray-400 dark:text-[#8b949e]">{totalTracked} crops</p>
+              </div>
+            </div>
           </div>
 
-          {/* Footer */}
-          <div className="pt-2 flex items-center justify-between">
-            {lastUpdated && (
-              <span className="text-[10px] text-gray-400 dark:text-[#8b949e]">
-                Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-            <Link href="/market-prices" className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:underline ml-auto">
-              View Live Prices <ArrowRight className="w-3.5 h-3.5" />
+          {/* Bar chart — top crop live prices */}
+          {cropPrices.length > 0 && (
+            <div className="mb-3">
+              <p className="text-[10px] font-bold text-gray-400 dark:text-[#8b949e] uppercase tracking-wider mb-2">
+                Live Prices (₦/kg)
+              </p>
+              <ResponsiveContainer width="100%" height={110}>
+                <BarChart data={cropPrices} margin={{ top: 0, right: 0, left: -22, bottom: 0 }} barSize={14}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `₦${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+                  <ReTooltip
+                    formatter={v => [`₦${Number(v).toLocaleString()}`, 'Price']}
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                  />
+                  <Bar dataKey="price" radius={[4, 4, 0, 0]}>
+                    {cropPrices.map((entry, i) => (
+                      <Cell key={i} fill={barColor(entry.trend)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="flex items-center gap-1 text-[9px] text-emerald-600 font-semibold"><span className="w-2 h-2 rounded-sm bg-emerald-500 inline-block" /> Rising</span>
+                <span className="flex items-center gap-1 text-[9px] text-gray-400 font-semibold"><span className="w-2 h-2 rounded-sm bg-gray-400 inline-block" /> Stable</span>
+                <span className="flex items-center gap-1 text-[9px] text-red-500 font-semibold"><span className="w-2 h-2 rounded-sm bg-red-500 inline-block" /> Falling</span>
+              </div>
+            </div>
+          )}
+
+          {/* Alerts + footer */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-[#30363d]">
+            <div className="flex items-center gap-2">
+              {highVolatility > 0 && (
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-2 py-1 rounded-lg">
+                  <AlertTriangle className="w-3 h-3" /> {highVolatility} volatile
+                </span>
+              )}
+              {lastUpdated && (
+                <span className="text-[10px] text-gray-400 dark:text-[#8b949e]">
+                  {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
+            <Link href="/market-prices" className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:underline">
+              View All <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </>
