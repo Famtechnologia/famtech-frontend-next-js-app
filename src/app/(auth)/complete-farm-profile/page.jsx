@@ -376,7 +376,7 @@ export default function ModernFarmRegistration() {
                 ? "bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/25"
                 : currentStep === step.id
                   ? "border-emerald-300 text-emerald-600 bg-emerald-50"
-                  : "border-gray-200 text-gray-400 bg-white"
+                  : "border-gray-200 dark:border-[#30363d] text-gray-400 dark:text-[#6e7681] bg-white dark:bg-[#1c2128]"
             }`}
           >
             {currentStep > step.id ? (
@@ -1153,14 +1153,14 @@ export default function ModernFarmRegistration() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-[#0d1117] dark:via-[#0d1117] dark:to-[#0d1117] py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl text-center md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-slate-900 via-emerald-800 to-slate-900 bg-clip-text text-transparent mb-6 leading-tight">
+        <h2 className="text-4xl text-center md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-slate-900 via-emerald-800 to-slate-900 dark:from-[#e6edf3] dark:via-[#4ade80] dark:to-[#e6edf3] bg-clip-text text-transparent mb-6 leading-tight">
           Welcome to
-          <span className=" text-emerald-600"> Famtech</span>
+          <span className="text-emerald-600 dark:text-[#4ade80]"> Famtech</span>
         </h2>
 
-        <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed text-center mb-8">
+        <p className="text-lg md:text-xl text-slate-600 dark:text-[#8b949e] max-w-3xl mx-auto leading-relaxed text-center mb-8">
           Our diverse team of experts combines decades of experience in
           agriculture, technology, and business to revolutionize farming through
           innovation.
@@ -1168,7 +1168,7 @@ export default function ModernFarmRegistration() {
 
         {renderStepIndicator()}
 
-        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 lg:p-12">
+        <div className="bg-white dark:bg-[#161b22] rounded-3xl shadow-xl border border-transparent dark:border-[#30363d] p-4 md:p-8 lg:p-12">
           {renderCurrentStep()}
 
           {registrationError && (
@@ -1179,7 +1179,7 @@ export default function ModernFarmRegistration() {
             </div>
           )}
 
-          <div className="text-xs md:text-base flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
+          <div className="text-xs md:text-base flex items-center justify-between mt-12 pt-8 border-t border-gray-200 dark:border-[#30363d]">
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
