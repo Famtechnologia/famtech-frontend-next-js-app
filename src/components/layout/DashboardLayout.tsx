@@ -34,6 +34,7 @@ import { usePathname } from "next/navigation";
 // import { useLogout } from "@/lib/api/auth";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
+import { getMarketAlerts } from "@/lib/services/pricingAPI";
 import FloatingChatbot from "./FloatingChatbot";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 // --- Interface Definitions for clarity ---
@@ -73,6 +74,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [marketAlerts, setMarketAlerts] = useState<{ title: string; body: string; severity: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   // NEW STATE for collapsed sidebar flyout preview
   const [hoveredMenuKey, setHoveredMenuKey] = useState<string | null>(null);
@@ -336,11 +338,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // --- Data Fetching Logic ---
-  // Fetch notifications ONLY when the component mounts or the user changes
   const fetchNotifications = useCallback(async () => {
     const userId = user?._id;
     if (!userId) return;
-
     setIsLoading(true);
     try {
       const data = await getNotifications(userId);
@@ -352,10 +352,33 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [user?._id]);
 
-  // Initial fetch to get the unread count
+  const fetchMarketAlerts = useCallback(async () => {
+    try {
+      const res = await getMarketAlerts();
+      const raw = (res as any)?.data;
+      const arr = Array.isArray(raw) ? raw : [];
+      setMarketAlerts(
+        arr.slice(0, 5).map((a: any) => ({
+          title: `${a.crop ? a.crop.charAt(0).toUpperCase() + a.crop.slice(1) : "Crop"} price ${a.alertType === "price_increase" ? "up" : "down"} ${Math.abs(a.changePercent ?? 0).toFixed(1)}%`,
+          body: a.message ?? `Price moved to ₦${Number(a.currentPrice ?? 0).toLocaleString()}`,
+          severity: a.severity ?? "medium",
+        }))
+      );
+    } catch {
+      // silently ignore — market alerts are non-critical
+    }
+  }, []);
+
+  // Initial fetch + poll every 60 seconds
   useEffect(() => {
     fetchNotifications();
-  }, [fetchNotifications]);
+    fetchMarketAlerts();
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchMarketAlerts();
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications, fetchMarketAlerts]);
 
   // --- Dropdown Management Logic ---
   const toggleDropdown = () => {
@@ -365,9 +388,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     // Close profile dropdown when opening notifications
     setIsProfileDropdownOpen(false);
 
-    // Optional: Re-fetch only when opening to get the freshest data
     if (!isDropdownOpen) {
       fetchNotifications();
+      fetchMarketAlerts();
     }
   };
 
@@ -405,7 +428,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   // Calculate unread count (for the red dot)
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length + marketAlerts.length;
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-[#0d1117]">
@@ -799,12 +822,38 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <div className="p-4 text-center text-gray-500 dark:text-[#8b949e]">
                           Loading notifications...
                         </div>
-                      ) : notifications.length === 0 ? (
+                      ) : notifications.length === 0 && marketAlerts.length === 0 ? (
                         <div className="p-4 text-center text-gray-500 dark:text-[#8b949e]">
                           No new notifications.
                         </div>
                       ) : (
-                        notifications.map((notification) => {
+                        <>
+                        {/* Market price alerts */}
+                        {marketAlerts.map((alert, i) => (
+                          <Link
+                            key={`market-${i}`}
+                            href="/market-prices"
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="relative flex items-start gap-3 p-4 border-b border-slate-50 dark:border-[#30363d] bg-gradient-to-r from-amber-50/40 to-yellow-50/10 dark:from-amber-900/20 dark:to-amber-900/10 hover:from-amber-50/60 transition-all"
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shadow-sm">
+                                <TrendingUp size={16} />
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-slate-800 dark:text-[#e6edf3] leading-snug">{alert.title}</p>
+                              <p className="text-xs text-slate-500 dark:text-[#8b949e] mt-0.5 truncate">{alert.body}</p>
+                              <span className="inline-block mt-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 px-1.5 py-0.5 rounded">Market Alert</span>
+                            </div>
+                            <span className="absolute top-4 right-4 flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                          </Link>
+                        ))}
+                        {/* Task notifications */}
+                        {notifications.map((notification) => {
                           const isRead = notification.read;
                           return (
                             <Link
@@ -858,11 +907,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               )}
                             </Link>
                           );
-                        })
+                        })}
+                        </>
                       )}
                     </div>
 
-                    {notifications.length > 0 && (
+                    {(notifications.length > 0 || marketAlerts.length > 0) && (
                       <div className="p-2 border-t text-center border-gray-100 dark:border-[#30363d]">
                         <button className="text-xs text-green-600 hover:text-green-700">
                           Mark all as read
