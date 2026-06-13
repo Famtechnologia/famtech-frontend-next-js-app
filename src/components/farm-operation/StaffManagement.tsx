@@ -197,64 +197,57 @@ const StaffManagement = () => {
           filteredStaff.map((person) => (
             <div
               key={person.email}
-              className="flex flex-col justify-between h-full bg-white rounded-2xl border border-gray-150 shadow-sm hover:shadow-md transition-all duration-300 capitalize p-5"
+              className="flex flex-col justify-between h-full bg-white dark:bg-[#161b22] rounded-2xl border border-gray-100 dark:border-[#30363d] shadow-sm hover:shadow-md transition-all duration-300 capitalize p-5"
             >
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3.5">
-                    {/* Letter Avatar */}
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-base flex items-center justify-center shadow-inner uppercase flex-shrink-0">
                       {person.name?.charAt(0) || "?"}
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-800 text-base capitalize leading-tight">
+                      <h4 className="font-bold text-gray-800 dark:text-[#e6edf3] text-base capitalize leading-tight">
                         {person.name}
                       </h4>
-                      <p className="text-xs text-gray-455 lowercase break-all mt-0.5 font-medium">
+                      <p className="text-xs text-gray-500 dark:text-[#8b949e] lowercase break-all mt-0.5 font-medium">
                         {person.email}
                       </p>
                     </div>
                   </div>
                   {person.isVerified === "true" || String(person.isVerified) === "true" ? (
-                    <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100/50 rounded-full">
+                    <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-[#4ade80] bg-emerald-50 dark:bg-[#0d2a1a] border border-emerald-100 dark:border-green-900 rounded-full whitespace-nowrap">
                       Active
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-100/50 rounded-full">
+                    <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-full whitespace-nowrap">
                       Pending
                     </span>
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs">
-                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Phone Number</span>
-                  <span className="font-semibold text-gray-800">{person.phone || "N/A"}</span>
+                <div className="pt-3 border-t border-gray-100 dark:border-[#30363d] flex justify-between items-center text-xs">
+                  <span className="text-gray-400 dark:text-[#8b949e] font-bold uppercase tracking-wider text-[10px]">Invite Status</span>
+                  <span className="font-semibold text-gray-800 dark:text-[#e6edf3]">
+                    {person.inviteStatus === "accepted" ? "Accepted" : "Awaiting Acceptance"}
+                  </span>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="mt-5 pt-3.5 border-t border-gray-100 flex justify-between items-center bg-white">
+              <div className="mt-5 pt-3.5 border-t border-gray-100 dark:border-[#30363d] flex justify-between items-center">
                 <button
-                  onClick={() => {
-                    setStaffDelete(true);
-                    setSelectedId(person._id as string);
-                    setSelectedEmail(person.email as string);
-                  }}
+                  onClick={() => { setStaffDelete(true); setSelectedId(person._id as string); setSelectedEmail(person.email as string); }}
                   disabled={isLoading}
-                  className="flex items-center text-xs font-bold text-rose-600 hover:text-rose-800 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center text-xs font-bold text-rose-600 hover:text-rose-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
+                  <Trash2 className="h-4 w-4 mr-1" /> Delete
                 </button>
-                <div className="flex items-center gap-3">
-                  <button
-                    className="flex items-center text-xs font-bold text-emerald-650 hover:text-emerald-800 transition-colors"
-                    onClick={() => handleUpdateOpen(person)}
-                  >
-                    <SquarePen className="h-4 w-4 mr-1" />
-                    Edit
-                  </button>
-                </div>
+                <button
+                  className="flex items-center text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:text-emerald-800 transition-colors"
+                  onClick={() => handleUpdateOpen(person)}
+                >
+                  <SquarePen className="h-4 w-4 mr-1" /> Edit
+                </button>
               </div>
             </div>
           ))

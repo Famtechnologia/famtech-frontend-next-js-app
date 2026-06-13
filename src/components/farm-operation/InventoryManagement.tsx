@@ -5,7 +5,6 @@ import React, {
   useMemo,
   Dispatch,
   SetStateAction,
-  useCallback,
   useRef,
 } from "react";
 import {
@@ -162,30 +161,18 @@ const InventoryManagement = () => {
   const [updateFormData, setUpdateFormData] =
     useState<UpdateInventoryItemData | null>(null);
 
-  const fetchInventoryItems = useCallback(async () => {
+  useEffect(() => {
     if (!profile?.id) {
       setIsLoading(false);
-      setError("Cannot fetch inventory: User ID is missing. Please log in.");
       return;
     }
-
     setIsLoading(true);
-    setError(null); // Clear previous fetch error
-    try {
-      // FIX 4: Pass the required userId argument to getInventoryItems
-      const items = await getInventoryItems(profile?.id || "");
-      setInventoryItems(items);
-    } catch (err) {
-      console.error("Failed to fetch inventory:", err);
-      setError("Failed to load inventory items. Please check your connection.");
-    } finally {
-      setIsLoading(false);
-    }
+    setError(null);
+    getInventoryItems(profile.id)
+      .then((items) => setInventoryItems(items))
+      .catch(() => setError("Failed to load inventory items. Please check your connection."))
+      .finally(() => setIsLoading(false));
   }, [profile?.id]);
-
-  useEffect(() => {
-    fetchInventoryItems();
-  }, [fetchInventoryItems]);
 
   const formatDate = (dateString: string): string => {
     if (!dateString) return "";
@@ -712,26 +699,25 @@ const InventoryManagement = () => {
   }
 
   return (
-    <div className="p-2 lg:pt-8 lg:pb-8 max-w-7xl mx-auto">
+    <div className="p-2 lg:pt-8 lg:pb-8 max-w-7xl mx-auto dark:text-[#e6edf3]">
       {/* Global Error Banner */}
       {error && inventoryItems.length > 0 && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-md flex items-center">
+        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md flex items-center">
           <TriangleAlert className="h-5 w-5 text-red-600 mr-2 flex-shrink-0" />
-          <p className="text-sm text-red-800">{error}</p>
+          <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
         </div>
       )}
 
       {/* --- TABS SECTION --- */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl mb-8 max-w-2xl">
+      <div className="flex overflow-x-auto no-scrollbar items-center gap-2 p-1.5 bg-slate-100/80 dark:bg-[#161b22] rounded-2xl mb-6 max-w-2xl">
         {inventoryTabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => handleTabChange(tab.value)}
-            className={`flex items-center justify-center px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 whitespace-nowrap flex-1
-                        ${
-                          activeInventoryTab === tab.value
-                            ? "bg-white text-green-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                            : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
+            className={`flex items-center justify-center px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 whitespace-nowrap shrink-0
+                        ${activeInventoryTab === tab.value
+                          ? "bg-white dark:bg-[#21262d] text-green-700 dark:text-[#4ade80] shadow-sm"
+                          : "text-slate-500 dark:text-[#8b949e] hover:text-slate-800 dark:hover:text-[#e6edf3] hover:bg-white/50"
                         }`}
           >
             {tab.icon}
@@ -741,40 +727,38 @@ const InventoryManagement = () => {
       </div>
 
       {/* --- CONTROL BAR --- */}
-      <div className="md:flex justify-between items-center space-y-4 md:space-y-0 mb-8 relative z-20">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6 relative z-20">
         {/* Search */}
-        <div className="relative max-w-xs w-full">
+        <div className="relative w-full md:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder={`Search ${activeInventoryTab} inventory...`}
+            placeholder={`Search ${activeInventoryTab}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all text-sm"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-[#30363d] dark:bg-[#0d1117] dark:text-[#e6edf3] rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-sm"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Filter Dropdown Toggle */}
           <div className="relative" ref={filterDropdownRef}>
             <button
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className={`flex items-center px-4 py-2.5 text-sm font-semibold rounded-xl border transition-all ${
+              className={`flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl border transition-all ${
                 stockFilter !== "all"
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                  ? "bg-green-50 dark:bg-[#0d2a1a] text-green-700 dark:text-[#4ade80] border-green-200 dark:border-green-800"
+                  : "bg-white dark:bg-[#161b22] text-gray-700 dark:text-[#e6edf3] border-gray-200 dark:border-[#30363d] hover:bg-gray-50"
               }`}
             >
-              <ListFilter className="h-4 w-4 mr-2" />
-              Filter{stockFilter !== "all" ? `: ${stockFilter === "in" ? "In Stock" : stockFilter === "low" ? "Low Stock" : "Out of Stock"}` : ""}
+              <ListFilter className="h-4 w-4 mr-1.5" />
+              Filter
             </button>
 
             {showFilterDropdown && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-250">
-                <div className="px-4 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Filter Stock Status
-                </div>
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#161b22] rounded-xl shadow-lg border border-gray-100 dark:border-[#30363d] py-2 z-50">
+                <div className="px-4 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Stock Status</div>
                 {[
                   { label: "All Statuses", value: "all" },
                   { label: "In Stock Only", value: "in" },
@@ -783,14 +767,11 @@ const InventoryManagement = () => {
                 ].map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => {
-                      setStockFilter(opt.value as any);
-                      setShowFilterDropdown(false);
-                    }}
+                    onClick={() => { setStockFilter(opt.value as any); setShowFilterDropdown(false); }}
                     className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
                       stockFilter === opt.value
-                        ? "bg-green-50 text-green-700"
-                        : "text-gray-600 hover:bg-slate-50 hover:text-gray-900"
+                        ? "bg-green-50 dark:bg-[#0d2a1a] text-green-700 dark:text-[#4ade80]"
+                        : "text-gray-600 dark:text-[#8b949e] hover:bg-slate-50 dark:hover:bg-[#21262d]"
                     }`}
                   >
                     {opt.label}
@@ -801,25 +782,17 @@ const InventoryManagement = () => {
           </div>
 
           {/* View Toggles */}
-          <div className="bg-slate-100 p-0.5 rounded-xl flex items-center">
+          <div className="bg-slate-100 dark:bg-[#21262d] p-0.5 rounded-xl flex items-center">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === "grid"
-                  ? "bg-white text-green-700 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white dark:bg-[#30363d] text-green-700 dark:text-[#4ade80] shadow-sm" : "text-gray-500 dark:text-[#8b949e]"}`}
               title="Grid View"
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === "list"
-                  ? "bg-white text-green-700 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-white dark:bg-[#30363d] text-green-700 dark:text-[#4ade80] shadow-sm" : "text-gray-500 dark:text-[#8b949e]"}`}
               title="List View"
             >
               <List className="h-4 w-4" />
@@ -829,88 +802,127 @@ const InventoryManagement = () => {
           {/* Export Button */}
           <button
             onClick={handleExport}
-            className="flex items-center px-4 py-2.5 text-sm font-semibold text-gray-700 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+            className="flex items-center px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-[#e6edf3] rounded-xl border border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] hover:bg-gray-50 dark:hover:bg-[#21262d] transition-colors"
           >
-            <Download className="h-4 w-4 mr-2" /> Export
+            <Download className="h-4 w-4 mr-1.5" /> Export
           </button>
 
           {/* Add Item Button */}
           <button
-            onClick={() => {
-              setShowAddItemModal(true);
-              setFormError(null);
-            }}
-            className="flex items-center px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all w-fit md:w-auto justify-center"
+            onClick={() => { setShowAddItemModal(true); setFormError(null); }}
+            className="flex items-center px-4 py-2.5 text-sm font-semibold text-white rounded-xl bg-green-600 hover:bg-green-700 shadow-md transition-all"
           >
-            <Plus className="h-4 w-4 mr-2" /> Add Item
+            <Plus className="h-4 w-4 mr-1.5" /> Add Item
           </button>
         </div>
       </div>
 
       {/* --- INVENTORY ITEMS DISPLAY --- */}
-      {viewMode === "list" ? (
-        getItemsToDisplay.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-slate-50/50">
+      {getItemsToDisplay.length === 0 ? (
+        <div className="text-center py-14 border-2 border-dashed border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#161b22]">
+          <p className="text-gray-500 dark:text-[#8b949e] text-lg font-semibold">No {activeInventoryTab} items found.</p>
+          <p className="text-gray-400 dark:text-[#8b949e] text-sm mt-1">Try a different search or click &apos;Add Item&apos; to get started.</p>
+        </div>
+      ) : viewMode === "list" ? (
+        <>
+          {/* Mobile: cards */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {getItemsToDisplay.map((item: UnifiedInventoryItem) => {
+              const status = getItemStatus(item);
+              const isItemDeleting = isDeleting[item.id];
+              return (
+                <div key={item.id} className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-100 dark:border-[#30363d] p-4 shadow-sm relative overflow-hidden">
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${status === "Out of Stock" ? "bg-red-500" : status === "Low Stock" ? "bg-yellow-500" : "bg-green-500"}`} />
+                  <div className="flex items-start justify-between mb-3 pt-1">
+                    <p className="font-bold text-gray-800 dark:text-[#e6edf3] text-base">{item.name}</p>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(status)}`}>
+                      {getStatusIcon(status)}{status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                    <div className="p-2 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d]">
+                      <p className="text-slate-400 font-semibold mb-0.5">Quantity</p>
+                      <p className="font-bold text-slate-800 dark:text-[#e6edf3]">{item.quantity}</p>
+                    </div>
+                    <div className="p-2 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d]">
+                      <p className="text-slate-400 font-semibold mb-0.5">Reorder</p>
+                      <p className="font-bold text-slate-800 dark:text-[#e6edf3]">{item.reorderLevel ?? 0}</p>
+                    </div>
+                    {item.type && (
+                      <div className="p-2 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] col-span-2">
+                        <p className="text-slate-400 font-semibold mb-0.5">Type</p>
+                        <p className="font-semibold text-slate-700 dark:text-[#e6edf3]">{item.type}</p>
+                      </div>
+                    )}
+                    {typeof item.n === "number" && (
+                      <div className="p-2 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] col-span-2">
+                        <p className="text-slate-400 font-semibold mb-0.5">N-P-K</p>
+                        <p className="font-bold text-slate-800 dark:text-[#e6edf3]">{item.n}-{item.p}-{item.k}</p>
+                      </div>
+                    )}
+                    {item.equipmentPartData?.manufacturer && (
+                      <div className="p-2 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] col-span-2">
+                        <p className="text-slate-400 font-semibold mb-0.5">Manufacturer</p>
+                        <p className="font-semibold text-slate-700 dark:text-[#e6edf3]">{item.equipmentPartData.manufacturer}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-[#30363d]">
+                    <button onClick={() => handleDeleteItem(item.id)} disabled={isItemDeleting}
+                      className="flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 disabled:opacity-40">
+                      {isItemDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Delete
+                    </button>
+                    <button onClick={() => handleUpdateClick(item)}
+                      className="flex items-center gap-1 text-xs font-bold text-green-600 dark:text-[#4ade80] hover:text-green-800">
+                      <SquarePen className="h-3.5 w-3.5" /> Edit
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden md:block overflow-x-auto bg-white dark:bg-[#161b22] rounded-xl shadow-sm border border-gray-100 dark:border-[#30363d]">
+            <table className="min-w-full divide-y divide-gray-100 dark:divide-[#30363d]">
+              <thead className="bg-slate-50/50 dark:bg-[#0d1117]">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item Name</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Quantity</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Reorder Level</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                  {activeInventoryTab === "fertilizer" && (
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">N-P-K</th>
-                  )}
-                  {activeInventoryTab === "equipment parts" && (
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Manufacturer / Model</th>
-                  )}
-                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Quantity</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Reorder</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                  {activeInventoryTab === "fertilizer" && <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">N-P-K</th>}
+                  {activeInventoryTab === "equipment parts" && <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Manufacturer</th>}
+                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 bg-white">
+              <tbody className="divide-y divide-gray-100 dark:divide-[#30363d]">
                 {getItemsToDisplay.map((item: UnifiedInventoryItem) => {
                   const status = getItemStatus(item);
                   const isItemDeleting = isDeleting[item.id];
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">{item.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">{item.quantity}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.reorderLevel ?? 0}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={item.id} className="hover:bg-slate-50/30 dark:hover:bg-[#21262d] transition-colors">
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-800 dark:text-[#e6edf3]">{item.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#e6edf3]">{item.quantity}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-[#8b949e]">{item.reorderLevel ?? 0}</td>
+                      <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(status)}`}>
-                          {getStatusIcon(status)}
-                          <span className="ml-1 capitalize">{status}</span>
+                          {getStatusIcon(status)}{status}
                         </span>
                       </td>
                       {activeInventoryTab === "fertilizer" && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">
-                          {typeof item.n === "number" ? `${item.n}-${item.p}-${item.k}` : "-"}
-                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#e6edf3]">{typeof item.n === "number" ? `${item.n}-${item.p}-${item.k}` : "-"}</td>
                       )}
                       {activeInventoryTab === "equipment parts" && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">
-                          {item.equipmentPartData?.manufacturer || "-"} {item.equipmentPartData?.model ? `(${item.equipmentPartData.model})` : ""}
-                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-[#e6edf3]">{item.equipmentPartData?.manufacturer || "-"}</td>
                       )}
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
+                      <td className="px-6 py-4 text-right">
                         <div className="flex justify-end items-center gap-3">
-                          <button
-                            onClick={() => handleUpdateClick(item)}
-                            className="text-green-600 hover:text-green-800 transition-colors inline-flex items-center gap-1 font-semibold"
-                          >
+                          <button onClick={() => handleUpdateClick(item)} className="text-green-600 dark:text-[#4ade80] hover:text-green-800 inline-flex items-center gap-1 text-sm font-semibold">
                             <SquarePen className="h-4 w-4" /> Edit
                           </button>
-                          <button
-                            onClick={() => handleDeleteItem(item.id)}
-                            disabled={isItemDeleting}
-                            className="text-red-600 hover:text-red-800 transition-colors inline-flex items-center gap-1 font-semibold disabled:text-gray-300"
-                          >
-                            {isItemDeleting ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                            Delete
+                          <button onClick={() => handleDeleteItem(item.id)} disabled={isItemDeleting} className="text-red-600 hover:text-red-800 inline-flex items-center gap-1 text-sm font-semibold disabled:opacity-40">
+                            {isItemDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} Delete
                           </button>
                         </div>
                       </td>
@@ -920,123 +932,79 @@ const InventoryManagement = () => {
               </tbody>
             </table>
           </div>
-        ) : (
-          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-            <p className="text-gray-500 text-lg font-semibold">
-              No {activeInventoryTab} items found.
-            </p>
-            <p className="text-gray-400 text-sm mt-1">
-              Try a different search term or click &apos;Add Item &apos; to get started.
-            </p>
-          </div>
-        )
+        </>
       ) : (
         /* --- GRID VIEW --- */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {getItemsToDisplay.length > 0 ? (
-            getItemsToDisplay.map((item: UnifiedInventoryItem) => {
-              const status = getItemStatus(item);
-              const isItemDeleting = isDeleting[item.id];
-              return (
-                <Card
-                  key={item.id}
-                  title={item.name}
-                  borderless={true}
-                  className="flex flex-col justify-between h-full hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[250px] relative overflow-hidden"
-                >
-                  {/* Status Indicator Bar at the Top */}
-                  <div className={`absolute top-0 left-0 right-0 h-1.5 ${
-                    status === "Out of Stock" ? "bg-red-500" : status === "Low Stock" ? "bg-yellow-500" : "bg-green-500"
-                  }`} />
-                  
-                  <div className="space-y-4 pt-2">
-                    {/* Item Details */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col">
-                        <span className="text-slate-400 font-semibold mb-0.5">Quantity</span>
-                        <span className="font-bold text-slate-800 text-sm">{item.quantity}</span>
-                      </div>
-                      <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col">
-                        <span className="text-slate-400 font-semibold mb-0.5">Reorder</span>
-                        <span className="font-bold text-slate-800 text-sm">{item.reorderLevel ?? 0}</span>
-                      </div>
-                      
-                      {item.usageRate && (
-                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
-                          <span className="text-slate-400 font-semibold mb-0.5">Usage Rate</span>
-                          <span className="font-semibold text-slate-700 text-xs">{item.usageRate}</span>
-                        </div>
-                      )}
-                      {item.expireDate && (
-                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
-                          <span className="text-slate-400 font-semibold mb-0.5">Expiry Date</span>
-                          <span className="font-semibold text-slate-700 text-xs">{formatDate(item.expireDate)}</span>
-                        </div>
-                      )}
-                      {item.type && (
-                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
-                          <span className="text-slate-400 font-semibold mb-0.5">Type</span>
-                          <span className="font-semibold text-slate-700 text-xs">{item.type}</span>
-                        </div>
-                      )}
-                      {item.category === "equipment parts" && item.equipmentPartData?.model && (
-                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
-                          <span className="text-slate-400 font-semibold mb-0.5">Part Model</span>
-                          <span className="font-semibold text-slate-700 text-xs">{item.equipmentPartData.model}</span>
-                        </div>
-                      )}
-                      {typeof item.n === "number" && typeof item.p === "number" && typeof item.k === "number" && (
-                        <div className="p-2.5 bg-slate-50/50 rounded-xl border border-slate-100/50 flex flex-col col-span-2">
-                          <span className="text-slate-400 font-semibold mb-0.5">N-P-K Ratio</span>
-                          <span className="font-bold text-slate-850 text-xs">{item.n}-{item.p}-{item.k}</span>
-                        </div>
-                      )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {getItemsToDisplay.map((item: UnifiedInventoryItem) => {
+            const status = getItemStatus(item);
+            const isItemDeleting = isDeleting[item.id];
+            return (
+              <Card
+                key={item.id}
+                title={item.name}
+                borderless={true}
+                className="flex flex-col justify-between h-full hover:-translate-y-1 hover:shadow-xl transition-all duration-300 relative overflow-hidden dark:bg-[#161b22] dark:border-[#30363d]"
+              >
+                <div className={`absolute top-0 left-0 right-0 h-1.5 ${status === "Out of Stock" ? "bg-red-500" : status === "Low Stock" ? "bg-yellow-500" : "bg-green-500"}`} />
+                <div className="space-y-3 pt-2">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col">
+                      <span className="text-slate-400 font-semibold mb-0.5">Quantity</span>
+                      <span className="font-bold text-slate-800 dark:text-[#e6edf3] text-sm">{item.quantity}</span>
                     </div>
-                    {/* Status Badge */}
-                    <div
-                      className={`mt-4 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 ${getStatusColor(status)}`}
-                    >
-                      {getStatusIcon(status)}
-                      <span className="capitalize">{status}</span>
+                    <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col">
+                      <span className="text-slate-400 font-semibold mb-0.5">Reorder</span>
+                      <span className="font-bold text-slate-800 dark:text-[#e6edf3] text-sm">{item.reorderLevel ?? 0}</span>
                     </div>
+                    {item.usageRate && (
+                      <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col col-span-2">
+                        <span className="text-slate-400 font-semibold mb-0.5">Usage Rate</span>
+                        <span className="font-semibold text-slate-700 dark:text-[#e6edf3]">{item.usageRate}</span>
+                      </div>
+                    )}
+                    {item.expireDate && (
+                      <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col col-span-2">
+                        <span className="text-slate-400 font-semibold mb-0.5">Expiry</span>
+                        <span className="font-semibold text-slate-700 dark:text-[#e6edf3]">{formatDate(item.expireDate)}</span>
+                      </div>
+                    )}
+                    {item.type && (
+                      <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col col-span-2">
+                        <span className="text-slate-400 font-semibold mb-0.5">Type</span>
+                        <span className="font-semibold text-slate-700 dark:text-[#e6edf3]">{item.type}</span>
+                      </div>
+                    )}
+                    {item.category === "equipment parts" && item.equipmentPartData?.model && (
+                      <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col col-span-2">
+                        <span className="text-slate-400 font-semibold mb-0.5">Part Model</span>
+                        <span className="font-semibold text-slate-700 dark:text-[#e6edf3]">{item.equipmentPartData.model}</span>
+                      </div>
+                    )}
+                    {typeof item.n === "number" && typeof item.p === "number" && typeof item.k === "number" && (
+                      <div className="p-2.5 bg-slate-50 dark:bg-[#0d1117] rounded-xl border border-slate-100 dark:border-[#30363d] flex flex-col col-span-2">
+                        <span className="text-slate-400 font-semibold mb-0.5">N-P-K Ratio</span>
+                        <span className="font-bold text-slate-800 dark:text-[#e6edf3]">{item.n}-{item.p}-{item.k}</span>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Actions */}
-                  <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      disabled={isItemDeleting}
-                      className="px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isItemDeleting ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => handleUpdateClick(item)}
-                      className="px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
-                    >
-                      <SquarePen className="h-3.5 w-3.5" />
-                      Update
-                    </button>
+                  <div className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 ${getStatusColor(status)}`}>
+                    {getStatusIcon(status)}<span className="capitalize">{status}</span>
                   </div>
-                </Card>
-              );
-            })
-          ) : (
-            <div className="text-center py-12 col-span-full border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-              <p className="text-gray-500 text-lg font-semibold">
-                No {activeInventoryTab} items found.
-              </p>
-              <p className="text-gray-400 text-sm mt-1">
-                Try a different search term or click &apos;Add Item &apos; to get
-                started.
-              </p>
-            </div>
-          )}
+                </div>
+                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[#30363d] flex justify-between items-center">
+                  <button onClick={() => handleDeleteItem(item.id)} disabled={isItemDeleting}
+                    className="flex items-center gap-1 px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs font-bold transition-all disabled:opacity-50">
+                    {isItemDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} Delete
+                  </button>
+                  <button onClick={() => handleUpdateClick(item)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-green-50 dark:bg-[#0d2a1a] text-green-700 dark:text-[#4ade80] hover:bg-green-100 rounded-lg text-xs font-bold transition-all">
+                    <SquarePen className="h-3.5 w-3.5" /> Update
+                  </button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
 
