@@ -10,6 +10,8 @@ import {
   Loader2,
   Mail,
   CheckCircle,
+  ListFilter,
+  LayoutGrid,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { useProfile } from "@/lib/hooks/useProfile";
@@ -377,69 +379,6 @@ const StaffManagement = () => {
         </div>
       </Modal>
 
-      {/* --- Password Regeneration Modal --- */}
-      <Modal
-        show={staffRegenerateShow}
-        onClose={handleRegenerateModalClose}
-        title={regeneratedPassword ? "New Password Generated" : "Reset Staff Password"}
-      >
-        {!regeneratedPassword ? (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-650">
-              Are you sure you want to regenerate the password for <strong className="capitalize text-gray-800">{selectedStaffForRegen?.name}</strong>?
-            </p>
-            <p className="text-xs text-amber-650 bg-amber-50 border border-amber-100 p-2.5 rounded-lg">
-              Their current password will be immediately invalidated and they will need the new password to log in.
-            </p>
-            <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
-              <button
-                onClick={handleRegenerateModalClose}
-                className="px-4 py-2 text-sm font-semibold text-gray-750 bg-gray-150 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRegeneratePassword}
-                disabled={isLoading}
-                className="px-5 py-2 bg-amber-600 text-white text-sm font-bold rounded-lg hover:bg-amber-700 transition-colors shadow-sm flex items-center justify-center"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Regenerating...
-                  </>
-                ) : (
-                  "Confirm Reset"
-                )}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-655">
-              The password has been successfully reset. Please share these credentials securely with the staff member:
-            </p>
-            <div className="bg-slate-50 border border-gray-150 rounded-xl p-4 space-y-2">
-              <p className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-gray-500">Email:</span>
-                <span className="font-bold text-gray-850 lowercase">{selectedStaffForRegen?.email}</span>
-              </p>
-              <p className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-gray-500">New Password:</span>
-                <span className="font-bold text-emerald-700 tracking-wider text-base">{regeneratedPassword}</span>
-              </p>
-            </div>
-            <div className="pt-4 mt-6 border-t border-gray-100 flex justify-end">
-              <button
-                onClick={handleRegenerateModalClose}
-                className="px-5 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-md"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };

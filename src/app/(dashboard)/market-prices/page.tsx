@@ -276,7 +276,7 @@ export default function MarketPricesPage() {
                             />
                             <YAxis tick={{ fontSize: 9 }} tickFormatter={(v) => `₦${v.toLocaleString()}`} />
                             <Tooltip
-                              formatter={(v: number) => [`₦${v.toLocaleString()}`, "Price"]}
+                              formatter={(v: number | undefined) => [`₦${(v ?? 0).toLocaleString()}`, "Price"]}
                               labelFormatter={(l) => new Date(l).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                               contentStyle={{ fontSize: 11, borderRadius: 8 }}
                             />
