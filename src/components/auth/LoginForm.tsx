@@ -23,6 +23,7 @@ const Login: React.FC = () => {
     role: "",
   });
   const [loading, setLoading] = useState(false);
+  const [slowStart, setSlowStart] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
@@ -33,9 +34,20 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSlowStart(false);
+
+    // Show "waking up" message after 6s, auto-reset after 65s (Render cold start)
+    const slowTimer  = setTimeout(() => setSlowStart(true), 6000);
+    const safetyReset = setTimeout(() => {
+      setLoading(false);
+      setSlowStart(false);
+      toast.error("Server is taking too long. Please try again in a moment.");
+    }, 65000);
+    const cleanup = () => { clearTimeout(slowTimer); clearTimeout(safetyReset); };
 
     if (!form.role) {
       toast.error("Please select a role.");
+      cleanup();
       setLoading(false);
       return;
     }
@@ -44,36 +56,34 @@ const Login: React.FC = () => {
       if (form.role === "assignee") {
         const res = await loginStaff(form.email, form.password);
         const { token, message } = res;
-
-        // Set cookie BEFORE Zustand token — AuthProvider checks cookie on re-render
+        cleanup();
         Cookies.set("famtech-auth", token, { expires: 3 });
         useAuthStore.getState().setToken(token);
         toast.success(message || "Staff Login successful!");
-
-        // ⏳ Keep loading true until navigation completes
         router.replace("/staffs/tasks");
         return;
       } else if (form.role === "farmer") {
         const res = await login(form.email, form.password);
         const { token, message } = res;
-
-        // Set cookie BEFORE Zustand token — AuthProvider checks cookie on re-render
+        cleanup();
         Cookies.set("famtech-auth", token, { expires: 3 });
         useAuthStore.getState().setToken(token);
         toast.success(message || "Login successful!");
-
         router.replace("/dashboard");
         return;
       }
 
+      cleanup();
       setLoading(false);
     } catch (error: unknown) {
+      cleanup();
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Oops, looks like your connection dropped. Please refresh.";
       toast.error(errorMessage);
-      setLoading(false); // Only remove if login fails
+      setLoading(false);
+      setSlowStart(false);
     }
   };
 
@@ -84,12 +94,20 @@ const Login: React.FC = () => {
 
       {/* Glassmorphism container */}
       <div className="relative z-10 w-full max-w-md p-6 md:p-8 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl text-white overflow-hidden">
-        {/* ✅ Logging in overlay */}
+        {/* Logging in overlay */}
         {loading && (
-          <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center rounded-2xl">
-            <p className="text-green-300 font-semibold text-lg">
-              Logging in...
-            </p>
+          <div className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center rounded-2xl gap-3">
+            <div className="flex gap-1.5">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-bounce [animation-delay:0s]" />
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-bounce [animation-delay:0.15s]" />
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+            </div>
+            <p className="text-green-300 font-semibold text-lg">Logging in…</p>
+            {slowStart && (
+              <p className="text-white/60 text-xs text-center max-w-[220px] leading-relaxed">
+                Server is waking up — this can take up to 30 seconds on first load. Please wait…
+              </p>
+            )}
           </div>
         )}
 
