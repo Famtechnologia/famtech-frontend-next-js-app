@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, AlertTriangle, CheckCircle, Clock, RefreshCw, ArrowRight } from 'lucide-react';
+import { Bell, AlertTriangle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import Card from '@/components/ui/Card';
-import Link from 'next/link';
 import apiClient from '@/lib/api/apiClient';
 
 interface Alert {
@@ -128,13 +127,10 @@ const Alerts = () => {
           </div>
         )}
 
-        <div className="pt-3 mt-2 border-t border-gray-100 dark:border-[#30363d] flex items-center justify-between">
+        <div className="pt-3 mt-2 border-t border-gray-100 dark:border-[#30363d]">
           <p className="text-[10px] text-gray-400 dark:text-[#8b949e]">
             {unread > 0 ? `${unread} unacknowledged` : 'All caught up'}
           </p>
-          <Link href="/settings" className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">
-            Manage <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
       </div>
     </Card>
