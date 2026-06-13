@@ -51,27 +51,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       "/verify-code",
       "/verify-email",
       "/post-signup",
-      "/complete-farm-profile",
     ];
+
+    // Pages that are authenticated but should not trigger further redirects
+    const skipRedirectRoutes = ["/complete-farm-profile"];
 
     if (token && user) {
       const isStaff = user.role === "staff" || user.role === "assignee";
 
       if (publicRoutes.includes(pathname)) {
+        // User is on a public route but already logged in — send them where they belong
         if (isStaff) {
           router.replace("/staffs/tasks");
+        } else if (!user.farmProfile) {
+          router.replace("/complete-farm-profile");
         } else {
-          // Only redirect to complete-farm-profile if they aren't already there
-          if (!user.farmProfile && pathname !== "/complete-farm-profile") {
-            router.replace("/complete-farm-profile");
-          } else if (user.farmProfile && pathname !== "/dashboard") {
-            router.replace("/dashboard");
-          }
+          router.replace("/dashboard");
         }
+      } else if (!isStaff && !user.farmProfile && !skipRedirectRoutes.includes(pathname)) {
+        // User is on a private route but has no farm profile — send to setup
+        router.replace("/complete-farm-profile");
       }
     }
 
   }, [loading, token, user, pathname, router]);
+
 
   return <>{children}</>;
 }
