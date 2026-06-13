@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   User,
@@ -19,8 +19,20 @@ export default function ModernFarmRegistration() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
-  const {user} = useAuth()
-  console.log(user)
+  const {user} = useAuth();
+
+  // Pre-fill personal info from auth user to avoid asking twice
+  useEffect(() => {
+    if (user) {
+      const nameParts = (user.name || "").split(" ");
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName || nameParts[0] || prev.firstName,
+        lastName: user.lastName || nameParts.slice(1).join(" ") || prev.lastName,
+        phoneNumber: user.phone || user.phoneNumber || prev.phoneNumber,
+      }));
+    }
+  }, [user]);
 
   const [formData, setFormData] = useState({
     // Personal Information

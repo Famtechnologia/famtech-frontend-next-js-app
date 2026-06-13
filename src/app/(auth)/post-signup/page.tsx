@@ -1,133 +1,121 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { FaPaperPlane} from "react-icons/fa";
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation"; 
-// Note: You would import your resend API function here
-// import { resendVerificationEmail } from "@/lib/api/auth";
+import { Loader2, Mail, ArrowRight, CheckCircle, Leaf } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function VerifyEmailNoticePage() {
-    const router = useRouter();
-    const [, setUserEmail] = useState('');
-   // const [, setIsResending] = useState(false);
-    const [resendCooldown, setResendCooldown] = useState(0);
-    const [isLoggingIn, setIsLoggingIn] = useState(false); // 👈 New state for Login button
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-    // --- Load Email from Storage ---
-    useEffect(() => {
-        const email = localStorage.getItem("pendingVerificationEmail");
-        if (email) {
-            setUserEmail(email);
-        }
-    }, []);
+  useEffect(() => {
+    setMounted(true);
+    const email = localStorage.getItem("pendingVerificationEmail");
+    if (email) setUserEmail(email);
+  }, []);
 
-    // --- Cooldown Timer Logic ---
-    useEffect(() => {
-        if (resendCooldown > 0) {
-            const timer = setInterval(() => {
-                setResendCooldown((prev) => prev - 1);
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [resendCooldown]);
+  const handleGoToLogin = () => {
+    setIsLoggingIn(true);
+    setTimeout(() => {
+      router.push("/login");
+      localStorage.removeItem("pendingVerificationEmail");
+    }, 500);
+  };
 
-    // --- Resend Handler ---
-  {/* const handleResendEmail = async () => {
-        if (isResending || resendCooldown > 0 || !userEmail) return;
-     setIsResending(true);
+  const steps = [
+    "Check your inbox for our verification email",
+    "Click the confirmation link inside",
+    "You'll be taken straight to your dashboard",
+  ];
 
-        try {
-            // 🚀 REAL API CALL: await resendVerificationEmail({ email: userEmail });
-            
-            // Simulation to show the spinner (Remove in production)
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            setResendCooldown(60); 
-            alert(`New verification email sent to ${userEmail}!`);
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 40%, #166534 100%)" }}
+    >
+      {/* Background glow orbs */}
+      <div className="absolute top-0 left-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
+        style={{ background: "radial-gradient(circle, #4ade80, transparent)" }} />
+      <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-15 blur-3xl pointer-events-none"
+        style={{ background: "radial-gradient(circle, #86efac, transparent)" }} />
 
-        } catch (error) {
-            console.error("Resend error:", error);
-            alert("Failed to resend verification email. Please try again later.");
-        } finally {
-            setIsResending(false);
-        }
-    };*/}
+      {/* Brand mark */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
+        <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+          <Leaf className="h-4 w-4 text-green-300" />
+        </div>
+        <span className="text-white font-bold text-lg tracking-tight">Famtech</span>
+      </div>
 
-    // --- Go to Login Handler with Loading State ---
-    const handleGoToLogin = () => {
-        setIsLoggingIn(true);
-        
-        // Use a short delay to ensure the user sees the spinner before navigation
-        setTimeout(() => {
-            router.push("/login");
-            
-            // Clean up the temporary email storage after sending the user to login
-            localStorage.removeItem("pendingVerificationEmail"); 
-        }, 500); 
-    };
+      {/* Card */}
+      <div className={`max-w-md w-full transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+        <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl text-white text-center">
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+          <div className="relative z-10">
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl text-center">
-                
-                <FaPaperPlane className="text-green-600 text-6xl mx-auto mb-6" />
-
-                <h2 className="text-3xl font-bold mb-4 text-gray-800">
-                    Verify Your Email Address
-                </h2>
-                
-                <p className="text-gray-600 mb-6">
-                    Thank you for signing up! We&#39;ve sent a verification to your email address. 
-                    <br/>
-                  
-                </p>
-                
-                <hr className="my-6 text-gray-300" />
-
-                <p className="text-sm text-gray-500 mb-4">
-                    Didn&#39;t receive the email? Check your spam or junk folder.
-                </p>
-
-                
-                    {/* Resend Button with Loading/Cooldown States 
-                    <button
-                        onClick={handleResendEmail}
-                        disabled={isResending || resendCooldown > 0 || !userEmail}
-                        className="w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-700 p-3 rounded-xl hover:bg-gray-300 transition duration-150 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                    >
-                        {isResending ? (
-                            <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                <span>Sending...</span>
-                            </>
-                        ) : resendCooldown > 0 ? (
-                            <span>Resend in {resendCooldown}s</span>
-                        ) : (
-                            <>
-                                <FaRedo />
-                                <span>Resend Verification Email</span>
-                            </>
-                        )}
-                    </button> */}
-
-                    {/* Go to Login Button with Loading State */}
-                    <button
-                        onClick={handleGoToLogin}
-                        disabled={isLoggingIn}
-                        className="w-full bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition duration-150 disabled:bg-green-400 disabled:cursor-wait inline-flex items-center justify-center gap-2"
-                    >
-                        {isLoggingIn ? (
-                            <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                <span>Going to Login...</span>
-                            </>
-                        ) : (
-                            <span>Go to Login Page</span>
-                        )}
-                    </button>
-                </div>
+            {/* Animated icon */}
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-2xl bg-green-400/20 animate-ping" style={{ animationDuration: '2.5s' }} />
+              <div className="relative h-full w-full rounded-2xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center">
+                <Mail className="w-9 h-9 text-green-300" />
+              </div>
             </div>
-    
-    );
+
+            {/* Heading */}
+            <div className="inline-flex items-center gap-1.5 bg-green-400/20 text-green-300 text-xs font-bold px-3 py-1 rounded-full mb-4">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" /> ALMOST THERE
+            </div>
+            <h1 className="text-2xl font-extrabold mb-2 tracking-tight">Check Your Inbox</h1>
+            {userEmail ? (
+              <p className="text-green-200/70 text-sm mb-6">
+                We sent a verification link to <span className="text-white font-semibold">{userEmail}</span>
+              </p>
+            ) : (
+              <p className="text-green-200/70 text-sm mb-6">
+                We've sent a verification link to your email address.
+              </p>
+            )}
+
+            {/* Steps */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-7 text-left space-y-3">
+              {steps.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-full bg-green-400/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle className="h-3 w-3 text-green-400" />
+                  </div>
+                  <p className="text-sm text-green-100/80">{step}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-green-300/50 text-xs">already verified?</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={handleGoToLogin}
+              disabled={isLoggingIn}
+              className="w-full flex items-center justify-center gap-2 bg-white text-green-800 hover:bg-green-50 disabled:opacity-60 disabled:cursor-wait font-bold py-3.5 px-6 rounded-2xl transition-all shadow-lg shadow-black/20 active:scale-95"
+            >
+              {isLoggingIn ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Going to Login…</>
+              ) : (
+                <><span>Go to Login</span><ArrowRight className="w-4 h-4" /></>
+              )}
+            </button>
+
+            <p className="text-green-300/50 text-xs mt-5">
+              Didn't receive the email? Check your spam or junk folder.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
