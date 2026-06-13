@@ -26,9 +26,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [cookie, token, setToken]);
 
-  // 2. Fetch user if token is present but user is null
+  // 2. Fetch user if token is present but user is null,
+  //    OR if user exists but farmProfile is missing (stale cached data)
   useEffect(() => {
-    if (token && !user) {
+    if (token && (!user || !user.farmProfile)) {
       setLoading(true);
       fetchUser().finally(() => {
         setLoading(false);
