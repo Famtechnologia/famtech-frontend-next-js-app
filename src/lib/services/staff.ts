@@ -7,6 +7,7 @@ export interface StaffType {
   phone?: string;
   email?: string;
   isVerified?: string;
+  inviteStatus?: "pending" | "accepted";
   farmId?: string;
   _id?: string;
 }
@@ -21,7 +22,25 @@ export const getStaffById = async (id: string): Promise<StaffType> => {
   return response.data.data;
 };
 
-// Create a new staff
+// Invite a new staff member (invite-only flow)
+export const inviteStaff = async (data: { name: string; email: string; farmId: string }): Promise<any> => {
+  const response = await apiClient.post("/api/staff/invite", data);
+  return response.data;
+};
+
+// Verify an invite token (returns name + email if valid)
+export const verifyInviteToken = async (token: string): Promise<{ name: string; email: string }> => {
+  const response = await apiClient.get(`/api/staff/invite/${token}`);
+  return response.data.data;
+};
+
+// Staff accepts invite and sets their password
+export const acceptInvite = async (token: string, password: string): Promise<any> => {
+  const response = await apiClient.post(`/api/staff/accept-invite/${token}`, { password });
+  return response.data;
+};
+
+// Legacy — kept for backward compat but no longer used in UI
 export const createStaff = async (taskData: StaffType): Promise<any> => {
   const response = await apiClient.post("/api/staff/signup", taskData);
   return response.data;

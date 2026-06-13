@@ -4,23 +4,21 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Search,
-  ListFilter,
-  LayoutGrid,
   TriangleAlert,
   Trash2,
   SquarePen,
   Loader2,
-  KeyRound,
+  Mail,
+  CheckCircle,
 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { useProfile } from "@/lib/hooks/useProfile";
 import {
-  createStaff,
+  inviteStaff,
   StaffType,
   getStaffs,
   deleteStaff,
   updateStaff,
-  regenerateStaffPassword,
 } from "@/lib/services/staff";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -42,12 +40,7 @@ const StaffManagement = () => {
   });
   const [staffCreate, setStaffCreate] = useState(false);
   const [staffDelete, setStaffDelete] = useState(false);
-
-  // Password Generation and Reset states
-  const [generatedPassword, setGeneratedPassword] = useState("");
-  const [staffRegenerateShow, setStaffRegenerateShow] = useState(false);
-  const [regeneratedPassword, setRegeneratedPassword] = useState("");
-  const [selectedStaffForRegen, setSelectedStaffForRegen] = useState<StaffType | null>(null);
+  const [invitedEmail, setInvitedEmail] = useState("");
 
   const { profile } = useProfile();
 
@@ -103,9 +96,9 @@ const StaffManagement = () => {
         setSelectedId("");
         return;
       }
-      const response = await createStaff({ ...formData, farmId: profile.id });
-      setGeneratedPassword(response.tempPassword || "");
-      toast.success("Staff member created successfully!");
+      await inviteStaff({ name: formData.name, email: formData.email, farmId: profile.id });
+      setInvitedEmail(formData.email);
+      toast.success("Invite sent successfully!");
       fetchStaffData();
       setShowAddStaffModal(false);
       setStaffCreate(true);
@@ -154,37 +147,11 @@ const StaffManagement = () => {
 
   const handleCreateStaffModalClose = () => {
     setShowAddStaffModal(false);
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      _id: "",
-    });
+    setFormData({ name: "", email: "", phone: "", _id: "" });
     setSelectedId("");
     setEdit(false);
     setStaffCreate(false);
-    setGeneratedPassword("");
-  };
-
-  const handleRegeneratePassword = async () => {
-    if (!selectedStaffForRegen?.email) return;
-    setIsLoading(true);
-    try {
-      const response = await regenerateStaffPassword(selectedStaffForRegen.email);
-      setRegeneratedPassword(response.tempPassword);
-      toast.success("Password reset and generated successfully!");
-    } catch (error) {
-      console.error("Failed to regenerate password:", error);
-      toast.error("Failed to regenerate password.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegenerateModalClose = () => {
-    setStaffRegenerateShow(false);
-    setRegeneratedPassword("");
-    setSelectedStaffForRegen(null);
+    setInvitedEmail("");
   };
 
   return (
@@ -281,21 +248,11 @@ const StaffManagement = () => {
                 </button>
                 <div className="flex items-center gap-3">
                   <button
-                    className="flex items-center text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors"
-                    onClick={() => {
-                      setSelectedStaffForRegen(person);
-                      setStaffRegenerateShow(true);
-                    }}
-                  >
-                    <KeyRound className="h-3.5 w-3.5 mr-1" />
-                    Reset PW
-                  </button>
-                  <button
                     className="flex items-center text-xs font-bold text-emerald-650 hover:text-emerald-800 transition-colors"
                     onClick={() => handleUpdateOpen(person)}
                   >
                     <SquarePen className="h-4 w-4 mr-1" />
-                    Update
+                    Edit
                   </button>
                 </div>
               </div>
@@ -316,19 +273,19 @@ const StaffManagement = () => {
       {/* --- ADD STAFF MODAL --- */}
       <Modal
         show={showAddStaffModal}
-        onClose={() => {
-          setShowAddStaffModal(false);
-          setFormError(null);
-        }}
-        title={edit ? "Edit Staff Details" : "Add New Staff Member"}
+        onClose={() => { setShowAddStaffModal(false); setFormError(null); }}
+        title={edit ? "Edit Staff Details" : "Invite Staff Member"}
       >
-        <form onSubmit={handleAddStaff} className="space-y-6">
+        <form onSubmit={handleAddStaff} className="space-y-5">
+          {!edit && (
+            <div className="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-[#0d2a1a] border border-emerald-100 dark:border-green-900 rounded-xl text-xs text-emerald-700 dark:text-[#4ade80]">
+              <Mail className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>An invite link will be emailed to the staff member. They set their own password — no temporary credentials needed.</span>
+            </div>
+          )}
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-semibold text-gray-700"
-            >
-              Name
+            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-[#e6edf3] mb-1">
+              Full Name
             </label>
             <input
               type="text"
@@ -336,16 +293,13 @@ const StaffManagement = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="e.g. John Doe"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent sm:text-sm text-gray-800"
+              placeholder="e.g. Precious Adedoyin"
+              className="block w-full border border-gray-300 dark:border-[#30363d] dark:bg-[#0d1117] dark:text-[#e6edf3] rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-semibold text-gray-700"
-            >
-              Email
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-[#e6edf3] mb-1">
+              Email Address
             </label>
             <input
               type="email"
@@ -354,87 +308,46 @@ const StaffManagement = () => {
               value={formData.email}
               onChange={handleChange}
               disabled={edit}
-              placeholder="e.g. john@example.com"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent sm:text-sm text-gray-800 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              placeholder="e.g. precious@example.com"
+              className="block w-full border border-gray-300 dark:border-[#30363d] dark:bg-[#0d1117] dark:text-[#e6edf3] rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
-          <div>
-            <label
-              htmlFor="phone"
-              className="block text-sm font-semibold text-gray-700"
-            >
-              Phone
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="e.g. +1 (555) 000-0000"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent sm:text-sm text-gray-800"
-            />
-          </div>
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-gray-200 dark:border-[#30363d]">
             {formError && (
-              <p className="mb-3 text-sm text-red-600 flex items-start">
-                <TriangleAlert className="h-4 w-4 mt-0.5 mr-1 flex-shrink-0" />
-                <span>{formError}</span>
+              <p className="mb-3 text-sm text-red-600 flex items-start gap-1.5">
+                <TriangleAlert className="h-4 w-4 mt-0.5 shrink-0" />
+                {formError}
               </p>
             )}
             <button
               type="submit"
               disabled={isLoading}
-              className={`
-                    w-full flex justify-center items-center rounded-lg border border-transparent py-2.5 px-4 text-sm font-bold shadow-md transition-colors text-white
-                    ${
-                      isLoading
-                        ? "bg-emerald-400 cursor-not-allowed"
-                        : "bg-emerald-600 hover:bg-emerald-700"
-                    }
-                `}
+              className="w-full flex justify-center items-center gap-2 rounded-xl py-2.5 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              {isLoading ? "Saving..." : edit ? "Save Changes" : "Save Staff"}
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : edit ? <SquarePen className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+              {isLoading ? "Saving..." : edit ? "Save Changes" : "Send Invite"}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* --- Staff Creation Successful --- */}
-      <Modal
-        show={staffCreate}
-        onClose={handleCreateStaffModalClose}
-        title="Staff member added successfully!"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-655">
-            A staff account has been set up with the following login details:
-          </p>
-          <div className="bg-slate-50 border border-gray-150 rounded-xl p-4 space-y-2">
-            <p className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">Email:</span>
-              <span className="font-bold text-gray-850 lowercase">{formData.email}</span>
-            </p>
-            <p className="flex justify-between items-center text-sm">
-              <span className="font-semibold text-gray-500">Temporary Password:</span>
-              <span className="font-bold text-emerald-700 tracking-wider text-base">{generatedPassword || "12345678"}</span>
-            </p>
+      {/* --- Invite sent confirmation --- */}
+      <Modal show={staffCreate} onClose={handleCreateStaffModalClose} title="Invite Sent!">
+        <div className="space-y-4 text-center py-2">
+          <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-[#1a3a2a] flex items-center justify-center mx-auto">
+            <CheckCircle className="w-7 h-7 text-emerald-600 dark:text-[#4ade80]" />
           </div>
-          <p className="text-xs text-amber-600 font-medium">
-            Note: Please share these temporary credentials securely with the staff member.
+          <div>
+            <p className="text-sm text-gray-700 dark:text-[#e6edf3] font-medium">An invite email has been sent to</p>
+            <p className="text-base font-bold text-emerald-700 dark:text-[#4ade80] mt-1 break-all">{invitedEmail}</p>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-[#8b949e] leading-relaxed">
+            They will receive a link to set their own password. The link expires in <strong>72 hours</strong>. Their account will show as <em>Pending</em> until they accept.
           </p>
         </div>
-        <div className="pt-4 mt-6 border-t border-gray-100 flex justify-end">
-          <button
-            onClick={handleCreateStaffModalClose}
-            className="px-4 py-2 text-sm font-semibold text-gray-750 bg-gray-100 rounded-lg hover:bg-gray-250 transition-colors"
-          >
-            Close
+        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-[#30363d] flex justify-end">
+          <button onClick={handleCreateStaffModalClose} className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-[#e6edf3] bg-gray-100 dark:bg-[#21262d] rounded-lg hover:bg-gray-200 dark:hover:bg-[#30363d] transition-colors">
+            Done
           </button>
         </div>
       </Modal>
