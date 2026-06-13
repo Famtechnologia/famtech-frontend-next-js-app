@@ -54,7 +54,7 @@ export default function ModernFarmRegistration() {
       currency: "NGN",
       timezone: "Africa/Lagos",
       farmingMethods: [],
-      seasonalPattern: "wet",
+      seasonalPattern: "year-round",
       primaryCrops: [],
       language: "en",
     };
