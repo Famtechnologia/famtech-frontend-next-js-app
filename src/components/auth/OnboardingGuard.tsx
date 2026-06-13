@@ -33,11 +33,11 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
         {/* Blocking overlay */}
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl text-center">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#161b22] p-8 shadow-2xl text-center border border-transparent dark:border-[#30363d]">
             {/* Icon */}
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-[#1a3a2a]">
               <svg
-                className="h-8 w-8 text-green-600"
+                className="h-8 w-8 text-green-600 dark:text-[#4ade80]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -57,10 +57,10 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
               </svg>
             </div>
 
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">
+            <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-[#e6edf3]">
               Complete Your Farm Profile
             </h2>
-            <p className="mb-6 text-gray-500">
+            <p className="mb-6 text-gray-500 dark:text-[#8b949e]">
               To unlock all features, please complete your farm setup first.
             </p>
 
