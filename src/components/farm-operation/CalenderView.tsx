@@ -70,10 +70,14 @@ const DayTasksModal: React.FC<{
 
   const getAssigneeName = (assigneeVal?: string) => {
     if (!assigneeVal || assigneeVal === "Unassigned") return "Unassigned";
+    const lower = assigneeVal.toLowerCase();
     const s = staffList.find(
-      (member) => member._id === assigneeVal || member.email === assigneeVal
+      (member) => member._id === assigneeVal || member.email?.toLowerCase() === lower
     );
-    return s?.name || assigneeVal;
+    if (s?.name) return s.name;
+    // If it looks like an email, show the part before @
+    if (assigneeVal.includes("@")) return assigneeVal.split("@")[0];
+    return assigneeVal;
   };
 
   const handleToggleStatus = async (task: Task) => {
@@ -453,13 +457,18 @@ const CalendarView: React.FC = () => {
   const { profile } = useProfile();
 
   const fetchCalendar = useCallback(async () => {
+    if (!profile?.id) {
+      setCalendarData({ month: currentMonth, year: currentYear, days: [] });
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
       const data = await getCalendarData(
         currentYear,
         currentMonth,
-        profile?.id || ""
+        profile.id
       );
       
       const days = Array.isArray(data) ? data.map((item: any) => {

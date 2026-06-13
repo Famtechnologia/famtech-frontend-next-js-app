@@ -281,7 +281,7 @@ export const SmartInsight = () => {
     } catch (error) {
       const errorMessage = {
         type: "bot",
-        text: `Sorry, I couldn't generate a response right now. Please try again in a moment.`,
+        text: `The AI advisory service is currently unavailable. Please check your internet connection and try again, or contact support if the issue persists.`,
       };
       setChatHistory((prev) => [...prev, errorMessage]);
       console.error("[SmartInsight] getAdvice failed:", error.message);

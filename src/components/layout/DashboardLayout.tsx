@@ -269,11 +269,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           children: [
             { name: "Profile", href: `/settings/profile` },
             { name: "Farm Settings", href: `/settings/farm-setting` },
-            {
-              name: "Notifications",
-              href: `/dashboard/farmer/${subRole}/settings/notifications`,
-              comingSoon: true,
-            },
+            { name: "Notifications", href: `/settings/notifications` },
           ],
         },
         {

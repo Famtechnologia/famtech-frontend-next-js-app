@@ -57,34 +57,33 @@ export default function FarmOperationsPage() {
     }, [activeTabKey]);
 
     return (
-        <div className="p-0 md:p-6 bg-white">
-            <h1 className="text-3xl font-semibold text-green-700 mb-6">Farm Operations</h1>
+        <div className="p-0 md:p-6 bg-white dark:bg-[#0d1117]">
+            <h1 className="text-2xl font-semibold text-green-700 dark:text-[#4ade80] mb-4 px-4 md:px-0 pt-4 md:pt-0">Farm Operations</h1>
 
-            {/* Internal Tab Navigation Driven by URL Query */}
-            <div className="flex flex-wrap items-center justify-start border-b border-gray-200 mb-6 -mt-2">
+            {/* Tab strip — horizontally scrollable on mobile */}
+            <div className="flex overflow-x-auto no-scrollbar gap-1 px-3 md:px-0 pb-0 mb-5 border-b border-gray-200 dark:border-[#30363d]">
                 {tabsConfig.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTabKey === tab.key;
-                    
                     return (
                         <button
                             key={tab.key}
                             onClick={() => handleTabChange(tab.key)}
-                            className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors
+                            className={`flex items-center gap-1.5 px-3 py-2.5 text-xs md:text-sm font-medium whitespace-nowrap transition-colors shrink-0 border-b-2 -mb-px
                                 ${isActive
-                                    ? 'border-b-2 border-green-600 text-green-700'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                    ? 'border-green-600 text-green-700 dark:text-[#4ade80] dark:border-[#4ade80]'
+                                    : 'border-transparent text-gray-500 dark:text-[#8b949e] hover:text-gray-700 dark:hover:text-[#e6edf3]'
                                 }`}
                         >
-                            <Icon size={18} />
+                            <Icon size={15} />
                             <span>{tab.label}</span>
                         </button>
                     );
                 })}
             </div>
 
-            {/* Render the Active Component */}
-            <div className="mt-4">
+            {/* Active tab content */}
+            <div>
                 {ActiveComponent}
             </div>
         </div>
