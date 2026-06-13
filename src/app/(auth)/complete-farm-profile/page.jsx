@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   User,
@@ -13,55 +13,60 @@ import {
 
 import apiClient from "@/lib/api/apiClient";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuthStore } from "@/lib/store/authStore";
 import { countries } from "@/lib/services/countries";
 export default function ModernFarmRegistration() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
-  const {user} = useAuth();
+  const { user } = useAuth();
 
-  const [formData, setFormData] = useState({
-    // Personal Information
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
+  // Read synchronously from the store so fields are pre-filled on first render,
+  // even before the useAuth hook has triggered a re-render.
+  const [formData, setFormData] = useState(() => {
+    const u = useAuthStore.getState().user;
+    return {
+      // Personal Information — not collected at signup, always blank
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
 
-    // Farm Information
-    farmName: "",
-    farmType: "crop",
-    farmSize: "",
-    farmSizeUnit: "hectares",
-    establishedYear: "", // Changed to empty string to make it truly optional
+      // Farm Information
+      farmName: "",
+      farmType: "crop",
+      farmSize: "",
+      farmSizeUnit: "hectares",
+      establishedYear: "",
 
-    // Location Information
-    country: "", // Changed from hardcoded 'Nigeria' to empty string
-    state: "",
-    city: "",
-    address: "",
-    coordinates: { latitude: "", longitude: "" },
+      // Location — pre-fill from signup data
+      country: u?.country?.toLowerCase() || "",
+      state:   u?.state?.toLowerCase()   || "",
+      lga:     u?.lga?.toLowerCase()     || "",
+      city: "",
+      address: "",
+      coordinates: { latitude: "", longitude: "" },
 
-    // Farm Settings
-    currency: "NGN",
-    timezone: "Africa/Lagos",
-    farmingMethods: [],
-    seasonalPattern: "wet",
-    primaryCrops: [],
-    language: "en",
+      // Farm Settings
+      currency: "NGN",
+      timezone: "Africa/Lagos",
+      farmingMethods: [],
+      seasonalPattern: "wet",
+      primaryCrops: [],
+      language: "en",
+    };
   });
 
-  // Pre-fill personal info from auth user to avoid asking twice
+  // Fallback: if user wasn't in the store on mount, fill once when it arrives
+  const prefilled = useRef(false);
   useEffect(() => {
-    if (user) {
-      const nameParts = (user.name || "").split(" ");
+    if (user && !prefilled.current) {
+      prefilled.current = true;
       setFormData(prev => ({
         ...prev,
-        firstName: user.firstName || nameParts[0] || prev.firstName,
-        lastName: user.lastName || nameParts.slice(1).join(" ") || prev.lastName,
-        phoneNumber: user.phone || user.phoneNumber || prev.phoneNumber,
         country: user.country ? user.country.toLowerCase() : prev.country,
-        state: user.state ? user.state.toLowerCase() : prev.state,
-        lga: user.lga ? user.lga.toLowerCase() : prev.lga,
+        state:   user.state   ? user.state.toLowerCase()   : prev.state,
+        lga:     user.lga     ? user.lga.toLowerCase()     : prev.lga,
       }));
     }
   }, [user]);
@@ -624,6 +629,11 @@ export default function ModernFarmRegistration() {
         <p className="text-gray-500 text-lg">
           Tell us where your farm is located
         </p>
+        {(formData.country || formData.state) && (
+          <p className="mt-2 text-sm text-emerald-600 font-medium">
+            Country and state have been pre-filled from your account — update them if your farm is in a different location.
+          </p>
+        )}
       </div>
 
       <div className="p-2 md:p-8">
