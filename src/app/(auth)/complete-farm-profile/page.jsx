@@ -20,7 +20,7 @@ export default function ModernFarmRegistration() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
-  const { user } = useAuth();
+  const { user, fetchUser, setUser } = useAuth();
 
   // Read location from three sources in priority order:
   // 1. famtech-signup-location (saved at signup, survives email verification)
@@ -339,6 +339,20 @@ export default function ModernFarmRegistration() {
       );
 
       const result = response.data;
+
+      // Mark profile as complete in localStorage — used by OnboardingGuard
+      // because /auth/me may not return farmProfile in its response
+      localStorage.setItem("famtech-profile-complete", "1");
+
+      // Also patch the auth store user directly so the guard unblocks immediately
+      const { useAuthStore } = await import("@/lib/store/authStore");
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        useAuthStore.getState().setUser({
+          ...currentUser,
+          farmProfile: result?.data?.farmProfile || result?.farmProfile || { completed: true },
+        });
+      }
 
       // Clean up the signup location now that the profile is complete
       localStorage.removeItem("famtech-signup-location");

@@ -19,8 +19,14 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const isStaff = user?.role === "staff" || user?.role === "assignee";
   if (isStaff) return <>{children}</>;
 
+  // Check localStorage flag — set when profile is submitted successfully.
+  // This handles cases where /auth/me does not return farmProfile in its response.
+  const profileComplete =
+    typeof window !== "undefined" &&
+    localStorage.getItem("famtech-profile-complete") === "1";
+
   // If the user has no farm profile, block the UI with an onboarding prompt
-  if (user && !user.farmProfile) {
+  if (user && !user.farmProfile && !profileComplete) {
     if (pathname === "/dashboard") {
       return <>{children}</>;
     }
