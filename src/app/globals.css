@@ -2,6 +2,51 @@
 /* @plugin "@tailwindcss/typography"; */
 /* @import "tw-animate-css"; */
 
+/* ── Class-based dark mode (Tailwind v4) ─────────────────────────────────── */
+@variant dark (&:where(.dark, .dark *));
+
+/* ── Semantic design tokens ──────────────────────────────────────────────── */
+:root {
+  --bg-page:        #f9fafb;
+  --bg-surface:     #ffffff;
+  --bg-hover:       #f3f4f6;
+  --bg-active:      #f0fdf4;
+  --text-primary:   #111827;
+  --text-secondary: #6b7280;
+  --text-muted:     #9ca3af;
+  --border:         #e5e7eb;
+  --border-light:   #f3f4f6;
+  --green-nav:      #15803d;
+  --green-nav-bg:   #f0fdf4;
+}
+
+.dark {
+  --bg-page:        #0d1117;
+  --bg-surface:     #161b22;
+  --bg-hover:       #1c2128;
+  --bg-active:      #1a3a2a;
+  --text-primary:   #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted:     #6e7681;
+  --border:         #30363d;
+  --border-light:   #21262d;
+  --green-nav:      #4ade80;
+  --green-nav-bg:   #1a3a2a;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Dark scrollbars */
+.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+.dark ::-webkit-scrollbar-track { background: #0d1117; }
+.dark ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
 /* 
  @tailwind base;
 @tailwind components;

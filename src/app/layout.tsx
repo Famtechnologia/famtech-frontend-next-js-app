@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../components/auth/AuthProvider';
+import { ThemeProvider } from '../components/theme/ThemeProvider';
 import './globals.css';
 
 const inter = Inter({
@@ -37,11 +38,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.className}>
-      <body className='bg-white text-gray-800 antialiased'>
-        <AuthProvider>
-           {children}
-          <Toaster position="top-right" />
-        </AuthProvider>
+      <body className="antialiased">
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: 'var(--bg-surface)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border)',
+                },
+              }}
+            />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

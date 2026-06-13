@@ -34,6 +34,7 @@ import { usePathname } from "next/navigation";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
 import FloatingChatbot from "./FloatingChatbot";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 // --- Interface Definitions for clarity ---
 
 interface NavChild {
@@ -402,7 +403,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-[#0d1117]">
       {/* Sidebar (Main Element - Z-index: 50 is fine) */}
       <div
         className={`${
@@ -410,7 +411,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         } fixed inset-y-0 left-0 z-[150] ${
           // z-50 is the max index for the main sidebar
           sidebarCollapsed ? "w-16" : "w-64"
-        } bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:relative border-r border-gray-200 flex flex-col`}
+        } bg-white dark:bg-[#161b22] shadow-lg transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:relative border-r border-gray-200 dark:border-[#30363d] flex flex-col`}
         onMouseLeave={
           sidebarCollapsed ? () => setHoveredMenuKey(null) : undefined
         }
@@ -418,7 +419,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Standalone Collapse Button */}
         <button
           onClick={toggleSidebarCollapse}
-          className="absolute right-[-12px] top-6 z-[200] hidden md:flex items-center justify-center w-6 h-6 bg-white border border-gray-200 rounded-full shadow-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer"
+          className="absolute right-[-12px] top-6 z-[200] hidden md:flex items-center justify-center w-6 h-6 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-[#30363d] rounded-full shadow-md text-gray-500 dark:text-[#8b949e] hover:text-gray-700 dark:hover:text-[#e6edf3] hover:bg-gray-50 dark:hover:bg-[#1c2128] cursor-pointer"
           title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {sidebarCollapsed ? (
@@ -428,7 +429,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
         </button>
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-[#30363d]">
           <div
             className={`flex items-center ${
               sidebarCollapsed ? "justify-center w-full" : "space-x-2"
@@ -438,7 +439,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <span className="text-white font-bold text-sm">F</span>
             </div>
             {!sidebarCollapsed && (
-              <h1 className="text-xl font-bold text-gray-900">FAMTECH</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-[#e6edf3]">FAMTECH</h1>
             )}
           </div>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden">
@@ -476,7 +477,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <span className="truncate">
                   {item.name}
                   {item.subBrand && (
-                    <span className="ml-1.5 text-xs font-normal text-gray-400">
+                    <span className="ml-1.5 text-xs font-normal text-gray-400 dark:text-[#6e7681]">
                       {item.subBrand}
                     </span>
                   )}
@@ -489,10 +490,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {startsNewSection &&
                     (sidebarCollapsed ? (
                       index > 0 && (
-                        <div className="my-2 mx-2 border-t border-gray-200" />
+                        <div className="my-2 mx-2 border-t border-gray-200 dark:border-[#30363d]" />
                       )
                     ) : (
-                      <p className="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 select-none">
+                      <p className="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#6e7681] select-none">
                         {item.section}
                       </p>
                     ))}
@@ -527,10 +528,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           sidebarCollapsed ? "px-2" : "px-3"
                         } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 ${
                           itemIsActive
-                            ? "bg-green-50 text-green-700 font-semibold border-green-600"
+                            ? "bg-green-50 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] font-semibold border-green-600 dark:border-[#4ade80]"
                             : item.comingSoon
-                              ? "text-gray-400 hover:bg-gray-50 border-transparent"
-                              : "text-gray-700 hover:bg-gray-100 border-transparent"
+                              ? "text-gray-400 dark:text-[#6e7681] hover:bg-gray-50 dark:hover:bg-[#1c2128] border-transparent"
+                              : "text-gray-700 dark:text-[#8b949e] hover:bg-gray-100 dark:hover:bg-[#1c2128] border-transparent"
                         } ${sidebarCollapsed ? "justify-center" : ""}`}
                         title={sidebarCollapsed ? item.name : undefined}
                       >
@@ -583,13 +584,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                       setSidebarOpen(false); // Close mobile sidebar on navigation
                                     }
                                   }}
-                                  className={`block px-3 py-2 rounded-lg text-sm transition-colors hover:bg-gray-50 ${
+                                  className={`block px-3 py-2 rounded-lg text-sm transition-colors hover:bg-gray-50 dark:hover:bg-[#1c2128] ${
                                     isChildComingSoon
-                                      ? "text-gray-400"
-                                      : "text-gray-600 hover:text-gray-900"
+                                      ? "text-gray-400 dark:text-[#6e7681]"
+                                      : "text-gray-600 dark:text-[#8b949e] hover:text-gray-900 dark:hover:text-[#e6edf3]"
                                   } ${
                                     child.href === pathname
-                                      ? "font-semibold text-green-700"
+                                      ? "font-semibold text-green-700 dark:text-[#4ade80]"
                                       : ""
                                   }`}
                                 >
@@ -625,10 +626,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       }}
                       className={`block w-full rounded-lg text-sm font-medium transition-colors border-l-4 ${
                         itemIsActive
-                          ? "bg-green-50 text-green-700 font-semibold border-green-600"
+                          ? "bg-green-50 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] font-semibold border-green-600 dark:border-[#4ade80]"
                           : item.comingSoon
-                            ? "text-gray-400 hover:bg-gray-50 border-transparent"
-                            : "text-gray-700 hover:bg-gray-100 border-transparent"
+                            ? "text-gray-400 dark:text-[#6e7681] hover:bg-gray-50 dark:hover:bg-[#1c2128] border-transparent"
+                            : "text-gray-700 dark:text-[#8b949e] hover:bg-gray-100 dark:hover:bg-[#1c2128] border-transparent"
                       }`}
                       title={sidebarCollapsed ? item.name : undefined}
                     >
@@ -657,12 +658,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
 
         {/* Pinned Sign Out Section */}
-        <div className={`border-t border-gray-200 bg-white ${sidebarCollapsed ? "p-1.5" : "p-4"}`}>
+        <div className={`border-t border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] ${sidebarCollapsed ? "p-1.5" : "p-4"}`}>
           <button
             onClick={() => setShowLogoutConfirm(true)}
             className={`w-full flex items-center ${
               sidebarCollapsed ? "px-2 justify-center" : "px-3"
-            } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 border-transparent text-gray-650 hover:bg-gray-100 hover:text-gray-950`}
+            } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 border-transparent text-gray-650 dark:text-[#8b949e] hover:bg-gray-100 dark:hover:bg-[#1c2128] hover:text-gray-950 dark:hover:text-[#e6edf3]`}
             title={sidebarCollapsed ? "Sign out" : undefined}
           >
             <div
@@ -684,7 +685,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {sidebarCollapsed && activeParentItem && activeParentItem.children && (
         <div
           ref={flyoutRef}
-          className="fixed left-16 top-0 h-full overflow-y-auto bg-white shadow-xl z-[160] border-l border-gray-200 transition-opacity duration-150 ease-in-out"
+          className="fixed left-16 top-0 h-full overflow-y-auto bg-white dark:bg-[#161b22] shadow-xl z-[160] border-l border-gray-200 dark:border-[#30363d] transition-opacity duration-150 ease-in-out"
           style={{
             width: "200px",
             paddingTop: "64px", // Space for the top header
@@ -692,7 +693,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           }}
         >
           <div className="p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2 border-b pb-2">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-[#e6edf3] mb-2 border-b dark:border-[#30363d] pb-2">
               {activeParentItem.name}
             </h3>
             {activeParentItem.children.map((child) => {
@@ -714,11 +715,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       setHoveredMenuKey(null); // Close flyout on navigation
                     }
                   }}
-                  className={`block px-3 py-2 rounded-lg text-sm transition-colors hover:bg-gray-50 ${
+                  className={`block px-3 py-2 rounded-lg text-sm transition-colors hover:bg-gray-50 dark:hover:bg-[#1c2128] ${
                     isChildComingSoon
-                      ? "text-gray-400"
-                      : "text-gray-600 hover:text-gray-900"
-                  } ${child.href === pathname ? "font-semibold bg-gray-50 text-green-700" : ""}`}
+                      ? "text-gray-400 dark:text-[#6e7681]"
+                      : "text-gray-600 dark:text-[#8b949e] hover:text-gray-900 dark:hover:text-[#e6edf3]"
+                  } ${child.href === pathname ? "font-semibold bg-gray-50 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80]" : ""}`}
                 >
                   <span className="flex items-center gap-2">
                     {child.name}
@@ -738,7 +739,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-y-auto">
         {/* Top bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
+        <header className="bg-white dark:bg-[#161b22] shadow-sm border-b border-gray-200 dark:border-[#30363d]">
           <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center">
               <button
@@ -763,11 +764,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>*/}
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
+              <ThemeToggle />
               {/* 🎯 Notification Dropdown Container */}
               <div className="relative" ref={dropdownRef}>
                 {/* 🔔 Bell Icon Button (Toggle on click) */}
                 <button
-                  className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="relative p-2 text-gray-600 dark:text-[#8b949e] hover:text-gray-900 dark:hover:text-[#e6edf3] hover:bg-gray-100 dark:hover:bg-[#1c2128] rounded-lg transition-colors"
                   onClick={toggleDropdown}
                   disabled={isLoading}
                 >
@@ -780,20 +782,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* 📥 Notification Dropdown Content */}
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-70 md:w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[110] overflow-hidden">
-                    <div className="p-4 border-b border-gray-100">
-                      <h3 className="text-lg font-semibold text-gray-800">
+                  <div className="absolute right-0 mt-3 w-70 md:w-80 bg-white dark:bg-[#161b22] rounded-xl shadow-2xl border border-gray-100 dark:border-[#30363d] z-[110] overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 dark:border-[#30363d]">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-[#e6edf3]">
                         Notifications ({unreadCount})
                       </h3>
                     </div>
 
-                    <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                    <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-[#30363d]">
                       {isLoading ? (
-                        <div className="p-4 text-center text-gray-500">
+                        <div className="p-4 text-center text-gray-500 dark:text-[#8b949e]">
                           Loading notifications...
                         </div>
                       ) : notifications.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">
+                        <div className="p-4 text-center text-gray-500 dark:text-[#8b949e]">
                           No new notifications.
                         </div>
                       ) : (
@@ -806,8 +808,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               onClick={() => setIsDropdownOpen(false)}
                               className={`relative flex items-start gap-3 p-4 border-b border-slate-50 transition-all duration-200 ${
                                 isRead
-                                  ? "bg-white hover:bg-slate-50/80 text-slate-600"
-                                  : "bg-gradient-to-r from-green-50/40 to-emerald-50/10 hover:from-green-50/60 hover:to-emerald-50/20 text-slate-900 font-semibold"
+                                  ? "bg-white dark:bg-[#161b22] hover:bg-slate-50/80 dark:hover:bg-[#1c2128] text-slate-600 dark:text-[#8b949e]"
+                                  : "bg-gradient-to-r from-green-50/40 to-emerald-50/10 dark:from-[#1a3a2a]/40 dark:to-[#1a3a2a]/10 hover:from-green-50/60 hover:to-emerald-50/20 dark:hover:from-[#1a3a2a]/60 dark:hover:to-[#1a3a2a]/20 text-slate-900 dark:text-[#e6edf3] font-semibold"
                               }`}
                               title={notification?.notification}
                             >
@@ -856,7 +858,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
 
                     {notifications.length > 0 && (
-                      <div className="p-2 border-t text-center border-gray-100">
+                      <div className="p-2 border-t text-center border-gray-100 dark:border-[#30363d]">
                         <button className="text-xs text-green-600 hover:text-green-700">
                           Mark all as read
                         </button>
@@ -889,7 +891,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </div>
                   <ChevronDown
                     size={16}
-                    className={`text-gray-500 transition-transform duration-200 ${
+                    className={`text-gray-500 dark:text-[#8b949e] transition-transform duration-200 ${
                       isProfileDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
@@ -897,11 +899,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* Dropdown Menu */}
                 {isProfileDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-[110] transition-all">
+                  <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-[#161b22] rounded-xl shadow-xl border border-gray-100 dark:border-[#30363d] py-1.5 z-[110] transition-all">
                     {/* User Info Header in Dropdown */}
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Signed in as</p>
-                      <p className="text-sm font-semibold text-gray-800 truncate">
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-[#30363d]">
+                      <p className="text-[10px] text-gray-400 dark:text-[#6e7681] uppercase font-semibold tracking-wider">Signed in as</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-[#e6edf3] truncate">
                         {user?.email || "Farmer"}
                       </p>
                     </div>
@@ -909,22 +911,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Link
                       href="/settings/profile"
                       onClick={() => setIsProfileDropdownOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-[#8b949e] hover:bg-gray-50 dark:hover:bg-[#1c2128] transition-colors"
                     >
-                      <User size={16} className="mr-2.5 text-gray-400" />
+                      <User size={16} className="mr-2.5 text-gray-400 dark:text-[#6e7681]" />
                       View Profile
                     </Link>
 
                     <Link
                       href="/settings/farm-setting"
                       onClick={() => setIsProfileDropdownOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-[#8b949e] hover:bg-gray-50 dark:hover:bg-[#1c2128] transition-colors"
                     >
-                      <Settings size={16} className="mr-2.5 text-gray-400" />
+                      <Settings size={16} className="mr-2.5 text-gray-400 dark:text-[#6e7681]" />
                       Settings
                     </Link>
 
-                    <div className="border-t border-gray-100 my-1"></div>
+                    <div className="border-t border-gray-100 dark:border-[#30363d] my-1"></div>
 
                     <button
                       onClick={() => {
@@ -944,7 +946,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-[#0d1117]">
           <div className="p-4 md:p-6">{children}</div>
         </main>
       </div>
