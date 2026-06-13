@@ -130,9 +130,11 @@ export default function MarketPricesPage() {
     const init = async () => {
       setLoading(true);
       await loadCropList();
-      await Promise.allSettled([loadSummary(), loadAlerts()]);
+      setLoading(false);          // show grid immediately
       setLastUpdated(new Date());
-      setLoading(false);
+      // summary & alerts load in background — they're slow (backend iterates all 25 crops)
+      loadSummary();
+      loadAlerts();
     };
     init();
   }, [loadCropList, loadSummary, loadAlerts]);
