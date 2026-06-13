@@ -290,18 +290,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           expandable: true,
           section: "Account",
           children: [
-            {
-              name: "Documentation",
-              href: `/dashboard/farmer/${subRole}/help/docs`,
-              comingSoon: true,
-            },
-            { name: "Contact Support", href: `/help/contact-support` },
-            {
-              name: "Training",
-              href: `/dashboard/farmer/${subRole}/help/training`,
-              comingSoon: true,
-            },
-            { name: "FAQ", href: `/help/faq` },
+            { name: "Documentation", href: `/help/documentation` },
+            { name: "Tutorials",      href: `/help/training` },
+            { name: "Contact Support",href: `/help/contact-support` },
+            { name: "FAQ",            href: `/help/faq` },
           ],
         },
       ];
