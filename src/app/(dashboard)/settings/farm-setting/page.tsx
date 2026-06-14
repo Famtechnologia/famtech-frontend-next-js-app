@@ -94,40 +94,40 @@ const Settings: React.FC = () => {
     }
     
     return (
-        <div className="md:p-8 space-y-8 bg-slate-50/50 min-h-screen">
+        <div className="md:p-8 space-y-8 bg-slate-50/50 dark:bg-[#0d1117] min-h-screen">
             <div className="space-y-1">
-                <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
-                    <SettingsIcon className="h-6 w-6 text-emerald-600 animate-spin-slow" /> Settings Panel
+                <h1 className="text-2xl font-extrabold text-slate-800 dark:text-[#e6edf3] tracking-tight flex items-center gap-2">
+                    <SettingsIcon className="h-6 w-6 text-emerald-600" /> Settings Panel
                 </h1>
-                <p className="text-sm font-medium text-slate-400">Configure operational parameters and account details</p>
+                <p className="text-sm font-medium text-slate-400 dark:text-[#8b949e]">Configure operational parameters and account details</p>
             </div>
 
             {settingsSections.map((section, sectionIndex) => (
                 <div key={sectionIndex} className="space-y-4">
-                    <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider pl-1">{section.title}</h2>
-                    
+                    <h2 className="text-xs font-bold text-slate-400 dark:text-[#484f58] uppercase tracking-wider pl-1">{section.title}</h2>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {section.items.map((item, itemIndex) => (
                             <div
                                 key={itemIndex}
-                                className={`group p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-100/50 transition-all duration-300 flex flex-col justify-between`}
+                                className="group p-5 bg-white dark:bg-[#161b22] border border-slate-100 dark:border-[#30363d] rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-900 transition-all duration-300 flex flex-col justify-between"
                             >
                                 <div className="space-y-4">
                                     <div className={`p-2.5 rounded-xl w-fit ${item.bg.split(' ')[0]}`}>
                                         {item.icon}
                                     </div>
                                     <div className="space-y-1">
-                                        <h3 className="text-base font-bold text-slate-700 group-hover:text-emerald-800 transition-colors">
+                                        <h3 className="text-base font-bold text-slate-700 dark:text-[#e6edf3] group-hover:text-emerald-700 dark:group-hover:text-[#4ade80] transition-colors">
                                             {item.label}
                                         </h3>
-                                        <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                        <p className="text-slate-500 dark:text-[#8b949e] text-xs font-medium leading-relaxed">
                                             {item.description}
                                         </p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="pt-5 flex justify-end">
-                                    <Link href={item.href} className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-600 rounded-xl bg-slate-50 border border-slate-150 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all duration-300">
+                                    <Link href={item.href} className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-600 dark:text-[#c9d1d9] rounded-xl bg-slate-50 dark:bg-[#21262d] border border-slate-200 dark:border-[#30363d] group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all duration-300">
                                         {item.action}
                                         <ArrowRight className="h-3.5 w-3.5" />
                                     </Link>

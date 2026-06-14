@@ -257,7 +257,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="text-slate-900 font-sans p-3 md:p-6 min-h-screen" style={{background: 'linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #f0f9ff 100%)'}}>
+    <div className="text-slate-900 dark:text-[#e6edf3] font-sans p-3 md:p-6 min-h-screen bg-[#f0fdf4] dark:bg-[#0d1117]">
 
       {/* Toast */}
       {successToast && (
@@ -299,55 +299,55 @@ export default function ReportsPage() {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)'}}>
             <FileText className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total</p>
-            <p className="text-3xl font-extrabold text-slate-800">{metrics.total}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-[#8b949e]">Total</p>
+            <p className="text-3xl font-extrabold text-slate-800 dark:text-[#e6edf3]">{metrics.total}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)'}}>
             <CheckCircle2 className="h-5 w-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Completed</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-[#8b949e]">Completed</p>
             <p className="text-3xl font-extrabold text-green-600">{metrics.completed}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #fef9c3, #fef08a)'}}>
             <Loader2 className="h-5 w-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Generating</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-[#8b949e]">Generating</p>
             <p className="text-3xl font-extrabold text-amber-500">{metrics.pending}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] p-5 flex items-center gap-4">
           <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style={{background: 'linear-gradient(135deg, #fce7f3, #fbcfe8)'}}>
             <Download className="h-5 w-5 text-pink-600" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Downloads</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-[#8b949e]">Downloads</p>
             <p className="text-3xl font-extrabold text-pink-600">{metrics.totalDownloads}</p>
           </div>
         </div>
       </div>
 
       {/* Controls & Reports Container */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] shadow-sm overflow-hidden">
 
         {/* Filter Toolbar */}
-        <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/70 rounded-xl">
+        <div className="p-5 border-b border-slate-100 dark:border-[#30363d] flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/70 dark:bg-[#21262d] rounded-xl">
             {/* "All" tab always shown */}
             <button
               onClick={() => setSelectedTypeFilter("all")}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                selectedTypeFilter === "all" ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                selectedTypeFilter === "all" ? "bg-white dark:bg-[#161b22] text-green-700 dark:text-[#4ade80] shadow-sm" : "text-slate-500 dark:text-[#8b949e] hover:text-slate-700 dark:hover:text-[#c9d1d9]"
               }`}>
               All
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
@@ -360,7 +360,7 @@ export default function ReportsPage() {
                 key={type}
                 onClick={() => setSelectedTypeFilter(type)}
                 className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
-                  selectedTypeFilter === type ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  selectedTypeFilter === type ? "bg-white dark:bg-[#161b22] text-green-700 dark:text-[#4ade80] shadow-sm" : "text-slate-500 dark:text-[#8b949e] hover:text-slate-700 dark:hover:text-[#c9d1d9]"
                 }`}>
                 {typeLabel(type)}
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
@@ -373,7 +373,7 @@ export default function ReportsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input type="text" placeholder="Search reports..." value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 text-sm bg-slate-50 focus:bg-white transition-colors" />
+              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 dark:border-[#30363d] rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 text-sm bg-slate-50 dark:bg-[#0d1117] dark:text-[#e6edf3] focus:bg-white dark:focus:bg-[#161b22] transition-colors placeholder-slate-400 dark:placeholder-[#484f58]" />
           </div>
         </div>
 
@@ -383,7 +383,7 @@ export default function ReportsPage() {
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center">
               <Loader2 className="animate-spin h-6 w-6 text-green-600" />
             </div>
-            <p className="text-slate-600 font-semibold text-sm">Loading reports history...</p>
+            <p className="text-slate-600 dark:text-[#8b949e] font-semibold text-sm">Loading reports history...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center gap-3">
@@ -403,8 +403,8 @@ export default function ReportsPage() {
             <div className="h-20 w-20 rounded-3xl flex items-center justify-center mb-5" style={{background:'linear-gradient(135deg,#f0fdf4,#dcfce7)'}}>
               <FileText className="h-9 w-9 text-green-500" />
             </div>
-            <h3 className="text-xl font-bold text-slate-800">No reports yet</h3>
-            <p className="text-slate-500 text-sm mt-2 max-w-xs leading-relaxed">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-[#e6edf3]">No reports yet</h3>
+            <p className="text-slate-500 dark:text-[#8b949e] text-sm mt-2 max-w-xs leading-relaxed">
               {searchQuery || selectedTypeFilter !== "all" ? "No reports match your filters." : "Generate your first agricultural analytics report to get started."}
             </p>
             {!searchQuery && selectedTypeFilter === "all" && (
@@ -414,20 +414,20 @@ export default function ReportsPage() {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-50 dark:divide-[#30363d]">
             {filteredReports.map((report) => (
-              <div key={report._id} className="group p-5 sm:p-6 hover:bg-slate-50/60 transition-all flex flex-col sm:flex-row sm:items-center gap-4">
+              <div key={report._id} className="group p-5 sm:p-6 hover:bg-slate-50/60 dark:hover:bg-[#21262d]/60 transition-all flex flex-col sm:flex-row sm:items-center gap-4">
                 {/* Icon + Title */}
                 <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${report.format === 'pdf' ? 'bg-rose-50' : 'bg-green-50'}`}>
                     {report.format === 'pdf' ? <FileText className="h-5 w-5 text-rose-500" /> : <FileSpreadsheet className="h-5 w-5 text-green-600" />}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-slate-800 text-sm truncate">{report.title}</p>
+                    <p className="font-bold text-slate-800 dark:text-[#e6edf3] text-sm truncate">{report.title}</p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                      <span className="text-xs text-slate-400 font-medium capitalize">{report.type.replace(/_/g,' ')}</span>
+                      <span className="text-xs text-slate-400 dark:text-[#8b949e] font-medium capitalize">{report.type.replace(/_/g,' ')}</span>
                       <span className="text-slate-200">·</span>
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <span className="text-xs text-slate-400 dark:text-[#8b949e] flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {new Date(report.config?.period?.startDate).toLocaleDateString()} – {new Date(report.config?.period?.endDate).toLocaleDateString()}
                       </span>

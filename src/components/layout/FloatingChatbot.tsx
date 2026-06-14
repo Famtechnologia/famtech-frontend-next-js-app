@@ -192,7 +192,9 @@ export default function FloatingChatbot() {
                       : "bg-white dark:bg-[#21262d] text-gray-800 dark:text-[#e6edf3] border border-gray-100 dark:border-[#30363d] rounded-tl-none"
                   }`}
                 >
-                  <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
+                  <p className="whitespace-pre-line leading-relaxed">
+                    {msg.text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
+                  </p>
                   <span
                     className={`block text-[9px] mt-1.5 text-right ${
                       msg.sender === "user" ? "text-green-200" : "text-gray-400 dark:text-[#8b949e]"
