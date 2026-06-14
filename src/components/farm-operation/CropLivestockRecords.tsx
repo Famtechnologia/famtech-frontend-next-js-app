@@ -51,6 +51,19 @@ interface RecordDetailsProps {
   onClose: () => void;
 }
 
+const ImageWithFallback = ({ src, alt, ...props }: React.ComponentProps<typeof Image>) => {
+  const [errored, setErrored] = useState(false);
+  if (errored) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+        <Sprout className="w-8 h-8 mb-1 text-slate-300" />
+        <span className="text-xs">No image</span>
+      </div>
+    );
+  }
+  return <Image src={src} alt={alt} {...props} onError={() => setErrored(true)} />;
+};
+
 const getImageUrl = (
   imageSource: RecordImage | null | undefined
 ): string | null => {
@@ -667,7 +680,7 @@ const CropLivestockRecords: React.FC = () => {
                 <div>
                   <div className="relative w-full h-48 overflow-hidden bg-slate-50">
                     {imageUrl ? (
-                      <Image
+                      <ImageWithFallback
                         src={imageUrl}
                         alt={recordTitle}
                         fill
