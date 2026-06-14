@@ -21,7 +21,7 @@ const FarmDiary = () => {
           </span>
         </div>
       }
-      className="h-fit"
+      className="h-full"
       headerClassName="bg-green-50 border-b border-green-200"
       bodyClassName="p-6"
     >

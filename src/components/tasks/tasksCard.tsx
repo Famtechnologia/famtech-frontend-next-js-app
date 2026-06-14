@@ -150,7 +150,7 @@ const DashboardTasks = () => {
 
     if (isLoading) {
         return (
-            <Card title="Task Planner" headerClassName='bg-green-50/50' bodyClassName='p-6 flex items-center justify-center h-[350px]'>
+            <Card title="Task Planner" headerClassName='bg-green-50/50' bodyClassName='p-6 flex items-center justify-center h-full'>
                 <Loader2 className="w-8 h-8 animate-spin text-green-600" />
             </Card>
         );
@@ -158,7 +158,7 @@ const DashboardTasks = () => {
 
     if (error) {
         return (
-            <Card title="Task Planner" headerClassName='bg-red-50/50' bodyClassName='p-6 flex items-center justify-center h-[350px]'>
+            <Card title="Task Planner" headerClassName='bg-red-50/50' bodyClassName='p-6 flex items-center justify-center h-full'>
                 <AlertTriangle className="w-6 h-6 text-red-600 mr-2" />
                 <span className='text-red-600 text-sm font-medium'>Could not load tasks.</span>
             </Card>

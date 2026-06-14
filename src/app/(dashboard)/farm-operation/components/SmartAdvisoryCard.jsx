@@ -62,7 +62,7 @@ const SmartAdvisory = () => {
           )}
         </div>
       }
-      className="h-fit dark:bg-[#161b22] dark:border-[#30363d]"
+      className="h-full dark:bg-[#161b22] dark:border-[#30363d]"
       headerClassName="bg-blue-50 dark:bg-[#161b22] border-b border-blue-100 dark:border-[#30363d]"
       bodyClassName="p-4"
     >
