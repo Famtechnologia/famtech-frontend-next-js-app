@@ -131,7 +131,7 @@ export default function MappingPage() {
       const res = await fetch(`${GEO_BASE}/farms`, {
         method: "POST",
         headers: geoHeaders(userId, tenantId),
-        body: JSON.stringify({ name: farmForm.name, externalId: farmForm.externalId || undefined }),
+        body: JSON.stringify({ name: farmForm.name, externalId: farmForm.externalId || `farm-${Date.now()}`, tenantId }),
       });
       if (res.ok) {
         notify("Farm registered ✓");
@@ -392,7 +392,7 @@ export default function MappingPage() {
 
       {/* ── Modal: New Farm ── */}
       {showNewFarm && (
-        <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
               <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-sm">Register Farm</h3>
@@ -421,7 +421,7 @@ export default function MappingPage() {
 
       {/* ── Modal: New Section ── */}
       {showNewSection && (
-        <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
               <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-sm">Add Section / Plot</h3>
@@ -450,7 +450,7 @@ export default function MappingPage() {
 
       {/* ── Modal: New Asset ── */}
       {showNewAsset && (
-        <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
               <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-sm">Track Asset</h3>
