@@ -200,7 +200,7 @@ const DashboardTasks = () => {
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="Add a quick task..."
                     disabled={isSubmitting}
-                    className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 disabled:opacity-50"
+                    className="flex-1 text-xs border border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#21262d] text-gray-800 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 disabled:opacity-50"
                 />
                 <button
                     type="submit"
@@ -223,7 +223,7 @@ const DashboardTasks = () => {
                         return (
                             <div 
                                 key={task.id} 
-                                className="group flex items-center justify-between p-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-xl transition-all duration-150"
+                                className="group flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-[#21262d] hover:bg-slate-50 dark:hover:bg-[#30363d] border border-slate-100 dark:border-[#30363d] rounded-xl transition-all duration-150"
                             >
                                 <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
                                     <button
@@ -237,7 +237,7 @@ const DashboardTasks = () => {
                                         {isCompleted && <CheckCircle className="w-3 h-3" />}
                                     </button>
                                     <div className="min-w-0 flex-1">
-                                        <p className={`text-xs font-medium truncate ${isCompleted ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                                        <p className={`text-xs font-medium truncate ${isCompleted ? 'text-gray-400 dark:text-[#6e7681] line-through' : 'text-gray-700 dark:text-[#e6edf3]'}`}>
                                             {task.title}
                                         </p>
                                         <div className="flex items-center gap-2 mt-0.5">
