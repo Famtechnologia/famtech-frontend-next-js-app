@@ -5,7 +5,7 @@ import OfficerList from './chatwithofficer/OfficerList';
 import DefaultChatView from './chatwithofficer/DefaultChatView';
 import OfficerProfile, { Officer } from './chatwithofficer/OfficerProfile1';
 import ChatWindow from './chatwithofficer/ChatWindow';
-import { MessageSquare, UserCheck, ShieldAlert } from 'lucide-react';
+import { MessageSquare, UserCheck } from 'lucide-react';
 
 export default function ChatWithOfficerPage() {
   const [activeScreen, setActiveScreen] = useState<'default' | 'chat' | 'profile'>('default');
@@ -25,10 +25,7 @@ export default function ChatWithOfficerPage() {
         diagnostics: ['Identify fungal, bacterial, and pest crop infestations.', 'Recommend organic and safe chemical treatment regimens.'],
         soilPrep: ['Advise on pre-planting soil preparations and companion planting techniques.'],
       },
-      contact: {
-        email: 'grace.adebayo@famtech.llc',
-        phone: '+234 803 111 2222'
-      }
+      contact: { email: 'grace.adebayo@famtech.llc', phone: '+234 803 111 2222' },
     },
     {
       id: 2,
@@ -43,10 +40,7 @@ export default function ChatWithOfficerPage() {
         healthcare: ['Diagnose livestock diseases and direct vaccine calendars.', 'Provide animal husbandry best practices.'],
         nutrition: ['Offer feeding ratios and forage preservation recommendations.'],
       },
-      contact: {
-        email: 'ibrahim.musa@famtech.llc',
-        phone: '+234 809 333 4444'
-      }
+      contact: { email: 'ibrahim.musa@famtech.llc', phone: '+234 809 333 4444' },
     },
     {
       id: 3,
@@ -61,52 +55,28 @@ export default function ChatWithOfficerPage() {
         soilHealth: ['Conduct virtual soil structure analysis.', 'Formulate compost teas and organic NPK substitutes.'],
         sustainability: ['Train farmers on crop rotation and soil water retention.'],
       },
-      contact: {
-        email: 'ngozi.chukwuma@famtech.llc',
-        phone: '+234 812 555 6666'
-      }
-    }
+      contact: { email: 'ngozi.chukwuma@famtech.llc', phone: '+234 812 555 6666' },
+    },
   ];
 
-  const handleViewProfileClick = (officer: Officer) => {
-    setSelectedOfficer(officer);
-    setActiveScreen('profile');
-  };
-
-  const handleStartChatClick = (officer: Officer) => {
-    setSelectedOfficer(officer);
-    setActiveScreen('chat');
-  };
-
-  const handleBackToList = () => {
-    setActiveScreen('default');
-    setSelectedOfficer(null);
-  };
+  const handleViewProfileClick = (officer: Officer) => { setSelectedOfficer(officer); setActiveScreen('profile'); };
+  const handleStartChatClick  = (officer: Officer) => { setSelectedOfficer(officer); setActiveScreen('chat'); };
+  const handleBackToList      = ()                  => { setActiveScreen('default'); setSelectedOfficer(null); };
 
   const renderContent = () => {
     switch (activeScreen) {
       case 'default':
         return (
-          <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[450px]">
+          <div className="bg-white dark:bg-[#161b22] border border-slate-100 dark:border-[#30363d] rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[450px]">
             <DefaultChatView />
           </div>
         );
       case 'profile':
         if (!selectedOfficer) return null;
-        return (
-          <OfficerProfile 
-            officer={selectedOfficer} 
-            onStartChat={handleStartChatClick} 
-          />
-        );
+        return <OfficerProfile officer={selectedOfficer} onStartChat={handleStartChatClick} />;
       case 'chat':
         if (!selectedOfficer) return null;
-        return (
-          <ChatWindow 
-            officer={selectedOfficer} 
-            onBack={handleBackToList}
-          />
-        );
+        return <ChatWindow officer={selectedOfficer} onBack={handleBackToList} />;
       default:
         return null;
     }
@@ -114,8 +84,8 @@ export default function ChatWithOfficerPage() {
 
   return (
     <div className="space-y-6">
-      
-      {/* Intro Header */}
+
+      {/* Header Banner */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-bold text-emerald-100 border border-white/10 uppercase tracking-wide">
@@ -125,41 +95,39 @@ export default function ChatWithOfficerPage() {
             Consult Agricultural Extension Officers
           </h2>
           <p className="text-sm text-emerald-100 font-medium max-w-xl leading-relaxed">
-            Get personalized field guidance on pests, livestock feeding, soil analysis, and organic cultivation systems directly from certified regional experts.
+            Get personalized field guidance on pests, livestock feeding, soil analysis, and organic cultivation directly from certified regional experts.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 text-xs font-semibold text-white">
+        <div className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 text-xs font-semibold text-white shrink-0">
           <MessageSquare className="h-4 w-4 text-emerald-300" /> Responses: Within 2hr
         </div>
       </div>
 
-      {/* Main Split Layout */}
+      {/* Split Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
-        {/* Left column: Officers List */}
+
+        {/* Left: Officer List */}
         <div className={`lg:col-span-1 ${activeScreen !== 'default' && activeScreen !== 'profile' ? 'hidden lg:block' : 'block'}`}>
-          <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Available Experts</h3>
-              <p className="text-[11px] text-slate-400 font-medium">Select an officer to consult or view profile</p>
+          <div className="bg-white dark:bg-[#161b22] border border-slate-100 dark:border-[#30363d] rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-[#30363d] bg-slate-50/50 dark:bg-[#21262d]/50">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-[#e6edf3] uppercase tracking-wider">Available Experts</h3>
+              <p className="text-[11px] text-slate-400 dark:text-[#8b949e] font-medium">Select an officer to consult or view profile</p>
             </div>
             <div className="p-2">
-              <OfficerList 
-                officers={officers} 
-                onViewProfile={handleViewProfileClick} 
-                onStartChat={handleStartChatClick} 
+              <OfficerList
+                officers={officers}
+                onViewProfile={handleViewProfileClick}
+                onStartChat={handleStartChatClick}
               />
             </div>
           </div>
         </div>
 
-        {/* Right column: Active Detail Panel */}
+        {/* Right: Detail Panel */}
         <div className={`lg:col-span-2 ${activeScreen === 'default' && 'hidden lg:block'} ${activeScreen === 'profile' && 'block'} lg:block`}>
           {renderContent()}
         </div>
-
       </div>
-
     </div>
   );
 }
