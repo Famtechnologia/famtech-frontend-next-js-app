@@ -93,7 +93,7 @@ const CropHealthCard = () => {
         }
         className="h-full border border-gray-100 hover:shadow-md transition-shadow"
         headerClassName="bg-emerald-50/40 border-b border-emerald-100"
-        bodyClassName="p-5"
+        bodyClassName="p-5 flex flex-col"
       >
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-3">
@@ -126,8 +126,8 @@ const CropHealthCard = () => {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="max-h-[220px] overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+          <div className="flex flex-col flex-1 space-y-4">
+            <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
               {crops.slice(0, 3).map((crop) => (
                 <div
                   key={crop._id}
@@ -168,7 +168,7 @@ const CropHealthCard = () => {
               ))}
             </div>
 
-            <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
+            <div className="mt-auto pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
               <span className="text-gray-400 font-medium">
                 Showing {Math.min(3, crops.length)} of {crops.length}
               </span>
