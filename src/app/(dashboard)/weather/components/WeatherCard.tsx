@@ -298,7 +298,7 @@ export default function WeatherCard() {
     return (
         <Card
             title="Weather & Smart Advisory"
-            className={`h-fit md:h-[360px] transition-all duration-300 hover:shadow-md ${cardTheme.bg}`}
+            className={`h-full transition-all duration-300 hover:shadow-md ${cardTheme.bg}`}
             headerClassName={`border-b ${cardTheme.headerBg}`}
             bodyClassName="p-3 sm:p-5 flex flex-col justify-between"
         >

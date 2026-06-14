@@ -172,7 +172,7 @@ const DashboardTasks = () => {
     return (
         <Card 
             title="Task Planner" 
-            className="h-[360px] flex flex-col hover:shadow-md transition-all duration-300"
+            className="h-full flex flex-col hover:shadow-md transition-all duration-300"
             headerClassName='bg-green-50/30 border-b border-gray-100 py-3.5 px-5' 
             bodyClassName='p-4 sm:p-5 flex flex-col flex-1 overflow-hidden justify-between'
         >

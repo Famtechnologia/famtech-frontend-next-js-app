@@ -90,7 +90,7 @@ const MarketTrends = () => {
           </button>
         </div>
       }
-      className="h-fit dark:bg-[#161b22] dark:border-[#30363d]"
+      className="h-full dark:bg-[#161b22] dark:border-[#30363d]"
       headerClassName="dark:bg-[#161b22] dark:border-[#30363d]"
       bodyClassName="p-4"
     >

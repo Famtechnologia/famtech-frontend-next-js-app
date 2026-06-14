@@ -80,7 +80,7 @@ const Alerts = () => {
           </button>
         </div>
       }
-      className="h-fit dark:bg-[#161b22] dark:border-[#30363d]"
+      className="h-full dark:bg-[#161b22] dark:border-[#30363d]"
       headerClassName="bg-amber-50 dark:bg-[#161b22] border-b border-amber-100 dark:border-[#30363d]"
       bodyClassName="p-4"
     >

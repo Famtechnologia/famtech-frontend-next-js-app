@@ -86,28 +86,24 @@ export default function FarmerAdminDashboard() {
     <div className="space-y-4 px-0">
       <WelcomeHeader />
 
-      {/* Top row — 3 equal cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <WeatherForecast />
-        <Tasks />
-        <SmartAdvisory />
+      {/* Top row — 3 equal cards, all same height */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+        <div className="flex flex-col"><WeatherForecast /></div>
+        <div className="flex flex-col"><Tasks /></div>
+        <div className="flex flex-col"><SmartAdvisory /></div>
       </div>
 
-      {/* Middle row — 2/3 + 1/3 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <TaskOverviewCard />
-        </div>
-        <div className="lg:col-span-1">
-          <CropHealthCard />
-        </div>
+      {/* Middle row — 2/3 + 1/3, same height */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+        <div className="lg:col-span-2 flex flex-col"><TaskOverviewCard /></div>
+        <div className="lg:col-span-1 flex flex-col"><CropHealthCard /></div>
       </div>
 
-      {/* Bottom row — 3 equal cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <MarketPrices />
-        <FarmDiary />
-        <Alerts />
+      {/* Bottom row — 3 equal cards, same height */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+        <div className="flex flex-col"><MarketPrices /></div>
+        <div className="flex flex-col"><FarmDiary /></div>
+        <div className="flex flex-col"><Alerts /></div>
       </div>
     </div>
   );
