@@ -64,9 +64,9 @@ const SmartAdvisory = () => {
       }
       className="h-full dark:bg-[#161b22] dark:border-[#30363d]"
       headerClassName="bg-blue-50 dark:bg-[#161b22] border-b border-blue-100 dark:border-[#30363d]"
-      bodyClassName="p-4"
+      bodyClassName="p-4 flex flex-col"
     >
-      <div className="flex flex-col gap-3 min-h-[180px]">
+      <div className="flex flex-col flex-1 gap-3">
 
         {preview ? (
           /* Latest advice */

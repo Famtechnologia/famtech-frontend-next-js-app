@@ -270,7 +270,7 @@ export default function WeatherCard() {
         const advisories = getFarmingAdvisory(temp, windSpeed, humidity, weatherCondition);
         
         return (
-            <div className="space-y-3.5 h-[170px] overflow-y-auto pr-1">
+            <div className="space-y-3.5 overflow-y-auto pr-1 flex-1">
                 {advisories.map((adv, idx) => (
                     <div 
                         key={idx} 
@@ -308,7 +308,7 @@ export default function WeatherCard() {
                     <div className="flex bg-gray-100/80 dark:bg-[#21262d] p-0.75 rounded-lg mb-4 text-xs font-semibold">
                         <button
                           onClick={() => setActiveTab('weather')}
-                          className={`flex-1 py-1.5 rounded-md text-center transition-all ${
+                          className={`flex-1 py-1.5 rounded-md text-center transition-all outline-none focus:ring-2 focus:ring-green-400/50 ${
                             activeTab === 'weather'
                               ? 'bg-white dark:bg-[#30363d] text-gray-950 dark:text-[#e6edf3] shadow-sm'
                               : 'text-gray-500 dark:text-[#8b949e] hover:text-gray-800 dark:hover:text-[#e6edf3]'
@@ -318,7 +318,7 @@ export default function WeatherCard() {
                         </button>
                         <button
                           onClick={() => setActiveTab('advisory')}
-                          className={`flex-1 py-1.5 rounded-md text-center transition-all ${
+                          className={`flex-1 py-1.5 rounded-md text-center transition-all outline-none focus:ring-2 focus:ring-green-400/50 ${
                             activeTab === 'advisory'
                               ? 'bg-white dark:bg-[#30363d] text-gray-950 dark:text-[#e6edf3] shadow-sm'
                               : 'text-gray-500 dark:text-[#8b949e] hover:text-gray-800 dark:hover:text-[#e6edf3]'

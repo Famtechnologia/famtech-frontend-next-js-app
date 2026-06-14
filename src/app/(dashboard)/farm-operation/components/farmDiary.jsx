@@ -23,18 +23,18 @@ const FarmDiary = () => {
       }
       className="h-full"
       headerClassName="bg-green-50 border-b border-green-200"
-      bodyClassName="p-6"
+      bodyClassName="p-6 flex flex-col"
     >
-      <div className="flex flex-col justify-between min-h-[180px]">
-        {/* Empty State Message */}
-        <div className="flex flex-col items-center justify-center text-center text-gray-600 mt-4">
-          <NotebookPen className="w-8 h-8 text-green-500 mb-3" />
-          <p className="text-sm mb-4 max-w-xs">
-            Record and manage your farm activities easily. Track planting, harvesting, and fertilizer applications all in one place.
+      <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500 gap-3">
+        <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center">
+          <NotebookPen className="w-7 h-7 text-green-500" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">Coming Soon</p>
+          <p className="text-xs text-gray-400 max-w-[220px] leading-relaxed">
+            Record and manage your farm activities. Track planting, harvesting, and fertilizer applications all in one place.
           </p>
         </div>
-
-        
       </div>
     </Card>
   );

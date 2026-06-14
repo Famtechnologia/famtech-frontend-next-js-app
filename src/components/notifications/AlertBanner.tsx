@@ -82,9 +82,9 @@ const Alerts = () => {
       }
       className="h-full dark:bg-[#161b22] dark:border-[#30363d]"
       headerClassName="bg-amber-50 dark:bg-[#161b22] border-b border-amber-100 dark:border-[#30363d]"
-      bodyClassName="p-4"
+      bodyClassName="p-4 flex flex-col"
     >
-      <div className="flex flex-col min-h-[180px]">
+      <div className="flex flex-col flex-1">
         {loading ? (
           <div className="space-y-2.5 animate-pulse">
             {[...Array(3)].map((_, i) => (

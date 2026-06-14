@@ -92,7 +92,7 @@ const MarketTrends = () => {
       }
       className="h-full dark:bg-[#161b22] dark:border-[#30363d]"
       headerClassName="dark:bg-[#161b22] dark:border-[#30363d]"
-      bodyClassName="p-4"
+      bodyClassName="p-4 flex flex-col"
     >
       {loading && !summary ? (
         <div className="space-y-3 min-h-[220px] animate-pulse">
