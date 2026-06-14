@@ -225,8 +225,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           icon: Map,
           key: "mapping",
           expandable: false,
-          href: `/dashboard/farmer/${subRole}/mapping`,
-          comingSoon: true,
+          href: `/mapping`,
+          comingSoon: false,
           section: "Insights",
         },
 
