@@ -200,6 +200,7 @@ export default function MarketPricesPage() {
       result.push({
         date: date.toISOString().split("T")[0],
         price: Math.round(price),
+        region,
       });
     }
     // Pin last point to current real price
