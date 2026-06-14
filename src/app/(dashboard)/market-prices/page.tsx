@@ -177,9 +177,13 @@ export default function MarketPricesPage() {
     }
   }, []);
 
-  /* ── Fetch all prices (parallel) ── */
+  /* ── Fetch all prices in batches to avoid 429 rate limits ── */
   const fetchAllPrices = useCallback(async (crops: string[], reg: string) => {
-    await Promise.allSettled(crops.map((c) => fetchPrice(c, reg)));
+    const BATCH = 4;
+    for (let i = 0; i < crops.length; i += BATCH) {
+      await Promise.allSettled(crops.slice(i, i + BATCH).map((c) => fetchPrice(c, reg)));
+      if (i + BATCH < crops.length) await new Promise((r) => setTimeout(r, 300));
+    }
   }, [fetchPrice]);
 
   /* ── Synthetic history when real data is sparse ── */
@@ -529,11 +533,11 @@ export default function MarketPricesPage() {
                   <>
                     <div className="text-center">
                       <p className="text-[10px] font-bold text-gray-400 dark:text-[#484f58] uppercase">Low</p>
-                      <p className="text-sm font-bold text-red-500">₦{priceRange.min.toLocaleString()}</p>
+                      <p className="text-sm font-bold text-red-500">{priceRange.min > 0 ? `₦${priceRange.min.toLocaleString()}` : "—"}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-[10px] font-bold text-gray-400 dark:text-[#484f58] uppercase">High</p>
-                      <p className="text-sm font-bold text-emerald-600 dark:text-[#4ade80]">₦{priceRange.max.toLocaleString()}</p>
+                      <p className="text-sm font-bold text-emerald-600 dark:text-[#4ade80]">{priceRange.max > 0 ? `₦${priceRange.max.toLocaleString()}` : "—"}</p>
                     </div>
                   </>
                 )}
@@ -586,7 +590,7 @@ export default function MarketPricesPage() {
 
           {/* ── THE CHART ── */}
           <div className="flex-1 p-4 min-h-0">
-            <div className="h-full min-h-[280px] rounded-2xl border border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] p-4 overflow-hidden">
+            <div className="h-full min-h-[300px] rounded-2xl border border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] p-4 overflow-hidden" style={{ height: "100%", minHeight: 300 }}>
               {histLoading ? (
                 <div className="h-full flex flex-col items-center justify-center gap-3 text-gray-400 dark:text-[#484f58]">
                   <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
