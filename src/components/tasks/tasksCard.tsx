@@ -150,7 +150,7 @@ const DashboardTasks = () => {
 
     if (isLoading) {
         return (
-            <Card title="Task Planner" headerClassName='bg-green-50/50' bodyClassName='p-6 flex items-center justify-center h-full'>
+            <Card title="Task Planner" headerClassName='bg-green-50/50 dark:bg-[#0d2a1a]/30 border-b dark:border-[#30363d]' bodyClassName='p-6 flex items-center justify-center h-full'>
                 <Loader2 className="w-8 h-8 animate-spin text-green-600" />
             </Card>
         );
@@ -158,7 +158,7 @@ const DashboardTasks = () => {
 
     if (error) {
         return (
-            <Card title="Task Planner" headerClassName='bg-red-50/50' bodyClassName='p-6 flex items-center justify-center h-full'>
+            <Card title="Task Planner" headerClassName='bg-red-50/50 dark:bg-red-900/10 border-b dark:border-[#30363d]' bodyClassName='p-6 flex items-center justify-center h-full'>
                 <AlertTriangle className="w-6 h-6 text-red-600 mr-2" />
                 <span className='text-red-600 text-sm font-medium'>Could not load tasks.</span>
             </Card>
@@ -173,17 +173,17 @@ const DashboardTasks = () => {
         <Card 
             title="Task Planner" 
             className="h-full flex flex-col hover:shadow-md transition-all duration-300"
-            headerClassName='bg-green-50/30 border-b border-gray-100 py-3.5 px-5' 
+            headerClassName='bg-green-50/30 dark:bg-[#0d2a1a]/30 border-b border-gray-100 dark:border-[#30363d] py-3.5 px-5'
             bodyClassName='p-4 sm:p-5 flex flex-col flex-1 overflow-hidden justify-between'
         >
             {/* Dynamic Progress indicator */}
             {hasTasks && (
                 <div className="mb-3">
-                    <div className="flex justify-between items-center text-[10px] font-semibold text-gray-500 mb-1">
+                    <div className="flex justify-between items-center text-[10px] font-semibold text-gray-500 dark:text-[#8b949e] mb-1">
                         <span>COMPLETION RATE</span>
                         <span className="text-green-600">{completionRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-gray-100 dark:bg-[#30363d] rounded-full h-1.5 overflow-hidden">
                         <div 
                             className="bg-green-600 h-1.5 rounded-full transition-all duration-500" 
                             style={{ width: `${completionRate}%` }}
@@ -276,8 +276,8 @@ const DashboardTasks = () => {
             </div>
 
             {/* Bottom Actions Panel */}
-            <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs">
-                <span className="text-gray-500 font-medium">
+            <div className="pt-2.5 border-t border-gray-100 dark:border-[#30363d] flex items-center justify-between text-xs">
+                <span className="text-gray-500 dark:text-[#8b949e] font-medium">
                     {hasTasks ? `${completedCount} of ${tasks.length} completed` : 'Plan your operations'}
                 </span>
                 <Link 

@@ -92,7 +92,7 @@ const CropHealthCard = () => {
           </div>
         }
         className="h-full border border-gray-100 hover:shadow-md transition-shadow"
-        headerClassName="bg-emerald-50/40 border-b border-emerald-100"
+        headerClassName="bg-emerald-50/40 dark:bg-[#0d2a1a]/30 border-b border-emerald-100 dark:border-[#30363d]"
         bodyClassName="p-5 flex flex-col"
       >
         {loading ? (
@@ -131,14 +131,14 @@ const CropHealthCard = () => {
               {crops.slice(0, 3).map((crop) => (
                 <div
                   key={crop._id}
-                  className="p-3 rounded-xl bg-gray-50/70 border border-gray-100/80 hover:bg-white hover:border-emerald-100 hover:shadow-sm transition-all"
+                  className="p-3 rounded-xl bg-gray-50/70 dark:bg-[#21262d] border border-gray-100/80 dark:border-[#30363d] hover:bg-white dark:hover:bg-[#30363d] hover:border-emerald-100 hover:shadow-sm transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-gray-900 capitalize">
+                      <h4 className="text-xs font-bold text-gray-900 dark:text-[#e6edf3] capitalize">
                         {crop.cropName}
                       </h4>
-                      <p className="text-[10px] text-gray-500 capitalize mt-0.5">
+                      <p className="text-[10px] text-gray-500 dark:text-[#8b949e] capitalize mt-0.5">
                         {crop.variety || "Standard Variety"}
                       </p>
                     </div>
@@ -153,11 +153,11 @@ const CropHealthCard = () => {
 
                   {/* Growth stage progress */}
                   <div className="mt-3.5">
-                    <div className="flex items-center justify-between text-[9px] text-gray-400 mb-1 font-medium">
+                    <div className="flex items-center justify-between text-[9px] text-gray-400 dark:text-[#8b949e] mb-1 font-medium">
                       <span className="capitalize">Stage: {crop.currentGrowthStage || "Seeding"}</span>
                       <span>{getGrowthProgress(crop.currentGrowthStage)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200/60 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-gray-200/60 dark:bg-[#30363d] rounded-full h-1.5 overflow-hidden">
                       <div
                         className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${getGrowthProgress(crop.currentGrowthStage)}%` }}
@@ -168,8 +168,8 @@ const CropHealthCard = () => {
               ))}
             </div>
 
-            <div className="mt-auto pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
-              <span className="text-gray-400 font-medium">
+            <div className="mt-auto pt-2 border-t border-gray-100 dark:border-[#30363d] flex items-center justify-between text-[11px]">
+              <span className="text-gray-400 dark:text-[#8b949e] font-medium">
                 Showing {Math.min(3, crops.length)} of {crops.length}
               </span>
               <Link
