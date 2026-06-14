@@ -222,13 +222,16 @@ export default function MarketPricesPage() {
 
       // If fewer than 5 real data points, fill with synthetic history so the chart is always live
       if (raw.length < 5) {
-        const currentPrice = cropData[cropName]?.price;
-        if (currentPrice && currentPrice > 0) {
-          raw = buildSyntheticHistory(currentPrice, 30);
-        } else if (raw.length === 0) {
-          setHistLoading(false);
-          return;
-        }
+        // Use real price if loaded, otherwise use known Nigerian base prices as fallback
+        const BASE_PRICES: Record<string, number> = {
+          rice: 1400, maize: 600, yam: 1200, cassava: 350, cocoa: 5000,
+          palm_oil: 2200, plantain: 500, beans: 1100, millet: 550, sorghum: 500,
+          groundnut: 900, sweet_potato: 600, tomato: 800, pepper: 2500, onion: 700,
+          okra: 1000, garden_egg: 400, watermelon: 300, cucumber: 500, lettuce: 400,
+          cabbage: 350, carrot: 600, ginger: 4500, garlic: 7000, cotton: 1800,
+        };
+        const currentPrice = cropData[cropName]?.price || BASE_PRICES[cropName] || 800;
+        raw = buildSyntheticHistory(currentPrice, 30);
       }
 
       const sma7s  = calcSMA(raw, 7);
@@ -242,7 +245,7 @@ export default function MarketPricesPage() {
     } finally {
       setHistLoading(false);
     }
-  }, [cropData, buildSyntheticHistory]);
+  }, [buildSyntheticHistory]);
 
   /* ── Load alerts ── */
   const loadAlerts = useCallback(async () => {
@@ -275,14 +278,6 @@ export default function MarketPricesPage() {
     if (activeCrop) loadHistory(activeCrop, 30);
   }, [activeCrop, loadHistory]);
 
-  /* ── Re-run history once active crop price arrives (needed for synthetic fallback) ── */
-  const activePriceLoaded = cropData[activeCrop]?.price != null && !cropData[activeCrop]?.loading;
-  useEffect(() => {
-    if (activePriceLoaded && history.length === 0) {
-      loadHistory(activeCrop, 30);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePriceLoaded]);
 
   /* ── Auto-refresh active crop price every 90s ── */
   useEffect(() => {
