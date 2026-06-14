@@ -95,13 +95,13 @@ const MarketTrends = () => {
       bodyClassName="p-4 flex flex-col"
     >
       {loading && !summary ? (
-        <div className="space-y-3 min-h-[220px] animate-pulse">
+        <div className="flex-1 space-y-3 animate-pulse">
           <div className="h-4 w-32 bg-gray-200 dark:bg-[#30363d] rounded" />
           <div className="h-32 bg-gray-100 dark:bg-[#21262d] rounded-xl" />
           <div className="h-24 bg-gray-100 dark:bg-[#21262d] rounded-xl" />
         </div>
       ) : (
-        <>
+        <div className="flex flex-col flex-1">
           {/* Donut + stats row */}
           <div className="flex items-center gap-4 mb-4">
             {donutData.length > 0 ? (
@@ -192,7 +192,7 @@ const MarketTrends = () => {
           )}
 
           {/* Alerts + footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-[#30363d]">
+          <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100 dark:border-[#30363d]">
             <div className="flex items-center gap-2">
               {highVolatility > 0 && (
                 <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-2 py-1 rounded-lg">
@@ -209,7 +209,7 @@ const MarketTrends = () => {
               View All <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-        </>
+        </div>
       )}
     </Card>
   );
