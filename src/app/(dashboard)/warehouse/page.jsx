@@ -127,7 +127,7 @@ const Warehouse = () => {
   // Loading screen
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50/50">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50/50 dark:bg-[#0d1117]">
         <Loader2 className="h-10 w-10 text-green-600 animate-spin mb-4" />
         <p className="text-slate-500 font-medium">Checking authentication...</p>
       </div>
@@ -135,16 +135,16 @@ const Warehouse = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 text-slate-900 font-sans relative">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0d1117] text-slate-900 dark:text-[#e6edf3] font-sans relative">
       <div className="container p-4 mx-auto max-w-7xl">
         
         {/* Header Block */}
-        <div className="mb-6 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="mb-6 bg-white dark:bg-[#161b22] p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 dark:border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-[#e6edf3] tracking-tight">
               Warehouse Overview
             </h1>
-            <p className="text-slate-500 mt-1 text-sm font-medium">
+            <p className="text-slate-500 dark:text-[#8b949e] mt-1 text-sm font-medium">
               Manage your inventory locations and stock levels.
             </p>
           </div>
@@ -167,17 +167,17 @@ const Warehouse = () => {
                 placeholder="Search warehouses..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all text-sm bg-white"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-[#30363d] rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-green-100/50 focus:border-green-600 transition-all text-sm bg-white dark:bg-[#21262d] text-slate-800 dark:text-[#e6edf3] placeholder-slate-400 dark:placeholder-[#8b949e]"
               />
             </div>
             
-            <div className="flex gap-4 text-xs font-semibold text-slate-500 bg-white px-4 py-2.5 rounded-xl border border-slate-100/50 shadow-sm w-full md:w-auto justify-around">
+            <div className="flex gap-4 text-xs font-semibold text-slate-500 dark:text-[#8b949e] bg-white dark:bg-[#161b22] px-4 py-2.5 rounded-xl border border-slate-100/50 dark:border-[#30363d] shadow-sm w-full md:w-auto justify-around">
               <div>
-                Total Locations: <span className="text-slate-900 font-bold ml-1">{warehouses.length}</span>
+                Total Locations: <span className="text-slate-900 dark:text-[#e6edf3] font-bold ml-1">{warehouses.length}</span>
               </div>
-              <div className="border-l border-slate-200 h-4" />
+              <div className="border-l border-slate-200 dark:border-[#30363d] h-4" />
               <div>
-                Total Capacity: <span className="text-slate-900 font-bold ml-1">{totalCapacity.toLocaleString()} kg</span>
+                Total Capacity: <span className="text-slate-900 dark:text-[#e6edf3] font-bold ml-1">{totalCapacity.toLocaleString()} kg</span>
               </div>
             </div>
           </div>
@@ -190,12 +190,12 @@ const Warehouse = () => {
               <p className="text-slate-500 font-medium">Loading warehouses...</p>
             </div>
           ) : warehouses.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 p-12 max-w-md mx-auto shadow-sm">
-              <div className="bg-green-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center py-16 bg-white dark:bg-[#161b22] rounded-2xl border border-dashed border-slate-200 dark:border-[#30363d] p-12 max-w-md mx-auto shadow-sm">
+              <div className="bg-green-50 dark:bg-[#0d2a1a] w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Package className="h-7 w-7 text-green-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800">No warehouses found</h3>
-              <p className="text-slate-500 mb-6 text-sm mt-1.5 leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-[#e6edf3]">No warehouses found</h3>
+              <p className="text-slate-500 dark:text-[#8b949e] mb-6 text-sm mt-1.5 leading-relaxed">
                 Establish and register your first warehouse site location to begin tracking capacity.
               </p>
               <button
@@ -207,9 +207,9 @@ const Warehouse = () => {
               </button>
             </div>
           ) : filteredWarehouses.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200 p-8 max-w-md mx-auto shadow-sm">
-              <p className="text-slate-500 text-base font-semibold">No matching warehouses found</p>
-              <p className="text-slate-400 text-xs mt-1">Try adjusting your search criteria.</p>
+            <div className="text-center py-12 bg-white dark:bg-[#161b22] rounded-2xl border border-dashed border-slate-200 dark:border-[#30363d] p-8 max-w-md mx-auto shadow-sm">
+              <p className="text-slate-500 dark:text-[#8b949e] text-base font-semibold">No matching warehouses found</p>
+              <p className="text-slate-400 dark:text-[#6e7681] text-xs mt-1">Try adjusting your search criteria.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -96,23 +96,23 @@ export default function Page() {
     }
   
   return (
-    <div className="text-slate-900 font-sans p-3 md:p-6 bg-slate-50/30">
-      
+    <div className="text-slate-900 dark:text-[#e6edf3] font-sans p-3 md:p-6 bg-slate-50/30 dark:bg-[#0d1117]">
+
       {/* Header Block */}
-      <div className="hidden md:flex mb-6 bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="hidden md:flex mb-6 bg-white dark:bg-[#161b22] p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 dark:border-[#30363d] flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-[#e6edf3] tracking-tight">
             Advisory Workspace
           </h1>
-          <p className="text-slate-500 mt-1 text-sm font-medium">
+          <p className="text-slate-500 dark:text-[#8b949e] mt-1 text-sm font-medium">
             Generate expert advice plans and consult with your AI assistant.
           </p>
         </div>
         <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
-          <span className="inline-flex px-3 py-1 bg-slate-50 border border-slate-150 text-slate-605 text-[10px] font-bold rounded-lg uppercase tracking-wider w-fit">
+          <span className="inline-flex px-3 py-1 bg-slate-50 dark:bg-[#21262d] border border-slate-150 dark:border-[#30363d] text-slate-600 dark:text-[#8b949e] text-[10px] font-bold rounded-lg uppercase tracking-wider w-fit">
             Hi, {owner?.firstName || "Farmer"}
           </span>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+          <p className="text-slate-400 dark:text-[#6e7681] text-[10px] font-bold uppercase tracking-wider">
             {new Date().toLocaleDateString("en-NG", {
               weekday: "long",
               month: "short",
@@ -124,7 +124,7 @@ export default function Page() {
       </div>
 
       {/* --- SEGMENTED TABS SECTION --- */}
-      <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl md:rounded-2xl mb-4 md:mb-6 max-w-2xl scrollbar-none">
+      <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-slate-100/80 dark:bg-[#161b22] rounded-xl md:rounded-2xl mb-4 md:mb-6 max-w-2xl scrollbar-none">
         {tabsConfig.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTabKey === tab.key;
@@ -136,8 +136,8 @@ export default function Page() {
               className={`flex items-center justify-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold rounded-lg md:rounded-xl transition-all duration-200 whitespace-nowrap flex-1 shrink-0
                         ${
                           isActive
-                            ? "bg-white text-green-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-                            : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
+                            ? "bg-white dark:bg-[#21262d] text-green-700 dark:text-green-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                            : "text-slate-500 dark:text-[#8b949e] hover:text-slate-800 dark:hover:text-[#e6edf3] hover:bg-white/50 dark:hover:bg-[#21262d]/50"
                         }`}
             >
               <Icon size={15} />
