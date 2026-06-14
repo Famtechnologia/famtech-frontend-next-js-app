@@ -2,23 +2,23 @@
 import React, { useEffect, useState } from "react";
 import { Wheat, Plus, AlertCircle, Heart, Calendar } from "lucide-react";
 import Card from "@/components/ui/Card";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useProfile } from "@/lib/hooks/useProfile";
 import { getCropRecords, CropRecord } from "@/lib/services/croplivestock";
 import Link from "next/link";
 
 const CropHealthCard = () => {
-  const { user } = useAuthStore();
+  const { profile } = useProfile();
   const [crops, setCrops] = useState<CropRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!user?._id) return;
+    if (!profile?.id) return;
 
     const fetchCrops = async () => {
       try {
         setLoading(true);
-        const data = await getCropRecords(user._id);
+        const data = await getCropRecords(profile.id);
         // Ensure data is array
         if (Array.isArray(data)) {
           setCrops(data);
@@ -39,7 +39,7 @@ const CropHealthCard = () => {
     };
 
     fetchCrops();
-  }, [user?._id]);
+  }, [profile?.id]);
 
   const getHealthBadgeColor = (status: string) => {
     switch (status?.toLowerCase()) {
