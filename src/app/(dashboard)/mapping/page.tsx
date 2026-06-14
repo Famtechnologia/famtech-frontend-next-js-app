@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronUp, X, Check, Activity,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useProfile } from "@/lib/hooks/useProfile";
 
 /* ── Dynamic import — Leaflet requires no SSR ── */
 const MapView = dynamic(() => import("./MapView"), { ssr: false, loading: () => (
@@ -58,8 +59,13 @@ function geoHeaders(userId: string, tenantId: string) {
 
 export default function MappingPage() {
   const { user } = useAuthStore();
+  const { profile } = useProfile();
+
+  // Use profile farm ID as tenant, user ID as user identifier
   const userId   = user?._id ?? "guest";
-  const tenantId = user?.farmId ?? "default";
+  const tenantId = profile?.id ?? user?._id ?? "default";
+  const profileFarmName = profile?.farmName ?? null;
+  const profileExternalId = profile?.id ?? null;
 
   const [farms, setFarms]       = useState<Farm[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -108,13 +114,14 @@ export default function MappingPage() {
   }, [userId, tenantId]);
 
   useEffect(() => {
+    if (!tenantId || tenantId === "default") return;
     const init = async () => {
       setLoading(true);
       await fetchFarms();
       setLoading(false);
     };
     init();
-  }, [fetchFarms]);
+  }, [fetchFarms, tenantId]);
 
   useEffect(() => {
     if (activeFarm) {
@@ -124,7 +131,12 @@ export default function MappingPage() {
   }, [activeFarm, fetchSections, fetchAssets]);
 
   /* ── Create farm ── */
+  // Pre-fill with profile farm name when modal opens
   const [farmForm, setFarmForm] = useState({ name: "", externalId: "" });
+  const openNewFarm = () => {
+    setFarmForm({ name: profileFarmName ?? "", externalId: profileExternalId ?? "" });
+    openNewFarm();
+  };
   const handleCreateFarm = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -215,6 +227,15 @@ export default function MappingPage() {
   const PanelContent = () => (
     <div className="flex flex-col h-full">
       {/* Farm selector */}
+      {/* Profile farm banner */}
+      {profileFarmName && (
+        <div className="mx-3 mt-3 mb-1 px-3 py-2 bg-emerald-50 dark:bg-[#0d2a1a] rounded-lg border border-emerald-100 dark:border-emerald-900/40">
+          <p className="text-[10px] font-bold text-emerald-700 dark:text-[#4ade80] uppercase tracking-wider">Your Farm</p>
+          <p className="text-xs font-bold text-emerald-800 dark:text-[#4ade80] truncate">{profileFarmName}</p>
+          {profile?.location?.state && <p className="text-[10px] text-emerald-600 dark:text-[#4ade80]/70">{profile.location.city}, {profile.location.state}</p>}
+        </div>
+      )}
+
       <div className="p-3 border-b border-gray-100 dark:border-[#30363d]">
         <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-[#484f58] mb-2">Active Farm</p>
         <div className="relative">
@@ -263,7 +284,7 @@ export default function MappingPage() {
                 </button>
               </div>
             ))}
-            <button onClick={() => setShowNewFarm(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+            <button onClick={() => openNewFarm()} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
               <Plus className="w-3 h-3" /> Register Farm
             </button>
           </div>
@@ -360,7 +381,7 @@ export default function MappingPage() {
               <Download className="w-3 h-3" /> <span className="hidden sm:inline">GeoJSON</span>
             </button>
           )}
-          <button onClick={() => setShowNewFarm(true)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
+          <button onClick={() => openNewFarm()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
             <Plus className="w-3 h-3" /> <span className="hidden xs:inline">New Farm</span><span className="xs:hidden">Farm</span>
           </button>
         </div>
