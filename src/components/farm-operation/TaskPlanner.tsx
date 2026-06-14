@@ -307,7 +307,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 const App: React.FC = () => {
   const { profile } = useProfile();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -335,6 +335,7 @@ const App: React.FC = () => {
   type ApiTaskWithId = ApiTask & { id: string };
 
   const fetchTasks = React.useCallback(async () => {
+    if (!profile?.id) return;
     setLoading(true);
     setError(null);
     try {
