@@ -117,7 +117,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
     data.append("healthStatus", formData.healthStatus);
     data.append("feedSchedule", formData.feedSchedule);
     data.append("note", formData.note);
-    data.append("userId", user?.id || user?._id || profile?.id || "");
+    data.append("userId", profile?.id || "");
 
     // 🚀 FIX: Correctly loop over the array of files and append them
     imageFiles.forEach((file) => {
@@ -509,7 +509,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         data.append("healthStatus", formData.healthStatus);
         data.append("feedSchedule", formData.feedSchedule || "");
         data.append("note", formData.note || "");
-        data.append("userId", user?.id || user?._id || profile?.id || "");
+        data.append("userId", profile?.id || "");
         // Assumes the backend endpoint accepts the file under the key 'image'
         data.append("image", newImageFile, newImageFile.name);
         submissionData = data;
