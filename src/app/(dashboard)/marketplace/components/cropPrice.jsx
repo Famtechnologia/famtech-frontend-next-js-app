@@ -32,18 +32,22 @@ const MarketTrends = () => {
     } catch { /* show stale */ } finally {
       setLoading(false);
     }
-    // Load top crop prices in background for bar chart
-    const results = await Promise.allSettled(
-      TOP_CROPS.map(crop => getCropPrice(crop, 'lagos'))
-    );
-    const prices = results
-      .map((r, i) => ({
-        name: TOP_CROPS[i].charAt(0).toUpperCase() + TOP_CROPS[i].slice(1),
-        price: r.status === 'fulfilled' ? (r.value?.data?.adjustedPrice ?? r.value?.data?.price ?? null) : null,
-        trend: r.status === 'fulfilled' ? (r.value?.data?.marketTrend ?? 'stable') : 'stable',
-      }))
-      .filter(p => p.price != null);
-    setCropPrices(prices);
+    // Load top crop prices in batches to avoid rate limiting
+    const collected = [];
+    for (let i = 0; i < TOP_CROPS.length; i += 2) {
+      const batch = TOP_CROPS.slice(i, i + 2);
+      const results = await Promise.allSettled(batch.map(crop => getCropPrice(crop, 'lagos')));
+      results.forEach((r, j) => {
+        const crop = batch[j];
+        collected.push({
+          name: crop.charAt(0).toUpperCase() + crop.slice(1),
+          price: r.status === 'fulfilled' ? (r.value?.data?.adjustedPrice ?? r.value?.data?.price ?? null) : null,
+          trend: r.status === 'fulfilled' ? (r.value?.data?.marketTrend ?? 'stable') : 'stable',
+        });
+      });
+      if (i + 2 < TOP_CROPS.length) await new Promise(r => setTimeout(r, 200));
+    }
+    setCropPrices(collected.filter(p => p.price != null));
   };
 
   useEffect(() => { load(); }, []);
