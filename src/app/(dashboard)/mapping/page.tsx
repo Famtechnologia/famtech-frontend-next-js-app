@@ -3,8 +3,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState, useCallback } from "react";
 import {
-  Map, Plus, Layers, Trash2, Edit3, Download, Upload,
-  RefreshCw, ChevronDown, X, Check, Activity, Ruler,
+  Map, Plus, Layers, Trash2, Download,
+  ChevronDown, ChevronUp, X, Check, Activity,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 
@@ -74,6 +74,7 @@ export default function MappingPage() {
   const [showNewAsset, setShowNewAsset]     = useState(false);
   const [saving, setSaving]                 = useState(false);
   const [toast, setToast]                   = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen]           = useState(false);
 
   const notify = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
@@ -210,6 +211,130 @@ export default function MappingPage() {
     notify("GeoJSON exported ✓");
   };
 
+  /* Shared panel content — used in both sidebar and bottom sheet */
+  const PanelContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Farm selector */}
+      <div className="p-3 border-b border-gray-100 dark:border-[#30363d]">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-[#484f58] mb-2">Active Farm</p>
+        <div className="relative">
+          <select
+            value={activeFarm?.id ?? ""}
+            onChange={(e) => { setActiveFarm(farms.find(f => f.id === e.target.value) ?? null); setSheetOpen(false); }}
+            className="w-full appearance-none pl-3 pr-8 py-2 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none"
+          >
+            <option value="">— Select farm —</option>
+            {farms.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+          </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-100 dark:border-[#30363d] shrink-0">
+        {(["farms", "sections", "assets"] as const).map(t => (
+          <button key={t} onClick={() => setPanel(t)}
+            className={`flex-1 py-2 text-[10px] font-bold capitalize transition-colors ${panel === t ? "text-emerald-600 dark:text-[#4ade80] border-b-2 border-emerald-500" : "text-gray-400 dark:text-[#484f58]"}`}>
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        {panel === "farms" && (
+          <div>
+            {loading ? (
+              [...Array(3)].map((_, i) => <div key={i} className="m-3 h-10 bg-gray-100 dark:bg-[#21262d] rounded-lg animate-pulse" />)
+            ) : farms.length === 0 ? (
+              <div className="text-center py-8 px-4">
+                <Map className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
+                <p className="text-xs text-gray-400 dark:text-[#484f58]">No farms yet. Register one.</p>
+              </div>
+            ) : farms.map(farm => (
+              <div key={farm.id} onClick={() => { setActiveFarm(farm); setSheetOpen(false); }}
+                className={`flex items-center justify-between px-3 py-2.5 cursor-pointer border-b border-gray-50 dark:border-[#30363d]/40 transition-colors ${activeFarm?.id === farm.id ? "bg-emerald-50 dark:bg-[#0d2a1a] border-l-2 border-l-emerald-500" : "hover:bg-gray-50 dark:hover:bg-[#21262d]"}`}>
+                <div className="min-w-0">
+                  <p className={`text-xs font-bold truncate ${activeFarm?.id === farm.id ? "text-emerald-700 dark:text-[#4ade80]" : "text-gray-700 dark:text-[#c9d1d9]"}`}>{farm.name}</p>
+                  {farm.totalArea && <p className="text-[10px] text-gray-400 dark:text-[#484f58]">{farm.totalArea.toFixed(2)} {farm.areaUnit ?? "ha"}</p>}
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); deleteFarm(farm.id); }} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+            <button onClick={() => setShowNewFarm(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+              <Plus className="w-3 h-3" /> Register Farm
+            </button>
+          </div>
+        )}
+        {panel === "sections" && (
+          <div>
+            {!activeFarm ? <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
+            : sections.length === 0 ? (
+              <div className="text-center py-8 px-4">
+                <Layers className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
+                <p className="text-xs text-gray-400 dark:text-[#484f58]">No sections yet.</p>
+              </div>
+            ) : sections.map(s => (
+              <div key={s.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40">
+                <div>
+                  <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{s.name}</p>
+                  {s.cropType && <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{s.cropType}</p>}
+                </div>
+                <button onClick={() => deleteSection(s.id)} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+            {activeFarm && (
+              <button onClick={() => setShowNewSection(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+                <Plus className="w-3 h-3" /> Add Section
+              </button>
+            )}
+          </div>
+        )}
+        {panel === "assets" && (
+          <div>
+            {!activeFarm ? <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
+            : assets.length === 0 ? (
+              <div className="text-center py-8 px-4">
+                <Activity className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
+                <p className="text-xs text-gray-400 dark:text-[#484f58]">No assets tracked.</p>
+              </div>
+            ) : assets.map(a => (
+              <div key={a.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40">
+                <div>
+                  <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{a.name}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{a.assetType}</p>
+                </div>
+              </div>
+            ))}
+            {activeFarm && (
+              <button onClick={() => setShowNewAsset(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+                <Plus className="w-3 h-3" /> Track Asset
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Stats footer */}
+      {activeFarm && (
+        <div className="p-3 border-t border-gray-100 dark:border-[#30363d] grid grid-cols-2 gap-2 shrink-0">
+          <div className="bg-gray-50 dark:bg-[#21262d] rounded-lg p-2 text-center">
+            <p className="text-lg font-bold text-gray-900 dark:text-[#e6edf3]">{sections.length}</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#484f58] font-bold uppercase">Sections</p>
+          </div>
+          <div className="bg-gray-50 dark:bg-[#21262d] rounded-lg p-2 text-center">
+            <p className="text-lg font-bold text-gray-900 dark:text-[#e6edf3]">{assets.length}</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#484f58] font-bold uppercase">Assets</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-[#0d1117] overflow-hidden">
 
@@ -221,157 +346,35 @@ export default function MappingPage() {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] shrink-0">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] shrink-0">
+        <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center">
             <Map className="w-3.5 h-3.5 text-white" />
           </div>
           <span className="text-sm font-bold text-gray-900 dark:text-[#e6edf3]">Farm Mapping</span>
-          <span className="hidden sm:inline text-xs text-gray-400 dark:text-[#8b949e]">· Geospatial Intelligence · WGS84</span>
+          <span className="hidden sm:inline text-xs text-gray-400 dark:text-[#8b949e]">· WGS84</span>
         </div>
         <div className="flex items-center gap-2">
           {activeFarm && (
-            <button onClick={exportGeoJSON} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3] hover:bg-gray-50 dark:hover:bg-[#21262d]">
-              <Download className="w-3 h-3" /> GeoJSON
+            <button onClick={exportGeoJSON} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
+              <Download className="w-3 h-3" /> <span className="hidden sm:inline">GeoJSON</span>
             </button>
           )}
-          <button onClick={() => setShowNewFarm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
-            <Plus className="w-3 h-3" /> New Farm
+          <button onClick={() => setShowNewFarm(true)} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
+            <Plus className="w-3 h-3" /> <span className="hidden xs:inline">New Farm</span><span className="xs:hidden">Farm</span>
           </button>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* Desktop: sidebar + map | Mobile: map + bottom sheet */}
+      <div className="flex flex-1 overflow-hidden relative">
 
-        {/* ── Left panel ── */}
-        <aside className="w-64 shrink-0 border-r border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] flex flex-col overflow-hidden">
-
-          {/* Farm selector */}
-          <div className="p-3 border-b border-gray-100 dark:border-[#30363d]">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-[#484f58] mb-2">Active Farm</p>
-            <div className="relative">
-              <select
-                value={activeFarm?.id ?? ""}
-                onChange={(e) => setActiveFarm(farms.find(f => f.id === e.target.value) ?? null)}
-                className="w-full appearance-none pl-3 pr-8 py-2 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none"
-              >
-                <option value="">— Select farm —</option>
-                {farms.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Panel tabs */}
-          <div className="flex border-b border-gray-100 dark:border-[#30363d]">
-            {(["farms", "sections", "assets"] as const).map(t => (
-              <button key={t} onClick={() => setPanel(t)}
-                className={`flex-1 py-2 text-[10px] font-bold capitalize transition-colors ${panel === t ? "text-emerald-600 dark:text-[#4ade80] border-b-2 border-emerald-500" : "text-gray-400 dark:text-[#484f58]"}`}>
-                {t}
-              </button>
-            ))}
-          </div>
-
-          {/* Panel content */}
-          <div className="flex-1 overflow-y-auto">
-
-            {panel === "farms" && (
-              <div>
-                {loading ? (
-                  [...Array(4)].map((_, i) => <div key={i} className="m-3 h-10 bg-gray-100 dark:bg-[#21262d] rounded-lg animate-pulse" />)
-                ) : farms.length === 0 ? (
-                  <div className="text-center py-10 px-4">
-                    <Map className="w-8 h-8 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
-                    <p className="text-xs text-gray-400 dark:text-[#484f58]">No farms yet. Register one.</p>
-                  </div>
-                ) : farms.map(farm => (
-                  <div key={farm.id} onClick={() => setActiveFarm(farm)}
-                    className={`flex items-center justify-between px-3 py-2.5 cursor-pointer border-b border-gray-50 dark:border-[#30363d]/40 transition-colors ${activeFarm?.id === farm.id ? "bg-emerald-50 dark:bg-[#0d2a1a] border-l-2 border-l-emerald-500" : "hover:bg-gray-50 dark:hover:bg-[#21262d]"}`}>
-                    <div className="min-w-0">
-                      <p className={`text-xs font-bold truncate ${activeFarm?.id === farm.id ? "text-emerald-700 dark:text-[#4ade80]" : "text-gray-700 dark:text-[#c9d1d9]"}`}>{farm.name}</p>
-                      {farm.totalArea && <p className="text-[10px] text-gray-400 dark:text-[#484f58]">{farm.totalArea.toFixed(2)} {farm.areaUnit ?? "ha"}</p>}
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); deleteFarm(farm.id); }} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                <button onClick={() => setShowNewFarm(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
-                  <Plus className="w-3 h-3" /> Register Farm
-                </button>
-              </div>
-            )}
-
-            {panel === "sections" && (
-              <div>
-                {!activeFarm ? (
-                  <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
-                ) : sections.length === 0 ? (
-                  <div className="text-center py-10 px-4">
-                    <Layers className="w-8 h-8 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
-                    <p className="text-xs text-gray-400 dark:text-[#484f58]">No sections. Add a plot.</p>
-                  </div>
-                ) : sections.map(s => (
-                  <div key={s.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40 hover:bg-gray-50 dark:hover:bg-[#21262d]">
-                    <div>
-                      <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{s.name}</p>
-                      {s.cropType && <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{s.cropType}</p>}
-                    </div>
-                    <button onClick={() => deleteSection(s.id)} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                {activeFarm && (
-                  <button onClick={() => setShowNewSection(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
-                    <Plus className="w-3 h-3" /> Add Section
-                  </button>
-                )}
-              </div>
-            )}
-
-            {panel === "assets" && (
-              <div>
-                {!activeFarm ? (
-                  <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
-                ) : assets.length === 0 ? (
-                  <div className="text-center py-10 px-4">
-                    <Activity className="w-8 h-8 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
-                    <p className="text-xs text-gray-400 dark:text-[#484f58]">No assets tracked.</p>
-                  </div>
-                ) : assets.map(a => (
-                  <div key={a.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40 hover:bg-gray-50 dark:hover:bg-[#21262d]">
-                    <div>
-                      <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{a.name}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{a.assetType}</p>
-                    </div>
-                  </div>
-                ))}
-                {activeFarm && (
-                  <button onClick={() => setShowNewAsset(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
-                    <Plus className="w-3 h-3" /> Track Asset
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Stats footer */}
-          {activeFarm && (
-            <div className="p-3 border-t border-gray-100 dark:border-[#30363d] grid grid-cols-2 gap-2">
-              <div className="bg-gray-50 dark:bg-[#21262d] rounded-lg p-2 text-center">
-                <p className="text-lg font-bold text-gray-900 dark:text-[#e6edf3]">{sections.length}</p>
-                <p className="text-[10px] text-gray-400 dark:text-[#484f58] font-bold uppercase">Sections</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-[#21262d] rounded-lg p-2 text-center">
-                <p className="text-lg font-bold text-gray-900 dark:text-[#e6edf3]">{assets.length}</p>
-                <p className="text-[10px] text-gray-400 dark:text-[#484f58] font-bold uppercase">Assets</p>
-              </div>
-            </div>
-          )}
+        {/* ── Desktop sidebar (hidden on mobile) ── */}
+        <aside className="hidden md:flex w-64 shrink-0 border-r border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] flex-col overflow-hidden">
+          <PanelContent />
         </aside>
 
-        {/* ── Map ── */}
+        {/* ── Map (full width on mobile) ── */}
         <div className="flex-1 relative overflow-hidden">
           <MapView
             farm={activeFarm}
@@ -387,7 +390,31 @@ export default function MappingPage() {
               fetchFarms();
             }}
           />
+
+          {/* Mobile FAB to open bottom sheet */}
+          <button
+            onClick={() => setSheetOpen(o => !o)}
+            className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-[#30363d] rounded-full shadow-xl text-xs font-bold text-gray-700 dark:text-[#e6edf3]"
+          >
+            {sheetOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+            {activeFarm ? activeFarm.name : "Select Farm"}
+          </button>
         </div>
+
+        {/* ── Mobile bottom sheet ── */}
+        {sheetOpen && (
+          <div className="md:hidden absolute bottom-0 left-0 right-0 z-[450] bg-white dark:bg-[#161b22] border-t border-gray-200 dark:border-[#30363d] rounded-t-2xl shadow-2xl flex flex-col" style={{ maxHeight: "60vh" }}>
+            {/* Handle */}
+            <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 dark:bg-[#30363d] rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
+              <span className="text-xs font-bold text-gray-500 dark:text-[#8b949e]">Farm Manager</span>
+              <button onClick={() => setSheetOpen(false)}><X className="w-4 h-4 text-gray-400" /></button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <PanelContent />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Modal: New Farm ── */}

@@ -83,35 +83,32 @@ export default function FarmerAdminDashboard() {
   if (loading) return <DashboardSkeleton />;
 
   return (
-      <div className="space-y-6">
-        <WelcomeHeader />
+    <div className="space-y-4 px-0">
+      <WelcomeHeader />
 
-        {/* Top Section */}
-        <div
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-          style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 3fr))",
-          }}
-        >
-          <WeatherForecast />
-          <Tasks />
-          <SmartAdvisory />
+      {/* Top row — 3 equal cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <WeatherForecast />
+        <Tasks />
+        <SmartAdvisory />
+      </div>
+
+      {/* Middle row — 2/3 + 1/3 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <TaskOverviewCard />
         </div>
-
-        {/* Middle Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <TaskOverviewCard />
-          </div>
-          <div className="lg:col-span-1">{stats && <CropHealthCard />}</div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <MarketPrices />
-          <FarmDiary />
-          <Alerts/>
+        <div className="lg:col-span-1">
+          <CropHealthCard />
         </div>
       </div>
+
+      {/* Bottom row — 3 equal cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <MarketPrices />
+        <FarmDiary />
+        <Alerts />
+      </div>
+    </div>
   );
 }
