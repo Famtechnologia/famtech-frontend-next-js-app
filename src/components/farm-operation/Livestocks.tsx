@@ -11,6 +11,7 @@ import {
   LivestockRecord,
 } from "../../lib/services/croplivestock";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useAuthStore } from "@/lib/store/authStore";
 
 interface LivestockFormData {
   specie: string;
@@ -33,6 +34,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
   onRecordAdded,
 }) => {
   const { profile } = useProfile();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState<LivestockFormData>({
     specie: "",
     breed: "",
@@ -115,7 +117,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
     data.append("healthStatus", formData.healthStatus);
     data.append("feedSchedule", formData.feedSchedule);
     data.append("note", formData.note);
-    data.append("userId", profile?.id || "");
+    data.append("userId", user?._id || profile?.id || "");
 
     // 🚀 FIX: Correctly loop over the array of files and append them
     imageFiles.forEach((file) => {
@@ -382,7 +384,8 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
   onClose,
   onRecordUpdated,
 }) => {
-  const {profile} = useProfile()
+  const { profile } = useProfile();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState<UpdateLivestockPayload>({
     specie: record.specie || "",
     breed: record.breed || "",
@@ -506,7 +509,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         data.append("healthStatus", formData.healthStatus);
         data.append("feedSchedule", formData.feedSchedule || "");
         data.append("note", formData.note || "");
-        data.append("userId", profile?.id || "");
+        data.append("userId", user?._id || profile?.id || "");
         // Assumes the backend endpoint accepts the file under the key 'image'
         data.append("image", newImageFile, newImageFile.name);
         submissionData = data;

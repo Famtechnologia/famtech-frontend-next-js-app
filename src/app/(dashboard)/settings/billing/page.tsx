@@ -54,7 +54,7 @@ const plans: Plan[] = [
 
 const App: React.FC = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>('enterprise');
-  const [isLoading] = useState(true); 
+  const [isLoading] = useState(false);
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
   };
