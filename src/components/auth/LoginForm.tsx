@@ -103,11 +103,6 @@ const Login: React.FC = () => {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-bounce [animation-delay:0.3s]" />
             </div>
             <p className="text-green-300 font-semibold text-lg">Logging in…</p>
-            {slowStart && (
-              <p className="text-white/60 text-xs text-center max-w-[220px] leading-relaxed">
-                Server is waking up — this can take up to 30 seconds on first load. Please wait…
-              </p>
-            )}
           </div>
         )}
 
