@@ -802,7 +802,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* 📥 Notification Dropdown Content */}
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-70 md:w-80 bg-white dark:bg-[#161b22] rounded-xl shadow-2xl border border-gray-100 dark:border-[#30363d] z-[110] overflow-hidden">
+                  <div className="absolute right-0 mt-3 w-70 md:w-80 bg-white dark:bg-[#161b22] rounded-xl shadow-2xl border border-gray-100 dark:border-[#30363d] z-[9999] overflow-hidden">
                     <div className="p-4 border-b border-gray-100 dark:border-[#30363d]">
                       <h3 className="text-lg font-semibold text-gray-800 dark:text-[#e6edf3]">
                         Notifications ({unreadCount})
@@ -946,7 +946,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* Dropdown Menu */}
                 {isProfileDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-[#161b22] rounded-xl shadow-xl border border-gray-100 dark:border-[#30363d] py-1.5 z-[110] transition-all">
+                  <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-[#161b22] rounded-xl shadow-xl border border-gray-100 dark:border-[#30363d] py-1.5 z-[9999] transition-all">
                     {/* User Info Header in Dropdown */}
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-[#30363d]">
                       <p className="text-[10px] text-gray-400 dark:text-[#6e7681] uppercase font-semibold tracking-wider">Signed in as</p>
