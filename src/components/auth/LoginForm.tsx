@@ -27,6 +27,14 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
+  // Warm up the backend as soon as the login page loads
+  React.useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://api-famtech-backend-app.onrender.com"}/health`, {
+      method: "GET",
+      signal: AbortSignal.timeout(30000),
+    }).catch(() => {});
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -37,7 +45,7 @@ const Login: React.FC = () => {
     setSlowStart(false);
 
     // Show "waking up" message after 6s, auto-reset after 65s (Render cold start)
-    const slowTimer  = setTimeout(() => setSlowStart(true), 6000);
+    const slowTimer  = setTimeout(() => setSlowStart(true), 12000);
     const safetyReset = setTimeout(() => {
       setLoading(false);
       setSlowStart(false);
