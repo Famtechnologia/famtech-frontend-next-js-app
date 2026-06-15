@@ -54,7 +54,7 @@ const StaffManagement = () => {
     } catch (error) {
       console.error("Failed to fetch staff data:", error);
     }
-  }, [profile]);
+  }, [profile?.id]);
 
   useEffect(() => {
     fetchStaffData();

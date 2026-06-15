@@ -102,7 +102,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     } catch (error) {
       console.error("Failed to fetch staff data:", error);
     }
-  }, [profile]);
+  }, [profile?.id]);
 
   useEffect(() => {
     fetchStaffData();

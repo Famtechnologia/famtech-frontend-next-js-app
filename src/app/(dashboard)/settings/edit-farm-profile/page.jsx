@@ -88,7 +88,7 @@ export default function ModernFarmRegistration() {
         language: profile?.language || "en",
       });
     }
-  }, [profile]);
+  }, [profile?.id]);
 
   const farmingMethodOptions = ["organic", "irrigation", "mechanized", "manual"];
   const popularCrops = ["Maize", "Cassava", "Yam", "Rice", "Cocoa", "Cowpea", "Tomato", "Pepper", "Cashew"];
