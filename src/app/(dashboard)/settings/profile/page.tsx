@@ -63,13 +63,9 @@ interface FarmProfileData {
 
 const Settings: React.FC = () => {
   const { user } = useAuth();
-  const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { profile } = useProfile();
-
-  useEffect(() => {
-    setFarmProfile(profile as FarmProfileData | null);
-  }, [profile]);
+  const farmProfile = profile as FarmProfileData | null;
 
   useEffect(() => {
     const timer = setTimeout(() => {

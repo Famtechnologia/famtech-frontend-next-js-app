@@ -1,7 +1,7 @@
 // app/(dashboard)/page.tsx
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 //import axios, { AxiosError } from "axios";
 //import apiClient from "@/lib/api/apiClient";
 //import { useAuth } from "@/lib/hooks/useAuth";
@@ -65,30 +65,25 @@ export default function Page() {
     router.push(newUrl, { scroll: false });
   };
 
-  const [farmProfile, setFarmProfile] = useState<FarmProfileData | null>(null);
-
-  useEffect(() => {
-    setFarmProfile(profile as FarmProfileData | null);
-  }, [profile]);
-
+  const farmProfile = profile as FarmProfileData | null;
   const owner = farmProfile?.owner;
 
   const ActiveComponent = useMemo(() => {
     const defaultLocation = { state: "", country: "" };
+    const location = farmProfile?.location ?? defaultLocation;
 
     switch (activeTabKey) {
       case "health":
-        return <FarmHealthCard location={farmProfile?.location ?? defaultLocation} />;
+        return <FarmHealthCard location={location} />;
       case "chat":
         return <SmartInsight />;
       case "farm advice":
-        return <Explore location={farmProfile?.location ?? defaultLocation} />;
-        
       default:
-        // Use the first tab's component as the default if a strange key is found
-        return <Explore location={farmProfile?.location ?? defaultLocation} />;
+        return <Explore location={location} />;
     }
-  }, [activeTabKey, farmProfile?.location]);
+    // farmProfile.location is a plain object from the store — stable reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabKey, farmProfile?.location?.state, farmProfile?.location?.country]);
 
 
   if (isLoading) {
