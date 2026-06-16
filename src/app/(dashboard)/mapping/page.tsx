@@ -20,7 +20,7 @@ const MapView = dynamic(() => import("./MapView"), { ssr: false, loading: () => 
 )});
 
 /* ── API config ── */
-const GEO_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api-famtech-backend-app.onrender.com";
+const GEO_BASE = process.env.NEXT_PUBLIC_GEO_API_URL || "https://finite-enmu.sa.pipeops.app/api/v1";
 
 type Farm = {
   id: string;
