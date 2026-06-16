@@ -20,7 +20,7 @@ const MapView = dynamic(() => import("./MapView"), { ssr: false, loading: () => 
 )});
 
 /* ── API config ── */
-const GEO_BASE = "https://finite-enmu.sa.pipeops.app/api/v1";
+const GEO_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api-famtech-backend-app.onrender.com";
 
 type Farm = {
   id: string;
@@ -91,9 +91,11 @@ export default function MappingPage() {
       const json = await res.json();
       const list: Farm[] = Array.isArray(json) ? json : json.data ?? json.farms ?? [];
       setFarms(list);
-      if (list.length > 0 && !activeFarm) setActiveFarm(list[0]);
+      // Use functional updater to avoid activeFarm in deps (would cause loop)
+      setActiveFarm(prev => (prev === null && list.length > 0 ? list[0] : prev));
     } catch { /* ignore */ }
-  }, [userId, tenantId, activeFarm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, tenantId]);
 
   /* ── Fetch sections for active farm ── */
   const fetchSections = useCallback(async (farmId: string) => {
@@ -135,7 +137,7 @@ export default function MappingPage() {
   const [farmForm, setFarmForm] = useState({ name: "", externalId: "" });
   const openNewFarm = () => {
     setFarmForm({ name: profileFarmName ?? "", externalId: profileExternalId ?? "" });
-    openNewFarm();
+    setShowNewFarm(true);
   };
   const handleCreateFarm = async (e: React.FormEvent) => {
     e.preventDefault();
