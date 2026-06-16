@@ -95,7 +95,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (user?.farmProfile) {
       setId(user?.farmProfile);
     }
-  }, [user?.farmProfile, setId]);
+    // setId is a stable Zustand action — exclude from deps to avoid re-render loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.farmProfile]);
 
   // Close flyout when clicking outside
   useEffect(() => {

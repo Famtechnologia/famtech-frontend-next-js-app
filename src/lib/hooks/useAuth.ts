@@ -17,7 +17,8 @@ export const useAuth = () => {
     } catch (error) {
       console.log(error);
     }
-  }, [token, setUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // setUser is a stable Zustand action — excluded to prevent re-render loops
 
   const logout = () => {
     storeLogout();

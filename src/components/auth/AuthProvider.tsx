@@ -24,20 +24,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // This clears auth + profile localStorage so no stale data bleeds to next user
       useAuthStore.getState().logout();
     }
-  }, [cookie, token, setToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cookie, token]); // setToken is a stable Zustand action — excluded to prevent re-render loops
 
-  // 2. Fetch user if token is present but user is null,
-  //    OR if user exists but farmProfile is missing (stale cached data)
+  // 2. Fetch user when token changes — use token as the only dep to avoid
+  //    re-triggering when setLoading/fetchUser refs change or user object updates
   useEffect(() => {
-    if (token && (!user || !user.farmProfile)) {
-      setLoading(true);
-      fetchUser().finally(() => {
-        setLoading(false);
-      });
-    } else if (!token) {
+    if (!token) {
       setLoading(false);
+      return;
     }
-  }, [token, user, fetchUser, setLoading]);
+    if (user?.farmProfile) return; // already have a complete user
+    setLoading(true);
+    fetchUser().finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   // 3. Perform routing logic based on user role and path
   useEffect(() => {
