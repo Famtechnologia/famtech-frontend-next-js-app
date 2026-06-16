@@ -146,7 +146,7 @@ const RecordDetails: React.FC<RecordDetailsProps> = ({ record, type }) => {
             if (!url) return null;
             return (
               <div key={idx} className="w-44 h-32 relative flex-shrink-0 rounded-xl overflow-hidden border border-slate-100 shadow-sm group">
-                <Image
+                <ImageWithFallback
                   src={url}
                   alt={isCrop ? `${crop.cropName} image ${idx + 1}` : `${livestock.specie} image`}
                   fill
