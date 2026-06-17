@@ -29,14 +29,23 @@ interface Props {
   sections: Section[];
   assets: Asset[];
   onBoundaryUpdate: (farmId: string, boundary: GeoJSON.Polygon) => void;
+  /** GeoJSON FeatureCollection from /import-export/farms/:id/geojson (preferred) */
+  geoJSON?: GeoJSON.FeatureCollection | null;
 }
 
-export default function MapView({ farm, sections, assets, onBoundaryUpdate }: Props) {
+const ASSET_EMOJI: Record<string, string> = {
+  vehicle: "🚜",
+  irrigation: "💧",
+  sensor: "📡",
+  storage: "🏚️",
+};
+
+export default function MapView({ farm, sections, assets, onBoundaryUpdate, geoJSON }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const layersRef = useRef<import("leaflet").LayerGroup | null>(null);
 
-  /* init map once */
+  /* init Leaflet map once */
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -44,13 +53,12 @@ export default function MapView({ farm, sections, assets, onBoundaryUpdate }: Pr
       const L = (await import("leaflet")).default;
       await import("leaflet/dist/leaflet.css");
 
-      /* Fix broken default icon paths in webpack */
       // @ts-expect-error _getIconUrl
       delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+        iconUrl:       "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+        shadowUrl:     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       });
 
       const map = L.map(containerRef.current!, {
@@ -59,10 +67,20 @@ export default function MapView({ farm, sections, assets, onBoundaryUpdate }: Pr
         zoomControl: true,
       });
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+      // Satellite tile layer (ESRI World Imagery — free, no token required)
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles © Esri — Source: Esri, DigitalGlobe, USDA FSA",
+          maxZoom: 19,
+        }
+      ).addTo(map);
+
+      // Labels overlay on top of satellite
+      L.tileLayer(
+        "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+        { maxZoom: 19, opacity: 0.7 }
+      ).addTo(map);
 
       layersRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
@@ -79,7 +97,7 @@ export default function MapView({ farm, sections, assets, onBoundaryUpdate }: Pr
     };
   }, []);
 
-  /* redraw layers when data changes */
+  /* redraw layers whenever data changes */
   useEffect(() => {
     const draw = async () => {
       if (!mapRef.current || !layersRef.current) return;
@@ -87,35 +105,77 @@ export default function MapView({ farm, sections, assets, onBoundaryUpdate }: Pr
 
       layersRef.current.clearLayers();
 
-      const bounds: [number, number][] = [];
+      // ── Prefer the unified GeoJSON FeatureCollection from import-export ──
+      if (geoJSON && geoJSON.features?.length > 0) {
+        geoJSON.features.forEach((feature) => {
+          const type = feature.properties?.featureType as string;
+          const name = feature.properties?.name as string ?? "";
 
-      /* Farm boundary */
+          if (type === "farm") {
+            // Yellow dashed farm boundary
+            const layer = L.geoJSON(feature as GeoJSON.GeoJsonObject, {
+              style: { color: "#FFEB3B", weight: 3, dashArray: "6 4", fillOpacity: 0.06, fillColor: "#FFEB3B" },
+            }).addTo(layersRef.current!);
+            layer.bindPopup(`<strong>${name}</strong><br/>Farm boundary`);
+            try {
+              const b = layer.getBounds();
+              if (b.isValid()) mapRef.current!.fitBounds(b, { padding: [30, 30] });
+            } catch { /* ignore */ }
+
+          } else if (type === "section") {
+            // Green fill for sections
+            const cropType = feature.properties?.cropType as string ?? "";
+            const areaHa   = parseFloat(feature.properties?.areaHectares ?? "0").toFixed(2);
+            const layer = L.geoJSON(feature as GeoJSON.GeoJsonObject, {
+              style: { color: "#ffffff", weight: 1.5, fillOpacity: 0.4, fillColor: feature.properties?.color ?? "#4CAF50" },
+            }).addTo(layersRef.current!);
+            layer.bindPopup(`
+              <strong>${name}</strong><br/>
+              ${cropType ? `Crop: ${cropType}<br/>` : ""}
+              Area: ${areaHa} ha
+            `);
+
+          } else if (type === "asset" && feature.geometry?.type === "Point") {
+            const [lng, lat] = (feature.geometry as GeoJSON.Point).coordinates;
+            const assetType  = (feature.properties?.type ?? "other") as string;
+            const emoji      = ASSET_EMOJI[assetType] ?? "⚙️";
+            const icon = L.divIcon({
+              html: `<span style="font-size:20px;line-height:1">${emoji}</span>`,
+              className: "",
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+            });
+            const marker = L.marker([lat, lng], { icon }).addTo(layersRef.current!);
+            marker.bindPopup(`<strong>${name}</strong><br/>${assetType}`);
+          }
+        });
+        return;
+      }
+
+      // ── Fallback: render from separate farms/sections/assets props ──
       if (farm?.boundary) {
         const farmLayer = L.geoJSON(farm.boundary as GeoJSON.GeoJsonObject, {
-          style: { color: "#22c55e", weight: 2.5, fillOpacity: 0.08, fillColor: "#22c55e" },
+          style: { color: "#FFEB3B", weight: 3, dashArray: "6 4", fillOpacity: 0.06, fillColor: "#FFEB3B" },
         }).addTo(layersRef.current!);
         farmLayer.bindPopup(`<strong>${farm.name}</strong><br/>Farm boundary`);
-        farmLayer.getBounds().isValid() && bounds.push(...Object.values(farmLayer.getBounds()) as unknown as [number,number][]);
         try {
           const b = farmLayer.getBounds();
           if (b.isValid()) mapRef.current!.fitBounds(b, { padding: [30, 30] });
         } catch { /* ignore */ }
       }
 
-      /* Section boundaries */
-      sections.forEach(s => {
+      sections.forEach((s) => {
         if (!s.boundary) return;
         const layer = L.geoJSON(s.boundary as GeoJSON.GeoJsonObject, {
-          style: { color: "#f97316", weight: 2, fillOpacity: 0.12, fillColor: "#f97316" },
+          style: { color: "#ffffff", weight: 1.5, fillOpacity: 0.4, fillColor: "#4CAF50" },
         }).addTo(layersRef.current!);
         layer.bindPopup(`<strong>${s.name}</strong>${s.cropType ? `<br/>Crop: ${s.cropType}` : ""}`);
       });
 
-      /* Asset markers */
-      assets.forEach(a => {
+      assets.forEach((a) => {
         if (!a.location) return;
         const [lng, lat] = a.location.coordinates;
-        const emoji = a.assetType === "vehicle" ? "🚜" : a.assetType === "irrigation" ? "💧" : a.assetType === "sensor" ? "📡" : a.assetType === "storage" ? "🏚️" : "⚙️";
+        const emoji = ASSET_EMOJI[a.assetType] ?? "⚙️";
         const icon = L.divIcon({
           html: `<span style="font-size:20px;line-height:1">${emoji}</span>`,
           className: "",
@@ -128,14 +188,13 @@ export default function MapView({ farm, sections, assets, onBoundaryUpdate }: Pr
     };
 
     draw();
-  }, [farm, sections, assets]);
+  }, [farm, sections, assets, geoJSON]);
 
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" style={{ minHeight: 400 }} />
 
-      {/* Map hint overlay */}
-      {!farm && (
+      {!farm && !geoJSON && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="bg-white/90 dark:bg-[#161b22]/90 border border-gray-200 dark:border-[#30363d] rounded-2xl px-6 py-4 text-center shadow-xl backdrop-blur-sm">
             <p className="text-sm font-bold text-gray-700 dark:text-[#c9d1d9]">Select or register a farm</p>

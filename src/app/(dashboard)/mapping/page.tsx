@@ -1,9 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  Map, Plus, Layers, Trash2, Download,
+  Map, Plus, Layers, Trash2, Download, Upload,
   ChevronDown, ChevronUp, X, Check, Activity,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -49,23 +49,23 @@ type Asset = {
   location?: GeoJSON.Point;
 };
 
-function geoHeaders(userId: string, tenantId: string) {
+function geoHeaders(token: string, tenantId: string) {
   return {
     "Content-Type": "application/json",
-    "X-User-Id": userId,
-    "X-Tenant-Id": tenantId,
+    "Authorization": `Bearer ${token}`,
+    "x-tenant-id": tenantId,
   };
 }
 
 export default function MappingPage() {
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const { profile } = useProfile();
 
-  // Use profile farm ID as tenant, user ID as user identifier
-  const userId   = user?._id ?? "guest";
-  const tenantId = profile?.id ?? user?._id ?? "default";
-  const profileFarmName = profile?.farmName ?? null;
-  const profileExternalId = profile?.id ?? null;
+  // Auth token for geo service; tenant = farm profile ID
+  const authToken = token ?? "";
+  const tenantId  = profile?.id ?? user?._id ?? "default";
+  const profileFarmName    = profile?.farmName ?? null;
+  const profileExternalId  = profile?.id ?? null;
 
   const [farms, setFarms]       = useState<Farm[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -73,6 +73,8 @@ export default function MappingPage() {
   const [activeFarm, setActiveFarm] = useState<Farm | null>(null);
   const [loading, setLoading]   = useState(true);
   const [panel, setPanel]       = useState<"farms" | "sections" | "assets">("farms");
+  const [farmGeoJSON, setFarmGeoJSON] = useState<GeoJSON.FeatureCollection | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* modals */
   const [showNewFarm, setShowNewFarm]       = useState(false);
@@ -87,7 +89,7 @@ export default function MappingPage() {
   /* ── Fetch farms ── */
   const fetchFarms = useCallback(async () => {
     try {
-      const res = await fetch(`${GEO_BASE}/farms`, { headers: geoHeaders(userId, tenantId) });
+      const res = await fetch(`${GEO_BASE}/farms`, { headers: geoHeaders(authToken, tenantId) });
       const json = await res.json();
       const list: Farm[] = Array.isArray(json) ? json : json.data ?? json.farms ?? [];
       setFarms(list);
@@ -95,25 +97,25 @@ export default function MappingPage() {
       setActiveFarm(prev => (prev === null && list.length > 0 ? list[0] : prev));
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, tenantId]);
+  }, [authToken, tenantId]);
 
   /* ── Fetch sections for active farm ── */
   const fetchSections = useCallback(async (farmId: string) => {
     try {
-      const res = await fetch(`${GEO_BASE}/sections/farm/${farmId}`, { headers: geoHeaders(userId, tenantId) });
+      const res = await fetch(`${GEO_BASE}/sections/farm/${farmId}`, { headers: geoHeaders(authToken, tenantId) });
       const json = await res.json();
       setSections(Array.isArray(json) ? json : json.data ?? json.sections ?? []);
     } catch { /* ignore */ }
-  }, [userId, tenantId]);
+  }, [authToken, tenantId]);
 
   /* ── Fetch assets for active farm ── */
   const fetchAssets = useCallback(async (farmId: string) => {
     try {
-      const res = await fetch(`${GEO_BASE}/assets/farm/${farmId}`, { headers: geoHeaders(userId, tenantId) });
+      const res = await fetch(`${GEO_BASE}/assets/farm/${farmId}`, { headers: geoHeaders(authToken, tenantId) });
       const json = await res.json();
       setAssets(Array.isArray(json) ? json : json.data ?? json.assets ?? []);
     } catch { /* ignore */ }
-  }, [userId, tenantId]);
+  }, [authToken, tenantId]);
 
   useEffect(() => {
     if (!tenantId || tenantId === "default") return;
@@ -129,8 +131,17 @@ export default function MappingPage() {
     if (activeFarm) {
       fetchSections(activeFarm.id);
       fetchAssets(activeFarm.id);
+      // Fetch unified GeoJSON from import-export endpoint
+      fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, {
+        headers: geoHeaders(authToken, tenantId),
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => setFarmGeoJSON(data))
+        .catch(() => setFarmGeoJSON(null));
+    } else {
+      setFarmGeoJSON(null);
     }
-  }, [activeFarm, fetchSections, fetchAssets]);
+  }, [activeFarm, fetchSections, fetchAssets, authToken, tenantId]);
 
   /* ── Create farm ── */
   // Pre-fill with profile farm name when modal opens
@@ -145,7 +156,7 @@ export default function MappingPage() {
     try {
       const res = await fetch(`${GEO_BASE}/farms`, {
         method: "POST",
-        headers: geoHeaders(userId, tenantId),
+        headers: geoHeaders(authToken, tenantId),
         body: JSON.stringify({ name: farmForm.name, externalId: farmForm.externalId || `farm-${Date.now()}`, tenantId }),
       });
       if (res.ok) {
@@ -166,7 +177,7 @@ export default function MappingPage() {
     try {
       const res = await fetch(`${GEO_BASE}/sections`, {
         method: "POST",
-        headers: geoHeaders(userId, tenantId),
+        headers: geoHeaders(authToken, tenantId),
         body: JSON.stringify({ name: sectionForm.name, cropType: sectionForm.cropType || undefined, farmId: activeFarm.id }),
       });
       if (res.ok) {
@@ -187,7 +198,7 @@ export default function MappingPage() {
     try {
       const res = await fetch(`${GEO_BASE}/assets`, {
         method: "POST",
-        headers: geoHeaders(userId, tenantId),
+        headers: geoHeaders(authToken, tenantId),
         body: JSON.stringify({ name: assetForm.name, assetType: assetForm.assetType, farmId: activeFarm.id }),
       });
       if (res.ok) {
@@ -201,7 +212,7 @@ export default function MappingPage() {
 
   /* ── Delete farm ── */
   const deleteFarm = async (id: string) => {
-    await fetch(`${GEO_BASE}/farms/${id}`, { method: "DELETE", headers: geoHeaders(userId, tenantId) });
+    await fetch(`${GEO_BASE}/farms/${id}`, { method: "DELETE", headers: geoHeaders(authToken, tenantId) });
     notify("Farm deleted");
     if (activeFarm?.id === id) setActiveFarm(null);
     fetchFarms();
@@ -209,7 +220,7 @@ export default function MappingPage() {
 
   /* ── Delete section ── */
   const deleteSection = async (id: string) => {
-    await fetch(`${GEO_BASE}/sections/${id}`, { method: "DELETE", headers: geoHeaders(userId, tenantId) });
+    await fetch(`${GEO_BASE}/sections/${id}`, { method: "DELETE", headers: geoHeaders(authToken, tenantId) });
     notify("Section deleted");
     if (activeFarm) fetchSections(activeFarm.id);
   };
@@ -217,12 +228,40 @@ export default function MappingPage() {
   /* ── Export GeoJSON ── */
   const exportGeoJSON = async () => {
     if (!activeFarm) return;
-    const res = await fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, { headers: geoHeaders(userId, tenantId) });
+    const res = await fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, { headers: geoHeaders(authToken, tenantId) });
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `${activeFarm.name}.geojson`; a.click();
     URL.revokeObjectURL(url);
     notify("GeoJSON exported ✓");
+  };
+
+  /* ── Import GeoJSON file ── */
+  const handleGeoJSONImport = async (file: File) => {
+    if (!activeFarm) { notify("Select a farm first"); return; }
+    try {
+      const text = await file.text();
+      const geojson = JSON.parse(text);
+      const res = await fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/import/geojson`, {
+        method: "POST",
+        headers: geoHeaders(authToken, tenantId),
+        body: JSON.stringify(geojson),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        notify(`Imported ${result.sections ?? 0} sections, ${result.assets ?? 0} assets ✓`);
+        fetchSections(activeFarm.id);
+        fetchAssets(activeFarm.id);
+        // Refresh the unified GeoJSON
+        fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, {
+          headers: geoHeaders(authToken, tenantId),
+        }).then(r => r.json()).then(setFarmGeoJSON).catch(() => {});
+      } else {
+        notify("Import failed — check file format");
+      }
+    } catch {
+      notify("Invalid GeoJSON file");
+    }
   };
 
   /* Shared panel content — used in both sidebar and bottom sheet */
@@ -379,9 +418,16 @@ export default function MappingPage() {
         </div>
         <div className="flex items-center gap-2">
           {activeFarm && (
-            <button onClick={exportGeoJSON} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
-              <Download className="w-3 h-3" /> <span className="hidden sm:inline">GeoJSON</span>
-            </button>
+            <>
+              <button onClick={exportGeoJSON} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
+                <Download className="w-3 h-3" /> <span className="hidden sm:inline">Export</span>
+              </button>
+              <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
+                <Upload className="w-3 h-3" /> <span className="hidden sm:inline">Import</span>
+              </button>
+              <input ref={fileInputRef} type="file" accept=".geojson,application/geo+json" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleGeoJSONImport(f); e.target.value = ""; }} />
+            </>
           )}
           <button onClick={() => openNewFarm()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
             <Plus className="w-3 h-3" /> <span className="hidden xs:inline">New Farm</span><span className="xs:hidden">Farm</span>
@@ -403,14 +449,15 @@ export default function MappingPage() {
             farm={activeFarm}
             sections={sections}
             assets={assets}
+            geoJSON={farmGeoJSON}
             onBoundaryUpdate={async (farmId, boundary) => {
               await fetch(`${GEO_BASE}/farms/${farmId}/boundary`, {
                 method: "PATCH",
-                headers: geoHeaders(userId, tenantId),
+                headers: geoHeaders(authToken, tenantId),
                 body: JSON.stringify({ boundary }),
               });
               notify("Boundary saved ✓");
-              fetchFarms();
+              await fetchFarms();
             }}
           />
 
