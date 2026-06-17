@@ -339,10 +339,10 @@ export default function MappingPage() {
         <div className="mx-3 mt-3 mb-1 px-3 py-2 bg-emerald-50 dark:bg-[#0d2a1a] rounded-lg border border-emerald-100 dark:border-emerald-900/40">
           <p className="text-[10px] font-bold text-emerald-700 dark:text-[#4ade80] uppercase tracking-wider">Your Farm</p>
           <p className="text-xs font-bold text-emerald-800 dark:text-[#4ade80] truncate">{profileFarmName}</p>
-          {(profile as Record<string, unknown> | null)?.location && (
+          {(profile as unknown as Record<string, Record<string, string>> | null)?.location?.state && (
             <p className="text-[10px] text-emerald-600 dark:text-[#4ade80]/70">
-              {((profile as Record<string, Record<string, string>>).location)?.city},{" "}
-              {((profile as Record<string, Record<string, string>>).location)?.state}
+              {(profile as unknown as Record<string, Record<string, string>>).location?.city},{" "}
+              {(profile as unknown as Record<string, Record<string, string>>).location?.state}
             </p>
           )}
         </div>
