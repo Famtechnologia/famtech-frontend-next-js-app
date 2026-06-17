@@ -1,32 +1,37 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
-  Map, Plus, Layers, Trash2, Download, Upload,
+  Map, Plus, Layers, Trash2, Download,
   ChevronDown, ChevronUp, X, Check, Activity,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useProfile } from "@/lib/hooks/useProfile";
 
-/* ── Dynamic import — Leaflet requires no SSR ── */
-const MapView = dynamic(() => import("./MapView"), { ssr: false, loading: () => (
-  <div className="flex-1 flex items-center justify-center bg-gray-100 dark:bg-[#161b22]">
-    <div className="text-center space-y-3">
-      <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-      <p className="text-sm text-gray-500 dark:text-[#8b949e] font-medium">Loading map…</p>
-    </div>
-  </div>
-)});
+/* ── Dynamic import — Mapbox requires no SSR ── */
+const FarmMap = dynamic(
+  () => import("./MapView").then((m) => ({ default: m.FarmMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 flex items-center justify-center bg-gray-100 dark:bg-[#161b22] h-full">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-gray-500 dark:text-[#8b949e] font-medium">Loading map…</p>
+        </div>
+      </div>
+    ),
+  }
+);
 
-/* ── API config ── */
-const GEO_BASE = process.env.NEXT_PUBLIC_GEO_API_URL || "https://finite-enmu.sa.pipeops.app/api/v1";
+const GEO_BASE =
+  process.env.NEXT_PUBLIC_GEO_API_URL || "https://finite-enmu.sa.pipeops.app/api/v1";
 
 type Farm = {
   id: string;
   name: string;
   externalId?: string;
-  boundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon;
   totalArea?: number;
   areaUnit?: string;
   createdAt?: string;
@@ -37,7 +42,6 @@ type Section = {
   name: string;
   farmId: string;
   cropType?: string;
-  boundary?: GeoJSON.Polygon;
   area?: number;
 };
 
@@ -46,72 +50,152 @@ type Asset = {
   name: string;
   assetType: string;
   farmId: string;
-  location?: GeoJSON.Point;
 };
 
 function geoHeaders(token: string, tenantId: string) {
   return {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     "x-tenant-id": tenantId,
   };
+}
+
+/* ── Drag-and-Drop GeoJSON Uploader (per implementation plan §6) ── */
+function GeoJSONUploader({
+  farmId,
+  authToken,
+  tenantId,
+  onImported,
+}: {
+  farmId: string;
+  authToken: string;
+  tenantId: string;
+  onImported: (sections: number, assets: number) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.name.endsWith(".geojson")) {
+      setMessage("Please drop a valid .geojson file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const geojson = JSON.parse(event.target?.result as string);
+        setLoading(true);
+
+        const response = await fetch(
+          `${GEO_BASE}/import-export/farms/${farmId}/import/geojson`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+              "x-tenant-id": tenantId,
+            },
+            body: JSON.stringify(geojson),
+          }
+        );
+
+        const result = await response.json();
+        setMessage(
+          `Success! Imported ${result.sections ?? 0} sections and ${result.assets ?? 0} assets.`
+        );
+        onImported(result.sections ?? 0, result.assets ?? 0);
+      } catch (err) {
+        setMessage("Failed to import GeoJSON file: " + (err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+      className="mx-3 my-2 rounded-lg text-center cursor-pointer"
+      style={{
+        border: "2px dashed #0080FF",
+        padding: "20px",
+        background: "#F0F8FF",
+        borderRadius: "8px",
+      }}
+    >
+      {loading
+        ? "Processing GeoJSON…"
+        : "Drag & Drop your .geojson file here to import"}
+      {message && (
+        <div style={{ marginTop: "10px", fontWeight: "bold", fontSize: "12px" }}>
+          {message}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function MappingPage() {
   const { user, token } = useAuthStore();
   const { profile } = useProfile();
 
-  // Auth token for geo service; tenant = farm profile ID
   const authToken = token ?? "";
   const tenantId  = profile?.id ?? user?._id ?? "default";
-  const profileFarmName    = profile?.farmName ?? null;
-  const profileExternalId  = profile?.id ?? null;
+  const profileFarmName   = (profile?.farmName as string) ?? null;
+  const profileExternalId = (profile?.id as string) ?? null;
 
-  const [farms, setFarms]       = useState<Farm[]>([]);
-  const [sections, setSections] = useState<Section[]>([]);
-  const [assets, setAssets]     = useState<Asset[]>([]);
+  const [farms, setFarms]           = useState<Farm[]>([]);
+  const [sections, setSections]     = useState<Section[]>([]);
+  const [assets, setAssets]         = useState<Asset[]>([]);
   const [activeFarm, setActiveFarm] = useState<Farm | null>(null);
-  const [loading, setLoading]   = useState(true);
-  const [panel, setPanel]       = useState<"farms" | "sections" | "assets">("farms");
-  const [farmGeoJSON, setFarmGeoJSON] = useState<GeoJSON.FeatureCollection | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading]       = useState(true);
+  const [panel, setPanel]           = useState<"farms" | "sections" | "assets">("farms");
+  const [mapKey, setMapKey]         = useState(0); // force re-mount on farm change
 
   /* modals */
   const [showNewFarm, setShowNewFarm]       = useState(false);
   const [showNewSection, setShowNewSection] = useState(false);
   const [showNewAsset, setShowNewAsset]     = useState(false);
+  const [showImport, setShowImport]         = useState(false);
   const [saving, setSaving]                 = useState(false);
   const [toast, setToast]                   = useState<string | null>(null);
   const [sheetOpen, setSheetOpen]           = useState(false);
 
-  const notify = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+  const notify = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   /* ── Fetch farms ── */
   const fetchFarms = useCallback(async () => {
     try {
-      const res = await fetch(`${GEO_BASE}/farms`, { headers: geoHeaders(authToken, tenantId) });
+      const res  = await fetch(`${GEO_BASE}/farms`, { headers: geoHeaders(authToken, tenantId) });
       const json = await res.json();
       const list: Farm[] = Array.isArray(json) ? json : json.data ?? json.farms ?? [];
       setFarms(list);
-      // Use functional updater to avoid activeFarm in deps (would cause loop)
-      setActiveFarm(prev => (prev === null && list.length > 0 ? list[0] : prev));
+      setActiveFarm((prev) => (prev === null && list.length > 0 ? list[0] : prev));
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken, tenantId]);
 
-  /* ── Fetch sections for active farm ── */
+  /* ── Fetch sections ── */
   const fetchSections = useCallback(async (farmId: string) => {
     try {
-      const res = await fetch(`${GEO_BASE}/sections/farm/${farmId}`, { headers: geoHeaders(authToken, tenantId) });
+      const res  = await fetch(`${GEO_BASE}/sections/farm/${farmId}`, { headers: geoHeaders(authToken, tenantId) });
       const json = await res.json();
       setSections(Array.isArray(json) ? json : json.data ?? json.sections ?? []);
     } catch { /* ignore */ }
   }, [authToken, tenantId]);
 
-  /* ── Fetch assets for active farm ── */
+  /* ── Fetch assets ── */
   const fetchAssets = useCallback(async (farmId: string) => {
     try {
-      const res = await fetch(`${GEO_BASE}/assets/farm/${farmId}`, { headers: geoHeaders(authToken, tenantId) });
+      const res  = await fetch(`${GEO_BASE}/assets/farm/${farmId}`, { headers: geoHeaders(authToken, tenantId) });
       const json = await res.json();
       setAssets(Array.isArray(json) ? json : json.data ?? json.assets ?? []);
     } catch { /* ignore */ }
@@ -131,20 +215,11 @@ export default function MappingPage() {
     if (activeFarm) {
       fetchSections(activeFarm.id);
       fetchAssets(activeFarm.id);
-      // Fetch unified GeoJSON from import-export endpoint
-      fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, {
-        headers: geoHeaders(authToken, tenantId),
-      })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => setFarmGeoJSON(data))
-        .catch(() => setFarmGeoJSON(null));
-    } else {
-      setFarmGeoJSON(null);
+      setMapKey((k) => k + 1); // re-mount FarmMap so it fetches fresh GeoJSON
     }
-  }, [activeFarm, fetchSections, fetchAssets, authToken, tenantId]);
+  }, [activeFarm, fetchSections, fetchAssets]);
 
   /* ── Create farm ── */
-  // Pre-fill with profile farm name when modal opens
   const [farmForm, setFarmForm] = useState({ name: "", externalId: "" });
   const openNewFarm = () => {
     setFarmForm({ name: profileFarmName ?? "", externalId: profileExternalId ?? "" });
@@ -157,7 +232,11 @@ export default function MappingPage() {
       const res = await fetch(`${GEO_BASE}/farms`, {
         method: "POST",
         headers: geoHeaders(authToken, tenantId),
-        body: JSON.stringify({ name: farmForm.name, externalId: farmForm.externalId || `farm-${Date.now()}`, tenantId }),
+        body: JSON.stringify({
+          name: farmForm.name,
+          externalId: farmForm.externalId || `farm-${Date.now()}`,
+          tenantId,
+        }),
       });
       if (res.ok) {
         notify("Farm registered ✓");
@@ -165,7 +244,9 @@ export default function MappingPage() {
         setFarmForm({ name: "", externalId: "" });
         await fetchFarms();
       }
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ── Create section ── */
@@ -178,7 +259,11 @@ export default function MappingPage() {
       const res = await fetch(`${GEO_BASE}/sections`, {
         method: "POST",
         headers: geoHeaders(authToken, tenantId),
-        body: JSON.stringify({ name: sectionForm.name, cropType: sectionForm.cropType || undefined, farmId: activeFarm.id }),
+        body: JSON.stringify({
+          name: sectionForm.name,
+          cropType: sectionForm.cropType || undefined,
+          farmId: activeFarm.id,
+        }),
       });
       if (res.ok) {
         notify("Section created ✓");
@@ -186,7 +271,9 @@ export default function MappingPage() {
         setSectionForm({ name: "", cropType: "" });
         fetchSections(activeFarm.id);
       }
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ── Create asset ── */
@@ -199,7 +286,11 @@ export default function MappingPage() {
       const res = await fetch(`${GEO_BASE}/assets`, {
         method: "POST",
         headers: geoHeaders(authToken, tenantId),
-        body: JSON.stringify({ name: assetForm.name, assetType: assetForm.assetType, farmId: activeFarm.id }),
+        body: JSON.stringify({
+          name: assetForm.name,
+          assetType: assetForm.assetType,
+          farmId: activeFarm.id,
+        }),
       });
       if (res.ok) {
         notify("Asset registered ✓");
@@ -207,7 +298,9 @@ export default function MappingPage() {
         setAssetForm({ name: "", assetType: "equipment" });
         fetchAssets(activeFarm.id);
       }
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ── Delete farm ── */
@@ -228,52 +321,30 @@ export default function MappingPage() {
   /* ── Export GeoJSON ── */
   const exportGeoJSON = async () => {
     if (!activeFarm) return;
-    const res = await fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, { headers: geoHeaders(authToken, tenantId) });
+    const res  = await fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, {
+      headers: geoHeaders(authToken, tenantId),
+    });
     const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `${activeFarm.name}.geojson`; a.click();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = `${activeFarm.name}.geojson`; a.click();
     URL.revokeObjectURL(url);
     notify("GeoJSON exported ✓");
   };
 
-  /* ── Import GeoJSON file ── */
-  const handleGeoJSONImport = async (file: File) => {
-    if (!activeFarm) { notify("Select a farm first"); return; }
-    try {
-      const text = await file.text();
-      const geojson = JSON.parse(text);
-      const res = await fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/import/geojson`, {
-        method: "POST",
-        headers: geoHeaders(authToken, tenantId),
-        body: JSON.stringify(geojson),
-      });
-      if (res.ok) {
-        const result = await res.json();
-        notify(`Imported ${result.sections ?? 0} sections, ${result.assets ?? 0} assets ✓`);
-        fetchSections(activeFarm.id);
-        fetchAssets(activeFarm.id);
-        // Refresh the unified GeoJSON
-        fetch(`${GEO_BASE}/import-export/farms/${activeFarm.id}/geojson`, {
-          headers: geoHeaders(authToken, tenantId),
-        }).then(r => r.json()).then(setFarmGeoJSON).catch(() => {});
-      } else {
-        notify("Import failed — check file format");
-      }
-    } catch {
-      notify("Invalid GeoJSON file");
-    }
-  };
-
-  /* Shared panel content — used in both sidebar and bottom sheet */
+  /* ── Panel (shared between sidebar and mobile bottom sheet) ── */
   const PanelContent = () => (
     <div className="flex flex-col h-full">
-      {/* Farm selector */}
-      {/* Profile farm banner */}
       {profileFarmName && (
         <div className="mx-3 mt-3 mb-1 px-3 py-2 bg-emerald-50 dark:bg-[#0d2a1a] rounded-lg border border-emerald-100 dark:border-emerald-900/40">
           <p className="text-[10px] font-bold text-emerald-700 dark:text-[#4ade80] uppercase tracking-wider">Your Farm</p>
           <p className="text-xs font-bold text-emerald-800 dark:text-[#4ade80] truncate">{profileFarmName}</p>
-          {profile?.location?.state && <p className="text-[10px] text-emerald-600 dark:text-[#4ade80]/70">{profile.location.city}, {profile.location.state}</p>}
+          {(profile as Record<string, unknown> | null)?.location && (
+            <p className="text-[10px] text-emerald-600 dark:text-[#4ade80]/70">
+              {((profile as Record<string, Record<string, string>>).location)?.city},{" "}
+              {((profile as Record<string, Record<string, string>>).location)?.state}
+            </p>
+          )}
         </div>
       )}
 
@@ -282,11 +353,16 @@ export default function MappingPage() {
         <div className="relative">
           <select
             value={activeFarm?.id ?? ""}
-            onChange={(e) => { setActiveFarm(farms.find(f => f.id === e.target.value) ?? null); setSheetOpen(false); }}
+            onChange={(e) => {
+              setActiveFarm(farms.find((f) => f.id === e.target.value) ?? null);
+              setSheetOpen(false);
+            }}
             className="w-full appearance-none pl-3 pr-8 py-2 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none"
           >
             <option value="">— Select farm —</option>
-            {farms.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+            {farms.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
         </div>
@@ -294,9 +370,13 @@ export default function MappingPage() {
 
       {/* Tabs */}
       <div className="flex border-b border-gray-100 dark:border-[#30363d] shrink-0">
-        {(["farms", "sections", "assets"] as const).map(t => (
+        {(["farms", "sections", "assets"] as const).map((t) => (
           <button key={t} onClick={() => setPanel(t)}
-            className={`flex-1 py-2 text-[10px] font-bold capitalize transition-colors ${panel === t ? "text-emerald-600 dark:text-[#4ade80] border-b-2 border-emerald-500" : "text-gray-400 dark:text-[#484f58]"}`}>
+            className={`flex-1 py-2 text-[10px] font-bold capitalize transition-colors ${
+              panel === t
+                ? "text-emerald-600 dark:text-[#4ade80] border-b-2 border-emerald-500"
+                : "text-gray-400 dark:text-[#484f58]"
+            }`}>
             {t}
           </button>
         ))}
@@ -306,74 +386,108 @@ export default function MappingPage() {
       <div className="flex-1 overflow-y-auto">
         {panel === "farms" && (
           <div>
-            {loading ? (
-              [...Array(3)].map((_, i) => <div key={i} className="m-3 h-10 bg-gray-100 dark:bg-[#21262d] rounded-lg animate-pulse" />)
-            ) : farms.length === 0 ? (
-              <div className="text-center py-8 px-4">
-                <Map className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
-                <p className="text-xs text-gray-400 dark:text-[#484f58]">No farms yet. Register one.</p>
-              </div>
-            ) : farms.map(farm => (
-              <div key={farm.id} onClick={() => { setActiveFarm(farm); setSheetOpen(false); }}
-                className={`flex items-center justify-between px-3 py-2.5 cursor-pointer border-b border-gray-50 dark:border-[#30363d]/40 transition-colors ${activeFarm?.id === farm.id ? "bg-emerald-50 dark:bg-[#0d2a1a] border-l-2 border-l-emerald-500" : "hover:bg-gray-50 dark:hover:bg-[#21262d]"}`}>
-                <div className="min-w-0">
-                  <p className={`text-xs font-bold truncate ${activeFarm?.id === farm.id ? "text-emerald-700 dark:text-[#4ade80]" : "text-gray-700 dark:text-[#c9d1d9]"}`}>{farm.name}</p>
-                  {farm.totalArea && <p className="text-[10px] text-gray-400 dark:text-[#484f58]">{farm.totalArea.toFixed(2)} {farm.areaUnit ?? "ha"}</p>}
+            {loading
+              ? [...Array(3)].map((_, i) => (
+                  <div key={i} className="m-3 h-10 bg-gray-100 dark:bg-[#21262d] rounded-lg animate-pulse" />
+                ))
+              : farms.length === 0
+              ? (
+                <div className="text-center py-8 px-4">
+                  <Map className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
+                  <p className="text-xs text-gray-400 dark:text-[#484f58]">No farms yet. Register one.</p>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); deleteFarm(farm.id); }} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-            <button onClick={() => openNewFarm()} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+              )
+              : farms.map((farm) => (
+                <div key={farm.id}
+                  onClick={() => { setActiveFarm(farm); setSheetOpen(false); }}
+                  className={`flex items-center justify-between px-3 py-2.5 cursor-pointer border-b border-gray-50 dark:border-[#30363d]/40 transition-colors ${
+                    activeFarm?.id === farm.id
+                      ? "bg-emerald-50 dark:bg-[#0d2a1a] border-l-2 border-l-emerald-500"
+                      : "hover:bg-gray-50 dark:hover:bg-[#21262d]"
+                  }`}>
+                  <div className="min-w-0">
+                    <p className={`text-xs font-bold truncate ${activeFarm?.id === farm.id ? "text-emerald-700 dark:text-[#4ade80]" : "text-gray-700 dark:text-[#c9d1d9]"}`}>
+                      {farm.name}
+                    </p>
+                    {farm.totalArea && (
+                      <p className="text-[10px] text-gray-400 dark:text-[#484f58]">
+                        {farm.totalArea.toFixed(2)} {farm.areaUnit ?? "ha"}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteFarm(farm.id); }}
+                    className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            <button onClick={() => openNewFarm()}
+              className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
               <Plus className="w-3 h-3" /> Register Farm
             </button>
           </div>
         )}
+
         {panel === "sections" && (
           <div>
-            {!activeFarm ? <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
-            : sections.length === 0 ? (
-              <div className="text-center py-8 px-4">
-                <Layers className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
-                <p className="text-xs text-gray-400 dark:text-[#484f58]">No sections yet.</p>
-              </div>
-            ) : sections.map(s => (
-              <div key={s.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40">
-                <div>
-                  <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{s.name}</p>
-                  {s.cropType && <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{s.cropType}</p>}
+            {!activeFarm
+              ? <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
+              : sections.length === 0
+              ? (
+                <div className="text-center py-8 px-4">
+                  <Layers className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
+                  <p className="text-xs text-gray-400 dark:text-[#484f58]">No sections yet.</p>
                 </div>
-                <button onClick={() => deleteSection(s.id)} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+              )
+              : sections.map((s) => (
+                <div key={s.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40">
+                  <div>
+                    <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{s.name}</p>
+                    {s.cropType && <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{s.cropType}</p>}
+                  </div>
+                  <button onClick={() => deleteSection(s.id)} className="p-1 text-gray-300 dark:text-[#484f58] hover:text-red-500 transition-colors">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             {activeFarm && (
-              <button onClick={() => setShowNewSection(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
-                <Plus className="w-3 h-3" /> Add Section
-              </button>
+              <>
+                <button onClick={() => setShowNewSection(true)}
+                  className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+                  <Plus className="w-3 h-3" /> Add Section
+                </button>
+                <button onClick={() => setShowImport(true)}
+                  className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                  <Download className="w-3 h-3 rotate-180" /> Import GeoJSON
+                </button>
+              </>
             )}
           </div>
         )}
+
         {panel === "assets" && (
           <div>
-            {!activeFarm ? <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
-            : assets.length === 0 ? (
-              <div className="text-center py-8 px-4">
-                <Activity className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
-                <p className="text-xs text-gray-400 dark:text-[#484f58]">No assets tracked.</p>
-              </div>
-            ) : assets.map(a => (
-              <div key={a.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40">
-                <div>
-                  <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{a.name}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{a.assetType}</p>
+            {!activeFarm
+              ? <p className="text-xs text-center text-gray-400 dark:text-[#484f58] py-8 px-4">Select a farm first</p>
+              : assets.length === 0
+              ? (
+                <div className="text-center py-8 px-4">
+                  <Activity className="w-7 h-7 text-gray-300 dark:text-[#30363d] mx-auto mb-2" />
+                  <p className="text-xs text-gray-400 dark:text-[#484f58]">No assets tracked.</p>
                 </div>
-              </div>
-            ))}
+              )
+              : assets.map((a) => (
+                <div key={a.id} className="flex items-center justify-between px-3 py-2.5 border-b border-gray-50 dark:border-[#30363d]/40">
+                  <div>
+                    <p className="text-xs font-bold text-gray-700 dark:text-[#c9d1d9]">{a.name}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-[#484f58] capitalize">{a.assetType}</p>
+                  </div>
+                </div>
+              ))}
             {activeFarm && (
-              <button onClick={() => setShowNewAsset(true)} className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
+              <button onClick={() => setShowNewAsset(true)}
+                className="w-full flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold text-emerald-600 dark:text-[#4ade80] hover:bg-emerald-50 dark:hover:bg-[#0d2a1a] transition-colors">
                 <Plus className="w-3 h-3" /> Track Asset
               </button>
             )}
@@ -418,19 +532,14 @@ export default function MappingPage() {
         </div>
         <div className="flex items-center gap-2">
           {activeFarm && (
-            <>
-              <button onClick={exportGeoJSON} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
-                <Download className="w-3 h-3" /> <span className="hidden sm:inline">Export</span>
-              </button>
-              <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
-                <Upload className="w-3 h-3" /> <span className="hidden sm:inline">Import</span>
-              </button>
-              <input ref={fileInputRef} type="file" accept=".geojson,application/geo+json" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleGeoJSONImport(f); e.target.value = ""; }} />
-            </>
+            <button onClick={exportGeoJSON}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">
+              <Download className="w-3 h-3" /> <span className="hidden sm:inline">Export</span>
+            </button>
           )}
-          <button onClick={() => openNewFarm()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
-            <Plus className="w-3 h-3" /> <span className="hidden xs:inline">New Farm</span><span className="xs:hidden">Farm</span>
+          <button onClick={() => openNewFarm()}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
+            <Plus className="w-3 h-3" /> <span className="hidden xs:inline">New Farm</span>
           </button>
         </div>
       </div>
@@ -438,43 +547,41 @@ export default function MappingPage() {
       {/* Desktop: sidebar + map | Mobile: map + bottom sheet */}
       <div className="flex flex-1 overflow-hidden relative">
 
-        {/* ── Desktop sidebar (hidden on mobile) ── */}
+        {/* Desktop sidebar */}
         <aside className="hidden md:flex w-64 shrink-0 border-r border-gray-200 dark:border-[#30363d] bg-white dark:bg-[#161b22] flex-col overflow-hidden">
           <PanelContent />
         </aside>
 
-        {/* ── Map (full width on mobile) ── */}
+        {/* Map */}
         <div className="flex-1 relative overflow-hidden">
-          <MapView
-            farm={activeFarm}
-            sections={sections}
-            assets={assets}
-            geoJSON={farmGeoJSON}
-            onBoundaryUpdate={async (farmId, boundary) => {
-              await fetch(`${GEO_BASE}/farms/${farmId}/boundary`, {
-                method: "PATCH",
-                headers: geoHeaders(authToken, tenantId),
-                body: JSON.stringify({ boundary }),
-              });
-              notify("Boundary saved ✓");
-              await fetchFarms();
-            }}
-          />
+          {activeFarm ? (
+            <FarmMap
+              key={mapKey}
+              farmId={activeFarm.id}
+              authToken={authToken}
+              tenantId={tenantId}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/90 dark:bg-[#161b22]/90 border border-gray-200 dark:border-[#30363d] rounded-2xl px-6 py-4 text-center shadow-xl backdrop-blur-sm">
+                <p className="text-sm font-bold text-gray-700 dark:text-[#c9d1d9]">Select or register a farm</p>
+                <p className="text-xs text-gray-400 dark:text-[#484f58] mt-1">Farm boundaries and assets will appear here</p>
+              </div>
+            </div>
+          )}
 
-          {/* Mobile FAB to open bottom sheet */}
+          {/* Mobile FAB */}
           <button
-            onClick={() => setSheetOpen(o => !o)}
-            className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-[#30363d] rounded-full shadow-xl text-xs font-bold text-gray-700 dark:text-[#e6edf3]"
-          >
+            onClick={() => setSheetOpen((o) => !o)}
+            className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-[#30363d] rounded-full shadow-xl text-xs font-bold text-gray-700 dark:text-[#e6edf3]">
             {sheetOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
             {activeFarm ? activeFarm.name : "Select Farm"}
           </button>
         </div>
 
-        {/* ── Mobile bottom sheet ── */}
+        {/* Mobile bottom sheet */}
         {sheetOpen && (
           <div className="md:hidden absolute bottom-0 left-0 right-0 z-[450] bg-white dark:bg-[#161b22] border-t border-gray-200 dark:border-[#30363d] rounded-t-2xl shadow-2xl flex flex-col" style={{ maxHeight: "60vh" }}>
-            {/* Handle */}
             <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
               <div className="w-10 h-1 bg-gray-200 dark:bg-[#30363d] rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
               <span className="text-xs font-bold text-gray-500 dark:text-[#8b949e]">Farm Manager</span>
@@ -498,17 +605,18 @@ export default function MappingPage() {
             <form onSubmit={handleCreateFarm} className="p-4 space-y-3">
               <div>
                 <label className="text-xs font-bold text-gray-600 dark:text-[#8b949e] block mb-1">Farm Name *</label>
-                <input required value={farmForm.name} onChange={e => setFarmForm(p => ({...p, name: e.target.value}))}
+                <input required value={farmForm.name} onChange={(e) => setFarmForm((p) => ({ ...p, name: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="e.g. Ikeja Farm North" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 dark:text-[#8b949e] block mb-1">External ID (optional)</label>
-                <input value={farmForm.externalId} onChange={e => setFarmForm(p => ({...p, externalId: e.target.value}))}
+                <input value={farmForm.externalId} onChange={(e) => setFarmForm((p) => ({ ...p, externalId: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Link to your main system ID" />
               </div>
-              <button type="submit" disabled={saving} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm disabled:opacity-50">
+              <button type="submit" disabled={saving}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm disabled:opacity-50">
                 {saving ? "Saving…" : "Register Farm"}
               </button>
             </form>
@@ -527,17 +635,18 @@ export default function MappingPage() {
             <form onSubmit={handleCreateSection} className="p-4 space-y-3">
               <div>
                 <label className="text-xs font-bold text-gray-600 dark:text-[#8b949e] block mb-1">Section Name *</label>
-                <input required value={sectionForm.name} onChange={e => setSectionForm(p => ({...p, name: e.target.value}))}
+                <input required value={sectionForm.name} onChange={(e) => setSectionForm((p) => ({ ...p, name: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="e.g. Plot A — Rice Field" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 dark:text-[#8b949e] block mb-1">Crop Type</label>
-                <input value={sectionForm.cropType} onChange={e => setSectionForm(p => ({...p, cropType: e.target.value}))}
+                <input value={sectionForm.cropType} onChange={(e) => setSectionForm((p) => ({ ...p, cropType: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="e.g. rice, maize, cassava" />
               </div>
-              <button type="submit" disabled={saving} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm disabled:opacity-50">
+              <button type="submit" disabled={saving}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm disabled:opacity-50">
                 {saving ? "Saving…" : "Add Section"}
               </button>
             </form>
@@ -556,13 +665,13 @@ export default function MappingPage() {
             <form onSubmit={handleCreateAsset} className="p-4 space-y-3">
               <div>
                 <label className="text-xs font-bold text-gray-600 dark:text-[#8b949e] block mb-1">Asset Name *</label>
-                <input required value={assetForm.name} onChange={e => setAssetForm(p => ({...p, name: e.target.value}))}
+                <input required value={assetForm.name} onChange={(e) => setAssetForm((p) => ({ ...p, name: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="e.g. Tractor #1" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 dark:text-[#8b949e] block mb-1">Asset Type</label>
-                <select value={assetForm.assetType} onChange={e => setAssetForm(p => ({...p, assetType: e.target.value}))}
+                <select value={assetForm.assetType} onChange={(e) => setAssetForm((p) => ({ ...p, assetType: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl dark:bg-[#0d1117] dark:text-[#e6edf3] focus:outline-none">
                   <option value="equipment">Equipment</option>
                   <option value="vehicle">Vehicle</option>
@@ -572,10 +681,37 @@ export default function MappingPage() {
                   <option value="other">Other</option>
                 </select>
               </div>
-              <button type="submit" disabled={saving} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm disabled:opacity-50">
+              <button type="submit" disabled={saving}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm disabled:opacity-50">
                 {saving ? "Saving…" : "Track Asset"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: GeoJSON Drag-and-Drop Import ── */}
+      {showImport && activeFarm && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] w-full max-w-sm shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
+              <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-sm">Import GeoJSON</h3>
+              <button onClick={() => setShowImport(false)}><X className="w-4 h-4 text-gray-400" /></button>
+            </div>
+            <div className="p-4">
+              <GeoJSONUploader
+                farmId={activeFarm.id}
+                authToken={authToken}
+                tenantId={tenantId}
+                onImported={(s, a) => {
+                  notify(`Imported ${s} sections, ${a} assets ✓`);
+                  fetchSections(activeFarm.id);
+                  fetchAssets(activeFarm.id);
+                  setMapKey((k) => k + 1);
+                  setShowImport(false);
+                }}
+              />
+            </div>
           </div>
         </div>
       )}

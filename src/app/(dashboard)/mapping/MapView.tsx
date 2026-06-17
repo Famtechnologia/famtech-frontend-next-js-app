@@ -1,207 +1,181 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 
-type Farm = {
-  id: string;
-  name: string;
-  boundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon;
-};
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
-type Section = {
-  id: string;
-  name: string;
+const GEO_BASE =
+  process.env.NEXT_PUBLIC_GEO_API_URL || "https://finite-enmu.sa.pipeops.app/api/v1";
+
+interface FarmMapProps {
   farmId: string;
-  cropType?: string;
-  boundary?: GeoJSON.Polygon;
-};
-
-type Asset = {
-  id: string;
-  name: string;
-  assetType: string;
-  farmId: string;
-  location?: GeoJSON.Point;
-};
-
-interface Props {
-  farm: Farm | null;
-  sections: Section[];
-  assets: Asset[];
-  onBoundaryUpdate: (farmId: string, boundary: GeoJSON.Polygon) => void;
-  /** GeoJSON FeatureCollection from /import-export/farms/:id/geojson (preferred) */
-  geoJSON?: GeoJSON.FeatureCollection | null;
+  authToken: string;
+  tenantId: string;
 }
 
-const ASSET_EMOJI: Record<string, string> = {
-  vehicle: "🚜",
-  irrigation: "💧",
-  sensor: "📡",
-  storage: "🏚️",
-};
+export const FarmMap: React.FC<FarmMapProps> = ({ farmId, authToken, tenantId }) => {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
 
-export default function MapView({ farm, sections, assets, onBoundaryUpdate, geoJSON }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<import("leaflet").Map | null>(null);
-  const layersRef = useRef<import("leaflet").LayerGroup | null>(null);
-
-  /* init Leaflet map once */
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!mapContainerRef.current || !farmId) return;
 
-    const init = async () => {
-      const L = (await import("leaflet")).default;
-      await import("leaflet/dist/leaflet.css");
+    // Clean up previous map instance when farmId changes
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
 
-      // @ts-expect-error _getIconUrl
-      delete L.Icon.Default.prototype._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-        iconUrl:       "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-        shadowUrl:     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-      });
+    // 1. Initialize Mapbox
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/satellite-streets-v12",
+      center: [3.358, 7.168], // Nigeria fallback
+      zoom: 13,
+    });
+    mapRef.current = map;
 
-      const map = L.map(containerRef.current!, {
-        center: [9.082, 8.675], // Nigeria centroid
-        zoom: 6,
-        zoomControl: true,
-      });
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-      // Satellite tile layer (ESRI World Imagery — free, no token required)
-      L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        {
-          attribution: "Tiles © Esri — Source: Esri, DigitalGlobe, USDA FSA",
-          maxZoom: 19,
+    map.on("load", async () => {
+      try {
+        // 2. Fetch GeoJSON from the geo service
+        const response = await fetch(
+          `${GEO_BASE}/import-export/farms/${farmId}/geojson`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "x-tenant-id": tenantId,
+            },
+          }
+        );
+        const geojson = await response.json();
+
+        // 3. Add GeoJSON source
+        map.addSource("farm-features", {
+          type: "geojson",
+          data: geojson,
+        });
+
+        // 4. Sections — fill
+        map.addLayer({
+          id: "sections-fill",
+          type: "fill",
+          source: "farm-features",
+          filter: ["==", ["get", "featureType"], "section"],
+          paint: {
+            "fill-color": ["coalesce", ["get", "color"], "#4CAF50"],
+            "fill-opacity": 0.4,
+          },
+        });
+
+        // 5. Sections — border
+        map.addLayer({
+          id: "sections-stroke",
+          type: "line",
+          source: "farm-features",
+          filter: ["==", ["get", "featureType"], "section"],
+          paint: {
+            "line-color": "#FFFFFF",
+            "line-width": 1.5,
+          },
+        });
+
+        // 6. Assets — orange circles
+        map.addLayer({
+          id: "assets-circle",
+          type: "circle",
+          source: "farm-features",
+          filter: ["==", ["get", "featureType"], "asset"],
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#FF5722",
+            "circle-stroke-color": "#FFFFFF",
+            "circle-stroke-width": 1,
+          },
+        });
+
+        // 7. Farm boundary — yellow dashed line
+        map.addLayer({
+          id: "farm-boundary-line",
+          type: "line",
+          source: "farm-features",
+          filter: ["==", ["get", "featureType"], "farm"],
+          paint: {
+            "line-color": "#FFEB3B",
+            "line-width": 3,
+            "line-dasharray": [2, 2],
+          },
+        });
+
+        // 8. Auto-fit to farm bounds
+        const farmFeature = geojson.features?.find(
+          (f: GeoJSON.Feature) => f.properties?.featureType === "farm"
+        );
+        if (farmFeature?.geometry?.type === "Polygon") {
+          const coordinates = (farmFeature.geometry as GeoJSON.Polygon).coordinates[0];
+          const bounds = coordinates.reduce(
+            (acc: mapboxgl.LngLatBounds, coord) => acc.extend(coord as [number, number]),
+            new mapboxgl.LngLatBounds(
+              coordinates[0] as [number, number],
+              coordinates[0] as [number, number]
+            )
+          );
+          map.fitBounds(bounds, { padding: 40 });
         }
-      ).addTo(map);
 
-      // Labels overlay on top of satellite
-      L.tileLayer(
-        "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-        { maxZoom: 19, opacity: 0.7 }
-      ).addTo(map);
+        // ── Click interaction: sections popup ──
+        map.on("click", "sections-fill", (e) => {
+          const properties = e.features?.[0]?.properties;
+          if (!properties) return;
+          new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `<div style="font-family:sans-serif;padding:5px;">
+                <h4 style="margin:0 0 5px 0;">${properties.name ?? ""}</h4>
+                <strong>Type:</strong> ${properties.type ?? "section"}<br/>
+                <strong>Crop:</strong> ${properties.cropType ?? "N/A"}<br/>
+                <strong>Area:</strong> ${parseFloat(properties.areaHectares ?? "0").toFixed(2)} ha
+              </div>`
+            )
+            .addTo(map);
+        });
 
-      layersRef.current = L.layerGroup().addTo(map);
-      mapRef.current = map;
-    };
+        // ── Click interaction: assets popup ──
+        map.on("click", "assets-circle", (e) => {
+          const properties = e.features?.[0]?.properties;
+          if (!properties) return;
+          new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `<div style="font-family:sans-serif;padding:5px;">
+                <h4 style="margin:0 0 5px 0;">${properties.name ?? ""}</h4>
+                <strong>Type:</strong> ${properties.type ?? "asset"}
+              </div>`
+            )
+            .addTo(map);
+        });
 
-    init();
+        // Cursor pointer on hover
+        map.on("mouseenter", "sections-fill", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "sections-fill", () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", "assets-circle",  () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "assets-circle",  () => { map.getCanvas().style.cursor = ""; });
+
+      } catch (error) {
+        console.error("Error loading farm geospatial data:", error);
+      }
+    });
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        layersRef.current = null;
-      }
+      map.remove();
+      mapRef.current = null;
     };
-  }, []);
-
-  /* redraw layers whenever data changes */
-  useEffect(() => {
-    const draw = async () => {
-      if (!mapRef.current || !layersRef.current) return;
-      const L = (await import("leaflet")).default;
-
-      layersRef.current.clearLayers();
-
-      // ── Prefer the unified GeoJSON FeatureCollection from import-export ──
-      if (geoJSON && geoJSON.features?.length > 0) {
-        geoJSON.features.forEach((feature) => {
-          const type = feature.properties?.featureType as string;
-          const name = feature.properties?.name as string ?? "";
-
-          if (type === "farm") {
-            // Yellow dashed farm boundary
-            const layer = L.geoJSON(feature as GeoJSON.GeoJsonObject, {
-              style: { color: "#FFEB3B", weight: 3, dashArray: "6 4", fillOpacity: 0.06, fillColor: "#FFEB3B" },
-            }).addTo(layersRef.current!);
-            layer.bindPopup(`<strong>${name}</strong><br/>Farm boundary`);
-            try {
-              const b = layer.getBounds();
-              if (b.isValid()) mapRef.current!.fitBounds(b, { padding: [30, 30] });
-            } catch { /* ignore */ }
-
-          } else if (type === "section") {
-            // Green fill for sections
-            const cropType = feature.properties?.cropType as string ?? "";
-            const areaHa   = parseFloat(feature.properties?.areaHectares ?? "0").toFixed(2);
-            const layer = L.geoJSON(feature as GeoJSON.GeoJsonObject, {
-              style: { color: "#ffffff", weight: 1.5, fillOpacity: 0.4, fillColor: feature.properties?.color ?? "#4CAF50" },
-            }).addTo(layersRef.current!);
-            layer.bindPopup(`
-              <strong>${name}</strong><br/>
-              ${cropType ? `Crop: ${cropType}<br/>` : ""}
-              Area: ${areaHa} ha
-            `);
-
-          } else if (type === "asset" && feature.geometry?.type === "Point") {
-            const [lng, lat] = (feature.geometry as GeoJSON.Point).coordinates;
-            const assetType  = (feature.properties?.type ?? "other") as string;
-            const emoji      = ASSET_EMOJI[assetType] ?? "⚙️";
-            const icon = L.divIcon({
-              html: `<span style="font-size:20px;line-height:1">${emoji}</span>`,
-              className: "",
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-            });
-            const marker = L.marker([lat, lng], { icon }).addTo(layersRef.current!);
-            marker.bindPopup(`<strong>${name}</strong><br/>${assetType}`);
-          }
-        });
-        return;
-      }
-
-      // ── Fallback: render from separate farms/sections/assets props ──
-      if (farm?.boundary) {
-        const farmLayer = L.geoJSON(farm.boundary as GeoJSON.GeoJsonObject, {
-          style: { color: "#FFEB3B", weight: 3, dashArray: "6 4", fillOpacity: 0.06, fillColor: "#FFEB3B" },
-        }).addTo(layersRef.current!);
-        farmLayer.bindPopup(`<strong>${farm.name}</strong><br/>Farm boundary`);
-        try {
-          const b = farmLayer.getBounds();
-          if (b.isValid()) mapRef.current!.fitBounds(b, { padding: [30, 30] });
-        } catch { /* ignore */ }
-      }
-
-      sections.forEach((s) => {
-        if (!s.boundary) return;
-        const layer = L.geoJSON(s.boundary as GeoJSON.GeoJsonObject, {
-          style: { color: "#ffffff", weight: 1.5, fillOpacity: 0.4, fillColor: "#4CAF50" },
-        }).addTo(layersRef.current!);
-        layer.bindPopup(`<strong>${s.name}</strong>${s.cropType ? `<br/>Crop: ${s.cropType}` : ""}`);
-      });
-
-      assets.forEach((a) => {
-        if (!a.location) return;
-        const [lng, lat] = a.location.coordinates;
-        const emoji = ASSET_EMOJI[a.assetType] ?? "⚙️";
-        const icon = L.divIcon({
-          html: `<span style="font-size:20px;line-height:1">${emoji}</span>`,
-          className: "",
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
-        });
-        const marker = L.marker([lat, lng], { icon }).addTo(layersRef.current!);
-        marker.bindPopup(`<strong>${a.name}</strong><br/>${a.assetType}`);
-      });
-    };
-
-    draw();
-  }, [farm, sections, assets, geoJSON]);
+  }, [farmId, authToken, tenantId]);
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={containerRef} className="w-full h-full" style={{ minHeight: 400 }} />
-
-      {!farm && !geoJSON && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/90 dark:bg-[#161b22]/90 border border-gray-200 dark:border-[#30363d] rounded-2xl px-6 py-4 text-center shadow-xl backdrop-blur-sm">
-            <p className="text-sm font-bold text-gray-700 dark:text-[#c9d1d9]">Select or register a farm</p>
-            <p className="text-xs text-gray-400 dark:text-[#484f58] mt-1">Farm boundaries and assets will appear here</p>
-          </div>
-        </div>
-      )}
-    </div>
+    <div ref={mapContainerRef} style={{ width: "100%", height: "100%", minHeight: 400 }} />
   );
-}
+};
