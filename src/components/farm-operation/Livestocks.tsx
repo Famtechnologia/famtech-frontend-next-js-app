@@ -510,8 +510,8 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         data.append("feedSchedule", formData.feedSchedule || "");
         data.append("note", formData.note || "");
         data.append("userId", profile?.id || "");
-        // Assumes the backend endpoint accepts the file under the key 'image'
-        data.append("image", newImageFile, newImageFile.name);
+        // Assumes the backend endpoint accepts the file under the key 'livestockImages'
+        data.append("livestockImages", newImageFile, newImageFile.name);
         submissionData = data;
       } else {
         // If no new image, send the data as JSON payload
