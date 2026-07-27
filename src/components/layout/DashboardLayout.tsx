@@ -538,15 +538,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       }
                     >
                       <button
-                        onClick={
-                          !sidebarCollapsed
-                            ? item.comingSoon
-                              ? () => setShowComingSoon(true)
-                              : () => toggleMenu(item.key)
-                            : item.comingSoon
-                              ? () => setShowComingSoon(true)
-                              : undefined // Clicks on collapsed icon now managed by outer div
-                        }
+                        onClick={() => {
+                          if (item.comingSoon) {
+                            setShowComingSoon(true);
+                          } else {
+                            toggleMenu(item.key);
+                            if (item.href && item.href !== "#") {
+                              router.push(item.href);
+                            }
+                          }
+                        }}
                         className={`w-full flex items-center justify-between ${
                           sidebarCollapsed ? "px-2" : "px-3"
                         } py-3 rounded-lg text-sm font-medium transition-colors border-l-4 ${
