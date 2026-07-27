@@ -1,25 +1,22 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   DollarSign,
   TrendingUp,
   TrendingDown,
-  PieChart as PieChartIcon,
   Plus,
   Download,
-  Filter,
   Search,
-  Calendar,
-  CreditCard,
   Building2,
-  Sparkles,
   ArrowUpRight,
   ArrowDownRight,
-  Check,
   X,
   RefreshCw,
+  CreditCard,
+  PieChart as PieIcon,
+  CheckCircle2,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -70,29 +67,30 @@ const MONTHLY_FINANCIAL_DATA = [
 ];
 
 const EXPENSE_CATEGORIES_PIE = [
-  { name: "Fertilizer & Chemicals", value: 35, color: "#10B981" },
-  { name: "Seeds & Seedlings", value: 25, color: "#3B82F6" },
-  { name: "Labor & Wages", value: 20, color: "#F59E0B" },
-  { name: "Fuel & Power", value: 12, color: "#EF4444" },
-  { name: "Maintenance & Equipment", value: 8, color: "#8B5CF6" },
+  { name: "Fertilizer & Agro-chemicals", value: 35, color: "#16a34a" },
+  { name: "Seeds & Seedlings", value: 25, color: "#2563eb" },
+  { name: "Labor & Field Wages", value: 20, color: "#d97706" },
+  { name: "Fuel & Power", value: 12, color: "#dc2626" },
+  { name: "Machinery & Maintenance", value: 8, color: "#9333ea" },
 ];
 
 const VALUATION_BREAKDOWN = [
-  { category: "Land & Real Estate", value: 8500000 },
+  { category: "Land & Infrastructure", value: 8500000 },
   { category: "Machinery & Equipment", value: 4200000 },
-  { category: "Crop Produce Inventory", value: 2800000 },
-  { category: "Livestock Stock", value: 3100000 },
+  { category: "Produce Inventory", value: 2800000 },
+  { category: "Livestock Herd", value: 3100000 },
   { category: "Cash & Receivables", value: 1900000 },
 ];
 
 function FinancialsContent() {
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get("tab") || "overview";
+  const router = useRouter();
+  const currentTab = searchParams.get("tab") || "overview";
 
   const { profile } = useProfile();
   const farmCurrency = profile?.currency || "NGN";
 
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState(currentTab);
   const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
@@ -122,6 +120,11 @@ function FinancialsContent() {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    router.push(`/financials?tab=${tabId}`);
+  };
 
   const summary = useMemo(() => {
     const totalIncome = transactions
@@ -175,7 +178,7 @@ function FinancialsContent() {
       notes: incomeForm.notes.trim(),
     };
     setTransactions((prev) => [newTx, ...prev]);
-    toast.success("Income logged successfully! ✓");
+    toast.success("Income logged successfully!");
     setShowIncomeModal(false);
     setIncomeForm({
       category: "Crop Harvest",
@@ -203,7 +206,7 @@ function FinancialsContent() {
       notes: expenseForm.notes.trim(),
     };
     setTransactions((prev) => [newTx, ...prev]);
-    toast.success("Expense logged successfully! ✓");
+    toast.success("Expense logged successfully!");
     setShowExpenseModal(false);
     setExpenseForm({
       category: "Fertilizer",
@@ -233,46 +236,43 @@ function FinancialsContent() {
     a.download = `financial_report_${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Financial statement exported as CSV ✓");
+    toast.success("Financial statement exported as CSV");
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 bg-gray-50 dark:bg-[#0d1117] min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-0 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
+      {/* Consistent Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-[#30363d] pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">
-              SmartNet Financials
-            </span>
-            <span className="text-xs text-gray-400">Real-time ledger</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-[#e6edf3] mt-1">
-            Financial Dashboard
+          <h1 className="text-3xl font-semibold text-green-700 dark:text-green-500">
+            Financial Management
           </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            SmartNet ledger, income tracking, cost analysis, and farm net worth valuation.
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold border border-gray-200 dark:border-[#30363d] rounded-xl bg-white dark:bg-[#161b22] text-gray-700 dark:text-[#c9d1d9] hover:bg-gray-50 shadow-sm">
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#161b22] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <Download className="w-4 h-4" /> Export CSV
           </button>
           <button
             onClick={() => setShowIncomeModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md transition-colors">
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg transition-colors shadow-sm">
             <Plus className="w-4 h-4" /> Log Income
           </button>
           <button
             onClick={() => setShowExpenseModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md transition-colors">
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-sm">
             <Plus className="w-4 h-4" /> Log Expense
           </button>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-[#30363d] overflow-x-auto">
+      {/* Navigation Tabs - Consistent design with TaskPlanner & SmartAdvisory */}
+      <div className="flex border-b border-gray-200 dark:border-[#30363d]">
         {[
           { id: "overview", label: "Overview" },
           { id: "income", label: "Income & Revenue" },
@@ -281,10 +281,10 @@ function FinancialsContent() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-xs md:text-sm font-bold border-b-2 whitespace-nowrap transition-colors ${
+            onClick={() => handleTabChange(tab.id)}
+            className={`px-5 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
               activeTab === tab.id
-                ? "border-emerald-500 text-emerald-600 dark:text-[#4ade80]"
+                ? "border-green-700 text-green-700 dark:border-green-500 dark:text-green-500"
                 : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400"
             }`}>
             {tab.label}
@@ -292,84 +292,84 @@ function FinancialsContent() {
         ))}
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Total Farm Valuation
             </span>
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-emerald-600">
+            <div className="p-2 bg-green-50 dark:bg-green-950/40 rounded-lg text-green-700 dark:text-green-400">
               <Building2 className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-black text-gray-900 dark:text-[#e6edf3]">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {formatMoney(summary.totalValuation)}
           </p>
-          <div className="flex items-center text-xs font-semibold text-emerald-600 gap-1">
-            <ArrowUpRight className="w-3.5 h-3.5" /> +12.4% vs last quarter
+          <div className="flex items-center text-xs font-medium text-green-700 dark:text-green-400 gap-1">
+            <ArrowUpRight className="w-3.5 h-3.5" /> +12.4% net worth growth
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Total Income
             </span>
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-emerald-600">
+            <div className="p-2 bg-green-50 dark:bg-green-950/40 rounded-lg text-green-700 dark:text-green-400">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-black text-emerald-600 dark:text-[#4ade80]">
+          <p className="text-2xl font-bold text-green-700 dark:text-green-400">
             {formatMoney(summary.totalIncome)}
           </p>
-          <p className="text-xs text-gray-400">Total recorded crop & livestock sales</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Recorded crop & livestock sales</p>
         </div>
 
-        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Total Expenses
             </span>
-            <div className="p-2 bg-rose-50 dark:bg-rose-950/40 rounded-xl text-rose-600">
+            <div className="p-2 bg-rose-50 dark:bg-rose-950/40 rounded-lg text-rose-600">
               <TrendingDown className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-black text-rose-600 dark:text-rose-400">
+          <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
             {formatMoney(summary.totalExpense)}
           </p>
-          <p className="text-xs text-gray-400">Operating costs & inputs</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Input supplies & operational costs</p>
         </div>
 
-        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Net Profit Margin
             </span>
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl text-indigo-600">
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg text-indigo-600">
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+          <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
             {summary.profitMargin}%
           </p>
-          <p className="text-xs text-emerald-600 font-semibold">
+          <p className="text-xs text-green-700 dark:text-green-400 font-medium">
             Net Profit: {formatMoney(summary.netProfit)}
           </p>
         </div>
       </div>
 
-      {/* Charts Section */}
+      {/* Visualizations Section */}
       {(activeTab === "overview" || activeTab === "income" || activeTab === "expenses") && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Income vs Expense Chart */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm">
+          {/* Main Financial Performance Chart */}
+          <div className="lg:col-span-2 bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-base">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-base">
                   Income vs Expense Trends
                 </h3>
-                <p className="text-xs text-gray-400">Monthly financial performance breakdown</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Monthly financial performance breakdown</p>
               </div>
             </div>
             <div className="h-72 w-full">
@@ -377,12 +377,12 @@ function FinancialsContent() {
                 <AreaChart data={MONTHLY_FINANCIAL_DATA}>
                   <defs>
                     <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#15803d" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -393,24 +393,24 @@ function FinancialsContent() {
                     contentStyle={{ backgroundColor: "#161b22", borderRadius: "8px", border: "1px solid #30363d" }}
                   />
                   <Legend />
-                  <Area type="monotone" dataKey="income" name="Income" stroke="#10B981" fillOpacity={1} fill="url(#incomeGrad)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="expense" name="Expense" stroke="#EF4444" fillOpacity={1} fill="url(#expenseGrad)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="income" name="Income" stroke="#15803d" fillOpacity={1} fill="url(#incomeGrad)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="expense" name="Expense" stroke="#dc2626" fillOpacity={1} fill="url(#expenseGrad)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Expense Breakdown Pie */}
-          <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm flex flex-col justify-between">
+          {/* Expense Breakdown */}
+          <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm flex flex-col justify-between">
             <div>
-              <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-base mb-1">
-                Cost Structure
+              <h3 className="font-semibold text-gray-900 dark:text-white text-base mb-1">
+                Cost Allocation
               </h3>
-              <p className="text-xs text-gray-400 mb-4">Expense breakdown by input type</p>
-              <div className="h-52 w-full">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Expense breakdown by input type</p>
+              <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={EXPENSE_CATEGORIES_PIE} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4}>
+                    <Pie data={EXPENSE_CATEGORIES_PIE} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={4}>
                       {EXPENSE_CATEGORIES_PIE.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
@@ -425,9 +425,9 @@ function FinancialsContent() {
                 <div key={cat.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
-                    <span className="text-gray-600 dark:text-gray-300">{cat.name}</span>
+                    <span className="text-gray-600 dark:text-gray-300 truncate max-w-[160px]">{cat.name}</span>
                   </div>
-                  <span className="font-bold text-gray-900 dark:text-white">{cat.value}%</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{cat.value}%</span>
                 </div>
               ))}
             </div>
@@ -435,13 +435,13 @@ function FinancialsContent() {
         </div>
       )}
 
-      {/* Valuation Tab Chart */}
+      {/* Valuation Chart */}
       {activeTab === "valuation" && (
-        <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm">
-          <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-lg mb-2">
+        <div className="bg-white dark:bg-[#161b22] p-6 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">
             Farm Valuation & Asset Allocation
           </h3>
-          <p className="text-xs text-gray-400 mb-6">Breakdown of land, machinery, produce, and cash valuation</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">Breakdown of land, machinery, produce inventory, and livestock valuation</p>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={VALUATION_BREAKDOWN}>
@@ -449,7 +449,7 @@ function FinancialsContent() {
                 <XAxis dataKey="category" stroke="#8b949e" fontSize={12} />
                 <YAxis stroke="#8b949e" fontSize={12} />
                 <Tooltip formatter={(val: any) => [formatMoney(Number(val || 0)), "Valuation"]} />
-                <Bar dataKey="value" fill="#10B981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="value" fill="#15803d" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -457,13 +457,13 @@ function FinancialsContent() {
       )}
 
       {/* Transactions Table Section */}
-      <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm overflow-hidden">
         <div className="p-4 md:p-5 border-b border-gray-100 dark:border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] text-base">
+            <h3 className="font-semibold text-gray-900 dark:text-white text-base">
               Financial Transactions
             </h3>
-            <p className="text-xs text-gray-400">All income deposits and operational expenses</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">All income deposits and operational expenses</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -474,18 +474,18 @@ function FinancialsContent() {
                 placeholder="Search transactions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] focus:outline-none focus:ring-1 focus:ring-green-600"
               />
             </div>
 
-            <div className="flex border border-gray-200 dark:border-[#30363d] rounded-xl overflow-hidden text-xs">
+            <div className="flex border border-gray-300 dark:border-[#30363d] rounded-lg overflow-hidden text-xs">
               {(["all", "income", "expense"] as const).map((type) => (
                 <button
                   key={type}
                   onClick={() => setTypeFilter(type)}
-                  className={`px-3 py-1.5 capitalize font-semibold ${
+                  className={`px-3 py-1.5 capitalize font-medium ${
                     typeFilter === type
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-green-700 text-white"
                       : "bg-gray-50 dark:bg-[#0d1117] text-gray-600 dark:text-gray-300"
                   }`}>
                   {type}
@@ -497,7 +497,7 @@ function FinancialsContent() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 dark:bg-[#0d1117] text-gray-500 dark:text-gray-400 font-bold border-b border-gray-200 dark:border-[#30363d] uppercase tracking-wider">
+            <thead className="bg-gray-50 dark:bg-[#0d1117] text-gray-500 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-[#30363d] uppercase tracking-wider">
               <tr>
                 <th className="p-3.5">Type</th>
                 <th className="p-3.5">Category</th>
@@ -519,9 +519,9 @@ function FinancialsContent() {
                   <tr key={tx.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
                     <td className="p-3.5">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           tx.type === "income"
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                            ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
                             : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
                         }`}>
                         {tx.type === "income" ? (
@@ -532,13 +532,13 @@ function FinancialsContent() {
                         {tx.type}
                       </span>
                     </td>
-                    <td className="p-3.5 font-bold text-gray-900 dark:text-white">{tx.category}</td>
-                    <td className="p-3.5 text-gray-700 dark:text-gray-300 font-medium">{tx.reference}</td>
+                    <td className="p-3.5 font-semibold text-gray-900 dark:text-white">{tx.category}</td>
+                    <td className="p-3.5 text-gray-700 dark:text-gray-300">{tx.reference}</td>
                     <td className="p-3.5 text-gray-500">{tx.date}</td>
-                    <td className={`p-3.5 font-extrabold text-sm ${tx.type === "income" ? "text-emerald-600 dark:text-[#4ade80]" : "text-rose-600 dark:text-rose-400"}`}>
+                    <td className={`p-3.5 font-bold text-sm ${tx.type === "income" ? "text-green-700 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}>
                       {tx.type === "income" ? "+" : "-"}{formatMoney(tx.amount)}
                     </td>
-                    <td className="p-3.5 text-gray-400 truncate max-w-xs">{tx.notes || "—"}</td>
+                    <td className="p-3.5 text-gray-500 dark:text-gray-400 truncate max-w-xs">{tx.notes || "—"}</td>
                   </tr>
                 ))
               )}
@@ -550,10 +550,10 @@ function FinancialsContent() {
       {/* Modal: Log Income */}
       {showIncomeModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] w-full max-w-md shadow-xl overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
-              <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
-                <span className="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                <span className="p-1.5 bg-green-100 text-green-700 rounded-lg">
                   <TrendingUp className="w-4 h-4" />
                 </span>
                 Log Farm Income
@@ -564,13 +564,13 @@ function FinancialsContent() {
             </div>
             <form onSubmit={handleAddIncome} className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Category *
                 </label>
                 <select
                   value={incomeForm.category}
                   onChange={(e) => setIncomeForm({ ...incomeForm, category: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]">
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white">
                   <option value="Crop Harvest">Crop Harvest / Sales</option>
                   <option value="Livestock Sale">Livestock Sale</option>
                   <option value="Equipment Rental">Equipment Rental Lease</option>
@@ -580,7 +580,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Amount ({farmCurrency}) *
                 </label>
                 <input
@@ -589,12 +589,12 @@ function FinancialsContent() {
                   placeholder="e.g. 500000"
                   value={incomeForm.amount}
                   onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-green-600"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Transaction Date
                 </label>
                 <input
@@ -602,12 +602,12 @@ function FinancialsContent() {
                   required
                   value={incomeForm.date}
                   onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Reference / Buyer Name
                 </label>
                 <input
@@ -615,12 +615,12 @@ function FinancialsContent() {
                   placeholder="e.g. Grain Distributor Batch #A2"
                   value={incomeForm.reference}
                   onChange={(e) => setIncomeForm({ ...incomeForm, reference: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Notes
                 </label>
                 <textarea
@@ -628,13 +628,13 @@ function FinancialsContent() {
                   placeholder="Additional details..."
                   value={incomeForm.notes}
                   onChange={(e) => setIncomeForm({ ...incomeForm, notes: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md transition-colors">
+                className="w-full py-2.5 bg-green-700 hover:bg-green-800 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
                 Save Income Transaction
               </button>
             </form>
@@ -645,9 +645,9 @@ function FinancialsContent() {
       {/* Modal: Log Expense */}
       {showExpenseModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-gray-200 dark:border-[#30363d] w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] w-full max-w-md shadow-xl overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
-              <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-base flex items-center gap-2">
                 <span className="p-1.5 bg-rose-100 text-rose-600 rounded-lg">
                   <TrendingDown className="w-4 h-4" />
                 </span>
@@ -659,13 +659,13 @@ function FinancialsContent() {
             </div>
             <form onSubmit={handleAddExpense} className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Category *
                 </label>
                 <select
                   value={expenseForm.category}
                   onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]">
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white">
                   <option value="Fertilizer">Fertilizer & Agro-chemicals</option>
                   <option value="Seeds & Seedlings">Seeds & Seedlings</option>
                   <option value="Labor & Wages">Labor & Field Wages</option>
@@ -677,7 +677,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Amount ({farmCurrency}) *
                 </label>
                 <input
@@ -686,12 +686,12 @@ function FinancialsContent() {
                   placeholder="e.g. 150000"
                   value={expenseForm.amount}
                   onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-rose-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Transaction Date
                 </label>
                 <input
@@ -699,12 +699,12 @@ function FinancialsContent() {
                   required
                   value={expenseForm.date}
                   onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Vendor / Item Reference
                 </label>
                 <input
@@ -712,12 +712,12 @@ function FinancialsContent() {
                   placeholder="e.g. Agro Supplies Ltd"
                   value={expenseForm.reference}
                   onChange={(e) => setExpenseForm({ ...expenseForm, reference: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
+                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
                   Notes
                 </label>
                 <textarea
@@ -725,13 +725,13 @@ function FinancialsContent() {
                   placeholder="Additional details..."
                   value={expenseForm.notes}
                   onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-[#30363d] rounded-xl bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3]"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-sm shadow-md transition-colors">
+                className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
                 Save Expense Transaction
               </button>
             </form>
@@ -746,8 +746,8 @@ export default function FinancialsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0d1117]">
-          <div className="flex items-center gap-2 text-emerald-600 font-bold">
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0d1117]">
+          <div className="flex items-center gap-2 text-green-700 font-semibold">
             <RefreshCw className="w-5 h-5 animate-spin" />
             Loading Financials...
           </div>
