@@ -307,11 +307,7 @@ export default function ModernFarmRegistration() {
         country: formData.country.trim(),
         state: formData.state.trim(),
         city: formData.city.trim(),
-        // Only include address if it has a non-empty value
-        ...(formData.address &&
-          formData.address.toString().trim() !== "" && {
-            address: formData.address.trim(),
-          }),
+        address: formData.address?.trim() || `${formData.city.trim()}, ${formData.state.trim()}` || "N/A",
         // Only include coordinates if both latitude and longitude are provided
         ...(formData.coordinates.latitude &&
           formData.coordinates.longitude && {
@@ -324,9 +320,16 @@ export default function ModernFarmRegistration() {
         currency: formData.currency.trim(),
         timezone: formData.timezone.trim(),
 
-        farmingMethods: formData.farmingMethods
-          .map((method) => method.trim())
-          .filter((method) => method !== ""),
+        primaryCrops:
+          formData.primaryCrops && formData.primaryCrops.length > 0
+            ? formData.primaryCrops.map((c) => c.trim()).filter(Boolean)
+            : ["general"],
+
+        farmingMethods:
+          formData.farmingMethods && formData.farmingMethods.length > 0
+            ? formData.farmingMethods.map((method) => method.trim()).filter(Boolean)
+            : ["conventional"],
+
         seasonalPattern: Array.isArray(formData.seasonalPattern)
           ? formData.seasonalPattern[0].trim()
           : formData.seasonalPattern.trim(),
@@ -362,11 +365,14 @@ export default function ModernFarmRegistration() {
       let errorMessage = "Registration failed. Please try again.";
       if (error.response && error.response.data) {
         const errorData = error.response.data;
-        errorMessage =
-          errorData.message ||
-          errorData.errors?.join(", ") ||
-          errorData.error ||
-          errorMessage;
+        if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+          errorMessage = `Validation Failed: ${errorData.errors.join(" • ")}`;
+        } else {
+          errorMessage =
+            errorData.message ||
+            errorData.error ||
+            errorMessage;
+        }
       } else if (error.message) {
         errorMessage = error.message;
       }
