@@ -3,6 +3,8 @@
 import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 mapboxgl.accessToken =
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
@@ -15,11 +17,13 @@ interface FarmMapProps {
   farmId: string;
   authToken: string;
   tenantId: string;
+  onFeatureDrawn?: (feature: any) => void;
 }
 
-export const FarmMap: React.FC<FarmMapProps> = ({ farmId, authToken, tenantId }) => {
+export const FarmMap: React.FC<FarmMapProps> = ({ farmId, authToken, tenantId, onFeatureDrawn }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const drawRef = useRef<MapboxDraw | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current || !farmId) return;
@@ -40,6 +44,26 @@ export const FarmMap: React.FC<FarmMapProps> = ({ farmId, authToken, tenantId })
     mapRef.current = map;
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+    // 2. Initialize MapboxDraw for drawing farm sections & placing asset markers
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        polygon: true,
+        point: true,
+        trash: true,
+      },
+      defaultMode: "simple_select",
+    });
+    map.addControl(draw, "top-left");
+    drawRef.current = draw;
+
+    const handleCreate = (e: any) => {
+      if (e.features && e.features.length > 0) {
+        onFeatureDrawn?.(e.features[0]);
+      }
+    };
+    map.on("draw.create", handleCreate);
 
     map.on("load", async () => {
       try {
