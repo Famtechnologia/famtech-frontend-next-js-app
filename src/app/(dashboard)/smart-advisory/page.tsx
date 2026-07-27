@@ -93,28 +93,20 @@ export default function Page() {
   return (
     <div className="text-slate-900 dark:text-[#e6edf3] font-sans p-3 md:p-6 bg-slate-50/30 dark:bg-[#0d1117]">
 
-      {/* Header Block */}
-      <div className="hidden md:flex mb-6 bg-white dark:bg-[#161b22] p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 dark:border-[#30363d] flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Standard Famtech Heading */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#30363d] pb-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-[#e6edf3] tracking-tight">
+          <h1 className="text-3xl font-semibold text-green-700 dark:text-green-500">
             Advisory Workspace
           </h1>
-          <p className="text-slate-500 dark:text-[#8b949e] mt-1 text-sm font-medium">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Generate expert advice plans and consult with your AI assistant.
           </p>
         </div>
-        <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
-          <span className="inline-flex px-3 py-1 bg-slate-50 dark:bg-[#21262d] border border-slate-150 dark:border-[#30363d] text-slate-600 dark:text-[#8b949e] text-[10px] font-bold rounded-lg uppercase tracking-wider w-fit">
+        <div className="flex flex-col sm:items-end gap-1 shrink-0">
+          <span className="inline-flex px-3 py-1 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold rounded-lg">
             Hi, {owner?.firstName || "Farmer"}
           </span>
-          <p className="text-slate-400 dark:text-[#6e7681] text-[10px] font-bold uppercase tracking-wider">
-            {new Date().toLocaleDateString("en-NG", {
-              weekday: "long",
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </p>
         </div>
       </div>
 

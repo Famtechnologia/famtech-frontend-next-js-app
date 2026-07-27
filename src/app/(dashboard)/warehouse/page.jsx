@@ -135,27 +135,25 @@ const Warehouse = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0d1117] text-slate-900 dark:text-[#e6edf3] font-sans relative">
-      <div className="container p-4 mx-auto max-w-7xl">
-        
-        {/* Header Block */}
-        <div className="mb-6 bg-white dark:bg-[#161b22] p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 dark:border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-[#e6edf3] tracking-tight">
-              Warehouse Overview
-            </h1>
-            <p className="text-slate-500 dark:text-[#8b949e] mt-1 text-sm font-medium">
-              Manage your inventory locations and stock levels.
-            </p>
-          </div>
-          <button
-            onClick={handleCreateNew}
-            className="inline-flex items-center justify-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-4 focus:ring-green-100/50 w-full sm:w-auto"
-          >
-            <Plus className="h-4.5 w-4.5 mr-2" />
-            Create Warehouse
-          </button>
+    <div className="p-4 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
+      {/* Standard Famtech Heading */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#30363d] pb-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-semibold text-green-700 dark:text-green-500">
+            Warehouse Overview
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Manage your inventory locations and stock levels.
+          </p>
         </div>
+        <button
+          onClick={handleCreateNew}
+          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm w-full sm:w-auto"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Create Warehouse
+        </button>
+      </div>
 
         {/* Control bar */}
         {warehouses.length > 0 && (
