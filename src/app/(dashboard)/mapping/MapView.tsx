@@ -4,7 +4,9 @@ import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+mapboxgl.accessToken =
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
+  "pk.eyJ1IjoiZmFamVvIiwiYSI6ImNtcmttazBnazBnZW4zNXF2OTlhdjhndm4ifQ.hKb2Y3ZfL0kIMU-6u6TQ3A";
 
 const GEO_BASE =
   process.env.NEXT_PUBLIC_GEO_API_URL || "https://finite-enmu.sa.pipeops.app/api/v1";
