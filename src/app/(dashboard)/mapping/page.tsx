@@ -274,6 +274,19 @@ export default function MappingPage() {
     }
   };
 
+  const [drawnFeature, setDrawnFeature] = useState<any>(null);
+
+  const handleFeatureDrawn = useCallback((feature: any) => {
+    setDrawnFeature(feature);
+    if (feature?.geometry?.type === "Polygon") {
+      setShowNewSection(true);
+      notify("Polygon boundary drawn! Name your plot section below.");
+    } else if (feature?.geometry?.type === "Point") {
+      setShowNewAsset(true);
+      notify("Asset marker placed! Name your asset below.");
+    }
+  }, []);
+
   /* ── Create section ── */
   const [sectionForm, setSectionForm] = useState({ name: "", cropType: "" });
   const handleCreateSection = async (e: React.FormEvent) => {
@@ -296,15 +309,17 @@ export default function MappingPage() {
           name: secName,
           cropType: sectionForm.cropType || undefined,
           farmId: activeFarm.id,
+          geometry: drawnFeature?.geometry,
         }),
       });
     } catch {
       /* fallback */
     } finally {
       setSections((prev) => [...prev, newSec]);
-      notify("Section created ✓");
+      notify("Section created & saved ✓");
       setShowNewSection(false);
       setSectionForm({ name: "", cropType: "" });
+      setDrawnFeature(null);
       setSaving(false);
     }
   };
@@ -331,15 +346,17 @@ export default function MappingPage() {
           name: assetName,
           assetType: assetForm.assetType,
           farmId: activeFarm.id,
+          geometry: drawnFeature?.geometry,
         }),
       });
     } catch {
       /* fallback */
     } finally {
       setAssets((prev) => [...prev, newAsset]);
-      notify("Asset registered ✓");
+      notify("Asset registered & saved ✓");
       setShowNewAsset(false);
       setAssetForm({ name: "", assetType: "equipment" });
+      setDrawnFeature(null);
       setSaving(false);
     }
   };
@@ -600,6 +617,7 @@ export default function MappingPage() {
             farmId={activeFarm?.id || "default-farm"}
             authToken={authToken}
             tenantId={tenantId}
+            onFeatureDrawn={handleFeatureDrawn}
           />
 
           {/* Mobile FAB */}
