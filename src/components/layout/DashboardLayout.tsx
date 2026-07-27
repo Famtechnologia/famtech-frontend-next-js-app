@@ -30,7 +30,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 // import { useLogout } from "@/lib/api/auth";
 import Modal from "@/components/ui/Modal"; // adjust to your modal path
 import { getNotifications, Notification } from "@/lib/services/taskplanner";
@@ -67,6 +67,7 @@ interface DashboardLayoutProps {
 // --- End Interface Definitions ---
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["dashboard"]);
