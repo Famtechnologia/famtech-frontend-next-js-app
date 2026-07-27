@@ -12,6 +12,7 @@ import {
 } from "../../lib/services/croplivestock";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { useAuthStore } from "@/lib/store/authStore";
+import { compressImage } from "@/lib/utils/imageCompressor";
 
 interface LivestockFormData {
   specie: string;
@@ -119,8 +120,11 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
     data.append("note", formData.note);
     data.append("userId", profile?.id || "");
 
-    // 🚀 FIX: Correctly loop over the array of files and append them
-    imageFiles.forEach((file) => {
+    // 🚀 FIX: Correctly loop over the array of files, compress them, and append them
+    const compressedFiles = await Promise.all(
+      imageFiles.map((file) => compressImage(file))
+    );
+    compressedFiles.forEach((file) => {
       data.append("livestockImages", file, file.name);
     });
 
@@ -510,8 +514,9 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         data.append("feedSchedule", formData.feedSchedule || "");
         data.append("note", formData.note || "");
         data.append("userId", profile?.id || "");
-        // Assumes the backend endpoint accepts the file under the key 'livestockImages'
-        data.append("livestockImages", newImageFile, newImageFile.name);
+        // Assumes the backend endpoint accepts the file under the key 'livestockImages' after compressing it
+        const compressedFile = await compressImage(newImageFile);
+        data.append("livestockImages", compressedFile, compressedFile.name);
         submissionData = data;
       } else {
         // If no new image, send the data as JSON payload

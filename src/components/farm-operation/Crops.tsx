@@ -11,6 +11,7 @@ import {
   createCropRecord,
   deleteCropImages,
 } from "../../lib/services/croplivestock";
+import { compressImage } from "@/lib/utils/imageCompressor";
 
 // --- Interface Definitions ---
 interface AddCropFormProps {
@@ -132,8 +133,11 @@ export const AddCropForm: React.FC<AddCropFormProps> = ({
 
     data.append("note", formData.note);
 
-    // --- Append Image Files ---
-    imageFiles.forEach((file) => {
+    // --- Compress and Append Image Files ---
+    const compressedFiles = await Promise.all(
+      imageFiles.map((file) => compressImage(file))
+    );
+    compressedFiles.forEach((file) => {
       data.append("cropImages", file, file.name);
     });
 
@@ -583,12 +587,15 @@ export const UpdateCropForm: React.FC<UpdateCropFormProps> = ({
     data.append("userId", profile?.id || "");
     data.append("note", formData.note);
 
-    // Append any new image files to the same FormData object
-    // if (newImageFiles.length > 0) {
-    //     newImageFiles.forEach(file => {
-    //         data.append('cropImages', file, file.name);
-    //     });
-    // }
+    // Append any new image files to the same FormData object after compressing them
+    if (newImageFiles.length > 0) {
+      const compressedFiles = await Promise.all(
+        newImageFiles.map((file) => compressImage(file))
+      );
+      compressedFiles.forEach((file) => {
+        data.append("cropImages", file, file.name);
+      });
+    }
 
     try {
       // Perform the update with a single API call using the consolidated FormData
