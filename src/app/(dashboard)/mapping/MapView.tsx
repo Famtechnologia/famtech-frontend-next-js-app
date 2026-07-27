@@ -45,8 +45,13 @@ export const FarmMap: React.FC<FarmMapProps> = ({ farmId, authToken, tenantId, o
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-    // 2. Initialize MapboxDraw for drawing farm sections & placing asset markers
-    const draw = new MapboxDraw({
+    // 2. Safe MapboxDraw instantiation for CJS/ESM compatibility
+    const MapDraw =
+      typeof MapboxDraw === "function"
+        ? MapboxDraw
+        : (MapboxDraw as any)?.default || MapboxDraw;
+
+    const draw = new MapDraw({
       displayControlsDefault: false,
       controls: {
         polygon: true,
@@ -202,6 +207,30 @@ export const FarmMap: React.FC<FarmMapProps> = ({ farmId, authToken, tenantId, o
   }, [farmId, authToken, tenantId]);
 
   return (
-    <div ref={mapContainerRef} style={{ width: "100%", height: "100%", minHeight: 400 }} />
+    <div className="relative w-full h-full min-h-[400px]">
+      <div ref={mapContainerRef} className="w-full h-full min-h-[400px]" />
+      
+      {/* Quick Action Map Controls */}
+      <div className="absolute top-3 left-16 z-[10] flex items-center gap-2 bg-white/90 dark:bg-[#161b22]/90 backdrop-blur-md p-1.5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-lg">
+        <button
+          type="button"
+          onClick={() => drawRef.current?.changeMode("draw_polygon")}
+          className="px-2.5 py-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1">
+          <span>+ Draw Boundary</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => drawRef.current?.changeMode("draw_point")}
+          className="px-2.5 py-1 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors flex items-center gap-1">
+          <span>📍 Drop Marker</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => drawRef.current?.deleteAll()}
+          className="px-2 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          Clear
+        </button>
+      </div>
+    </div>
   );
 };
