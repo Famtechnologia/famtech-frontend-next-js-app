@@ -14,6 +14,9 @@ import {
   ArrowDownRight,
   X,
   RefreshCw,
+  CreditCard,
+  CheckCircle2,
+  PieChart as PieIcon,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -64,7 +67,7 @@ const MONTHLY_FINANCIAL_DATA = [
 ];
 
 const EXPENSE_CATEGORIES_PIE = [
-  { name: "Fertilizer & Agro-chemicals", value: 35, color: "#16a34a" },
+  { name: "Fertilizer & Agro-chemicals", value: 35, color: "#15803d" },
   { name: "Seeds & Seedlings", value: 25, color: "#2563eb" },
   { name: "Labor & Field Wages", value: 20, color: "#d97706" },
   { name: "Fuel & Power", value: 12, color: "#dc2626" },
@@ -237,313 +240,320 @@ function FinancialsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0d1117] text-slate-900 dark:text-[#e6edf3] font-sans relative">
-      <div className="container p-4 mx-auto max-w-7xl space-y-6">
-
-        {/* Warehouse-style Header Block */}
-        <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100/50 dark:border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0d1117] text-slate-900 dark:text-[#e6edf3] font-sans p-3 md:p-6 space-y-6">
+      
+      {/* Famtech Brand Hero Header Banner */}
+      <div className="relative overflow-hidden rounded-2xl shadow-xl" style={{ background: "linear-gradient(135deg, #052e16 0%, #14532d 40%, #15803d 100%)" }}>
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #86efac 0%, transparent 50%), radial-gradient(circle at 80% 20%, #4ade80 0%, transparent 40%)" }} />
+        <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5 text-white">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-[#e6edf3] tracking-tight">
-              Financial Overview
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <CreditCard className="h-4 w-4 text-green-300" />
+              </div>
+              <span className="text-green-300 text-xs font-bold uppercase tracking-widest">SmartNet Suite</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Financial Management
             </h1>
-            <p className="text-slate-500 dark:text-[#8b949e] mt-1 text-sm font-medium">
-              SmartNet ledger, income tracking, cost analysis, and farm net worth valuation.
+            <p className="text-green-100/90 text-sm mt-1 max-w-xl font-medium">
+              Real-time farm ledger, revenue analytics, cost breakdown, and net worth valuation.
             </p>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-2">
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               onClick={handleExportCSV}
-              className="inline-flex items-center justify-center px-4 py-2.5 border border-slate-200 dark:border-[#30363d] bg-white dark:bg-[#21262d] text-slate-700 dark:text-[#e6edf3] text-sm font-semibold rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-gray-800 transition-all">
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl backdrop-blur-md border border-white/20 shadow-md transition-all">
               <Download className="h-4 w-4 mr-2" /> Export CSV
             </button>
             <button
               onClick={() => setShowIncomeModal(true)}
-              className="inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all">
-              <Plus className="h-4 w-4 mr-2" /> Log Income
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-lg transition-all">
+              <Plus className="h-4 w-4 mr-1.5" /> Log Income
             </button>
             <button
               onClick={() => setShowExpenseModal(true)}
-              className="inline-flex items-center justify-center px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all">
-              <Plus className="h-4 w-4 mr-2" /> Log Expense
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl shadow-lg transition-all">
+              <Plus className="h-4 w-4 mr-1.5" /> Log Expense
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Warehouse-style Control Bar Tabs */}
-        <div className="flex bg-white dark:bg-[#161b22] p-1.5 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm overflow-x-auto">
-          {[
-            { id: "overview", label: "Overview" },
-            { id: "income", label: "Income & Revenue" },
-            { id: "expenses", label: "Expenses & Costs" },
-            { id: "valuation", label: "Farm Valuation" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "bg-green-600 text-white shadow-md"
-                  : "text-slate-600 dark:text-[#8b949e] hover:text-slate-900 dark:hover:text-[#e6edf3]"
-              }`}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* Famtech Navigation Tabs */}
+      <div className="flex bg-white dark:bg-[#161b22] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm overflow-x-auto">
+        {[
+          { id: "overview", label: "Overview" },
+          { id: "income", label: "Income & Revenue" },
+          { id: "expenses", label: "Expenses & Costs" },
+          { id: "valuation", label: "Farm Valuation" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => handleTabChange(tab.id)}
+            className={`px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap ${
+              activeTab === tab.id
+                ? "bg-[#15803d] text-white shadow-md"
+                : "text-slate-600 dark:text-[#8b949e] hover:text-slate-900 dark:hover:text-[#e6edf3]"
+            }`}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
-                Total Farm Valuation
-              </span>
-              <div className="p-2.5 bg-green-50 dark:bg-green-950/40 rounded-xl text-green-600">
-                <Building2 className="w-5 h-5" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-[#e6edf3]">
-              {formatMoney(summary.totalValuation)}
-            </p>
-            <div className="flex items-center text-xs font-semibold text-green-600 gap-1">
-              <ArrowUpRight className="w-3.5 h-3.5" /> +12.4% net worth growth
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
+              Total Farm Valuation
+            </span>
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-[#15803d] dark:text-emerald-400">
+              <Building2 className="w-5 h-5" />
             </div>
           </div>
-
-          <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
-                Total Income
-              </span>
-              <div className="p-2.5 bg-green-50 dark:bg-green-950/40 rounded-xl text-green-600">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-green-600">
-              {formatMoney(summary.totalIncome)}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-[#8b949e]">Recorded crop & livestock sales</p>
-          </div>
-
-          <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
-                Total Expenses
-              </span>
-              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl text-rose-600">
-                <TrendingDown className="w-5 h-5" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-rose-600">
-              {formatMoney(summary.totalExpense)}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-[#8b949e]">Input supplies & operational costs</p>
-          </div>
-
-          <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
-                Net Profit Margin
-              </span>
-              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl text-indigo-600">
-                <DollarSign className="w-5 h-5" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-indigo-600">
-              {summary.profitMargin}%
-            </p>
-            <p className="text-xs text-green-600 font-semibold">
-              Net Profit: {formatMoney(summary.netProfit)}
-            </p>
+          <p className="text-2xl font-black text-slate-900 dark:text-[#e6edf3]">
+            {formatMoney(summary.totalValuation)}
+          </p>
+          <div className="flex items-center text-xs font-bold text-[#15803d] dark:text-emerald-400 gap-1">
+            <ArrowUpRight className="w-3.5 h-3.5" /> +12.4% net worth growth
           </div>
         </div>
 
-        {/* Charts Section */}
-        {(activeTab === "overview" || activeTab === "income" || activeTab === "expenses") && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Financial Chart */}
-            <div className="lg:col-span-2 bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base">
-                    Income vs Expense Trends
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-[#8b949e]">Monthly financial performance breakdown</p>
-                </div>
-              </div>
-              <div className="h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={MONTHLY_FINANCIAL_DATA}>
-                    <defs>
-                      <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                    <XAxis dataKey="month" stroke="#8b949e" fontSize={12} />
-                    <YAxis stroke="#8b949e" fontSize={12} />
-                    <Tooltip
-                      formatter={(value: any) => [formatMoney(Number(value || 0)), ""]}
-                      contentStyle={{ backgroundColor: "#161b22", borderRadius: "12px", border: "1px solid #30363d" }}
-                    />
-                    <Legend />
-                    <Area type="monotone" dataKey="income" name="Income" stroke="#16a34a" fillOpacity={1} fill="url(#incomeGrad)" strokeWidth={2.5} />
-                    <Area type="monotone" dataKey="expense" name="Expense" stroke="#dc2626" fillOpacity={1} fill="url(#expenseGrad)" strokeWidth={2.5} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
+              Total Income
+            </span>
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-[#15803d] dark:text-emerald-400">
+              <TrendingUp className="w-5 h-5" />
             </div>
+          </div>
+          <p className="text-2xl font-black text-[#15803d] dark:text-emerald-400">
+            {formatMoney(summary.totalIncome)}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-[#8b949e]">Recorded crop & livestock sales</p>
+        </div>
 
-            {/* Expense Breakdown Pie */}
-            <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
+              Total Expenses
+            </span>
+            <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl text-rose-600">
+              <TrendingDown className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-rose-600 dark:text-rose-400">
+            {formatMoney(summary.totalExpense)}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-[#8b949e]">Input supplies & operational costs</p>
+        </div>
+
+        <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 dark:text-[#8b949e] uppercase tracking-wider">
+              Net Profit Margin
+            </span>
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl text-indigo-600">
+              <DollarSign className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+            {summary.profitMargin}%
+          </p>
+          <p className="text-xs text-[#15803d] dark:text-emerald-400 font-bold">
+            Net Profit: {formatMoney(summary.netProfit)}
+          </p>
+        </div>
+      </div>
+
+      {/* Visualizations Section */}
+      {(activeTab === "overview" || activeTab === "income" || activeTab === "expenses") && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Financial Trend Chart */}
+          <div className="lg:col-span-2 bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base mb-1">
-                  Cost Structure
+                <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base">
+                  Income vs Expense Trends
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-[#8b949e] mb-4">Expense breakdown by input type</p>
-                <div className="h-48 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={EXPENSE_CATEGORIES_PIE} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={4}>
-                        {EXPENSE_CATEGORIES_PIE.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value: any) => [`${value || 0}%`, ""]} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              <div className="space-y-2 text-xs border-t border-slate-100 dark:border-[#30363d] pt-3">
-                {EXPENSE_CATEGORIES_PIE.map((cat) => (
-                  <div key={cat.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
-                      <span className="text-slate-600 dark:text-slate-300 truncate max-w-[160px]">{cat.name}</span>
-                    </div>
-                    <span className="font-bold text-slate-900 dark:text-[#e6edf3]">{cat.value}%</span>
-                  </div>
-                ))}
+                <p className="text-xs text-slate-500 dark:text-[#8b949e]">Monthly financial performance breakdown</p>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Valuation Tab Chart */}
-        {activeTab === "valuation" && (
-          <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm">
-            <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-lg mb-1">
-              Farm Valuation & Asset Allocation
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8b949e] mb-6">Breakdown of land, machinery, produce inventory, and livestock valuation</p>
-            <div className="h-80 w-full">
+            <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={VALUATION_BREAKDOWN}>
+                <AreaChart data={MONTHLY_FINANCIAL_DATA}>
+                  <defs>
+                    <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#15803d" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                  <XAxis dataKey="category" stroke="#8b949e" fontSize={12} />
+                  <XAxis dataKey="month" stroke="#8b949e" fontSize={12} />
                   <YAxis stroke="#8b949e" fontSize={12} />
-                  <Tooltip formatter={(val: any) => [formatMoney(Number(val || 0)), "Valuation"]} />
-                  <Bar dataKey="value" fill="#16a34a" radius={[8, 8, 0, 0]} />
-                </BarChart>
+                  <Tooltip
+                    formatter={(value: any) => [formatMoney(Number(value || 0)), ""]}
+                    contentStyle={{ backgroundColor: "#161b22", borderRadius: "12px", border: "1px solid #30363d" }}
+                  />
+                  <Legend />
+                  <Area type="monotone" dataKey="income" name="Income" stroke="#15803d" fillOpacity={1} fill="url(#incomeGrad)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="expense" name="Expense" stroke="#dc2626" fillOpacity={1} fill="url(#expenseGrad)" strokeWidth={2.5} />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
-        )}
 
-        {/* Transactions Table Section */}
-        <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100/50 dark:border-[#30363d] shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-100 dark:border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Expense Breakdown Pie */}
+          <div className="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm flex flex-col justify-between">
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base">
-                Financial Transactions
+              <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base mb-1">
+                Cost Allocation
               </h3>
-              <p className="text-xs text-slate-500 dark:text-[#8b949e]">All income deposits and operational expenses</p>
+              <p className="text-xs text-slate-500 dark:text-[#8b949e] mb-4">Expense breakdown by input type</p>
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={EXPENSE_CATEGORIES_PIE} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={4}>
+                      {EXPENSE_CATEGORIES_PIE.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: any) => [`${value || 0}%`, ""]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative flex-1 sm:w-64">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search transactions..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-[#30363d] rounded-xl bg-slate-50 dark:bg-[#21262d] text-slate-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600"
-                />
-              </div>
-
-              <div className="flex bg-slate-50 dark:bg-[#21262d] p-1 border border-slate-200 dark:border-[#30363d] rounded-xl text-xs">
-                {(["all", "income", "expense"] as const).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setTypeFilter(type)}
-                    className={`px-3 py-1.5 capitalize font-semibold rounded-lg transition-all ${
-                      typeFilter === type
-                        ? "bg-green-600 text-white shadow-sm"
-                        : "text-slate-600 dark:text-[#8b949e]"
-                    }`}>
-                    {type}
-                  </button>
-                ))}
-              </div>
+            <div className="space-y-2 text-xs border-t border-slate-100 dark:border-[#30363d] pt-3">
+              {EXPENSE_CATEGORIES_PIE.map((cat) => (
+                <div key={cat.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                    <span className="text-slate-600 dark:text-slate-300 truncate max-w-[160px]">{cat.name}</span>
+                  </div>
+                  <span className="font-bold text-slate-900 dark:text-[#e6edf3]">{cat.value}%</span>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/50 dark:bg-[#21262d] text-slate-500 dark:text-[#8b949e] font-bold border-b border-slate-100 dark:border-[#30363d] uppercase tracking-wider">
+      {/* Valuation Chart */}
+      {activeTab === "valuation" && (
+        <div className="bg-white dark:bg-[#161b22] p-6 rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm">
+          <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-lg mb-1">
+            Farm Valuation & Asset Allocation
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-[#8b949e] mb-6">Breakdown of land, machinery, produce inventory, and livestock valuation</p>
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={VALUATION_BREAKDOWN}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                <XAxis dataKey="category" stroke="#8b949e" fontSize={12} />
+                <YAxis stroke="#8b949e" fontSize={12} />
+                <Tooltip formatter={(val: any) => [formatMoney(Number(val || 0)), "Valuation"]} />
+                <Bar dataKey="value" fill="#15803d" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Transactions Table Section */}
+      <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200/80 dark:border-[#30363d] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-slate-100 dark:border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base">
+              Financial Transactions
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-[#8b949e]">All income deposits and operational expenses</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-[#30363d] rounded-xl bg-slate-50 dark:bg-[#21262d] text-slate-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-[#15803d]/20 focus:border-[#15803d]"
+              />
+            </div>
+
+            <div className="flex bg-slate-50 dark:bg-[#21262d] p-1 border border-slate-200 dark:border-[#30363d] rounded-xl text-xs">
+              {(["all", "income", "expense"] as const).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setTypeFilter(type)}
+                  className={`px-3 py-1.5 capitalize font-bold rounded-lg transition-all ${
+                    typeFilter === type
+                      ? "bg-[#15803d] text-white shadow-sm"
+                      : "text-slate-600 dark:text-[#8b949e]"
+                  }`}>
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50/50 dark:bg-[#21262d] text-slate-500 dark:text-[#8b949e] font-bold border-b border-slate-100 dark:border-[#30363d] uppercase tracking-wider">
+              <tr>
+                <th className="p-4">Type</th>
+                <th className="p-4">Category</th>
+                <th className="p-4">Reference / Item</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Amount</th>
+                <th className="p-4">Notes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-[#30363d]">
+              {filteredTransactions.length === 0 ? (
                 <tr>
-                  <th className="p-4">Type</th>
-                  <th className="p-4">Category</th>
-                  <th className="p-4">Reference / Item</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Notes</th>
+                  <td colSpan={6} className="text-center py-8 text-slate-400">
+                    No transactions match your query.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-[#30363d]">
-                {filteredTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-slate-400">
-                      No transactions match your query.
+              ) : (
+                filteredTransactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-slate-50/80 dark:hover:bg-gray-800/40 transition-colors">
+                    <td className="p-4">
+                      <span
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                          tx.type === "income"
+                            ? "bg-emerald-100 text-[#15803d] dark:bg-emerald-950 dark:text-emerald-300"
+                            : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                        }`}>
+                        {tx.type === "income" ? (
+                          <ArrowUpRight className="w-3 h-3" />
+                        ) : (
+                          <ArrowDownRight className="w-3 h-3" />
+                        )}
+                        {tx.type}
+                      </span>
                     </td>
+                    <td className="p-4 font-bold text-slate-900 dark:text-[#e6edf3]">{tx.category}</td>
+                    <td className="p-4 text-slate-700 dark:text-slate-300 font-medium">{tx.reference}</td>
+                    <td className="p-4 text-slate-500">{tx.date}</td>
+                    <td className={`p-4 font-bold text-sm ${tx.type === "income" ? "text-[#15803d] dark:text-emerald-400" : "text-rose-600"}`}>
+                      {tx.type === "income" ? "+" : "-"}{formatMoney(tx.amount)}
+                    </td>
+                    <td className="p-4 text-slate-500 dark:text-[#8b949e] truncate max-w-xs">{tx.notes || "—"}</td>
                   </tr>
-                ) : (
-                  filteredTransactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-slate-50/80 dark:hover:bg-gray-800/40 transition-colors">
-                      <td className="p-4">
-                        <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
-                            tx.type === "income"
-                              ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-                              : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                          }`}>
-                          {tx.type === "income" ? (
-                            <ArrowUpRight className="w-3 h-3" />
-                          ) : (
-                            <ArrowDownRight className="w-3 h-3" />
-                          )}
-                          {tx.type}
-                        </span>
-                      </td>
-                      <td className="p-4 font-bold text-slate-900 dark:text-[#e6edf3]">{tx.category}</td>
-                      <td className="p-4 text-slate-700 dark:text-slate-300 font-medium">{tx.reference}</td>
-                      <td className="p-4 text-slate-500">{tx.date}</td>
-                      <td className={`p-4 font-bold text-sm ${tx.type === "income" ? "text-green-600" : "text-rose-600"}`}>
-                        {tx.type === "income" ? "+" : "-"}{formatMoney(tx.amount)}
-                      </td>
-                      <td className="p-4 text-slate-500 dark:text-[#8b949e] truncate max-w-xs">{tx.notes || "—"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -553,7 +563,7 @@ function FinancialsContent() {
           <div className="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-100 dark:border-[#30363d] w-full max-w-md shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-[#30363d]">
               <h3 className="font-bold text-slate-900 dark:text-[#e6edf3] text-base flex items-center gap-2">
-                <span className="p-2 bg-green-50 dark:bg-green-950 text-green-600 rounded-xl">
+                <span className="p-2 bg-emerald-50 dark:bg-emerald-950 text-[#15803d] rounded-xl">
                   <TrendingUp className="w-4 h-4" />
                 </span>
                 Log Farm Income
@@ -564,7 +574,7 @@ function FinancialsContent() {
             </div>
             <form onSubmit={handleAddIncome} className="p-6 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Category *
                 </label>
                 <select
@@ -580,7 +590,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Amount ({farmCurrency}) *
                 </label>
                 <input
@@ -589,12 +599,12 @@ function FinancialsContent() {
                   placeholder="e.g. 500000"
                   value={incomeForm.amount}
                   onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
-                  className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-[#30363d] rounded-xl bg-slate-50 dark:bg-[#21262d] text-slate-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600"
+                  className="w-full px-4 py-2.5 text-sm border border-slate-200 dark:border-[#30363d] rounded-xl bg-slate-50 dark:bg-[#21262d] text-slate-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-[#15803d]/20 focus:border-[#15803d]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Transaction Date
                 </label>
                 <input
@@ -607,7 +617,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Reference / Buyer Name
                 </label>
                 <input
@@ -620,7 +630,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Notes
                 </label>
                 <textarea
@@ -634,7 +644,7 @@ function FinancialsContent() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-sm shadow-md transition-all">
+                className="w-full py-3 bg-[#15803d] hover:bg-[#166534] text-white rounded-xl font-bold text-sm shadow-md transition-all">
                 Save Income Transaction
               </button>
             </form>
@@ -659,7 +669,7 @@ function FinancialsContent() {
             </div>
             <form onSubmit={handleAddExpense} className="p-6 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Category *
                 </label>
                 <select
@@ -677,7 +687,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Amount ({farmCurrency}) *
                 </label>
                 <input
@@ -691,7 +701,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Transaction Date
                 </label>
                 <input
@@ -704,7 +714,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Vendor / Item Reference
                 </label>
                 <input
@@ -717,7 +727,7 @@ function FinancialsContent() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Notes
                 </label>
                 <textarea
@@ -731,7 +741,7 @@ function FinancialsContent() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold text-sm shadow-md transition-all">
+                className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-sm shadow-md transition-all">
                 Save Expense Transaction
               </button>
             </form>
@@ -747,7 +757,7 @@ export default function FinancialsPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-slate-50/50 dark:bg-[#0d1117]">
-          <div className="flex items-center gap-2 text-green-600 font-medium">
+          <div className="flex items-center gap-2 text-[#15803d] font-bold">
             <RefreshCw className="w-5 h-5 animate-spin" />
             Loading Financials...
           </div>
