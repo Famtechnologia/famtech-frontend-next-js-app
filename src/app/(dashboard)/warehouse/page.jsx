@@ -14,6 +14,7 @@ import {
 } from "@/lib/services/warehouse";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useProfile } from "@/lib/hooks/useProfile";
+import PageHeader from "@/components/common/PageHeader";
 
 const Warehouse = () => {
   const { user, loading: authLoading } = useAuth();
@@ -136,16 +137,9 @@ const Warehouse = () => {
 
   return (
     <div className="p-4 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
-      {/* Standard Famtech Heading */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#30363d] pb-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-semibold text-green-700 dark:text-green-500">
-            Warehouse Overview
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Manage your inventory locations and stock levels.
-          </p>
-        </div>
+      <PageHeader
+        title="Warehouse Overview"
+        subtitle="Manage your inventory locations and stock levels.">
         <button
           onClick={handleCreateNew}
           className="flex items-center justify-center gap-1.5 px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm w-full sm:w-auto"
@@ -153,7 +147,7 @@ const Warehouse = () => {
           <Plus className="h-4 w-4 mr-1" />
           Create Warehouse
         </button>
-      </div>
+      </PageHeader>
 
         {/* Control bar */}
         {warehouses.length > 0 && (
@@ -223,7 +217,6 @@ const Warehouse = () => {
             </div>
           )}
         </div>
-      </div>
 
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm transition-all">

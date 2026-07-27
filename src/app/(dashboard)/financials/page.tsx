@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
   X,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -32,6 +33,9 @@ import {
 } from "recharts";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { toast } from "react-hot-toast";
+import PageHeader from "@/components/common/PageHeader";
+import apiClient from "@/lib/api/apiClient";
+import { useAuthStore } from "@/lib/store/authStore";
 
 interface Transaction {
   id: string;
@@ -43,41 +47,41 @@ interface Transaction {
   notes: string;
 }
 
-const INITIAL_TRANSACTIONS: Transaction[] = [
-  { id: "tx-1", type: "income", category: "Crop Harvest", amount: 1250000, date: "2026-07-20", reference: "Maize Batch #A1", notes: "Sold 50 bags to regional distributor" },
-  { id: "tx-2", type: "expense", category: "Fertilizer", amount: 185000, date: "2026-07-18", reference: "NPK 15-15-15", notes: "Purchased 10 bags for plot B" },
-  { id: "tx-3", type: "income", category: "Livestock Sale", amount: 640000, date: "2026-07-15", reference: "Cattle Batch #C3", notes: "Sold 4 bulls at livestock market" },
-  { id: "tx-4", type: "expense", category: "Labor & Wages", amount: 120000, date: "2026-07-12", reference: "Field Hand Workers", notes: "Weekly wages for weeding and maintenance" },
-  { id: "tx-5", type: "expense", category: "Fuel & Energy", amount: 95000, date: "2026-07-08", reference: "Tractor Diesel", notes: "Fuel refill for land preparation" },
-  { id: "tx-6", type: "income", category: "Equipment Rental", amount: 210000, date: "2026-07-05", reference: "Harvester Lease", notes: "Leased harvester to neighboring farm" },
-  { id: "tx-7", type: "expense", category: "Seeds & Seedlings", amount: 140000, date: "2026-07-01", reference: "Hybrid Maize Seeds", notes: "High yield seed supply for Q3 planting" },
+// Normalise a transaction row from the API into the shape the UI renders.
+const mapApiTransaction = (t: Record<string, unknown>): Transaction => ({
+  id: String(t.id ?? t._id ?? ""),
+  type: t.type === "expense" ? "expense" : "income",
+  category: String(t.category ?? ""),
+  amount: Number(t.amount ?? 0),
+  date: t.date ? new Date(t.date as string).toISOString().split("T")[0] : "",
+  reference: String(t.reference ?? ""),
+  notes: String(t.notes ?? ""),
+});
+
+// Palette for the (dynamically derived) expense-breakdown pie slices.
+const EXPENSE_COLORS = [
+  "#15803d",
+  "#2563eb",
+  "#d97706",
+  "#dc2626",
+  "#9333ea",
+  "#0891b2",
+  "#c026d3",
+  "#65a30d",
 ];
 
-const MONTHLY_FINANCIAL_DATA = [
-  { month: "Jan", income: 1400000, expense: 620000, net: 780000 },
-  { month: "Feb", income: 1650000, expense: 710000, net: 940000 },
-  { month: "Mar", income: 1900000, expense: 850000, net: 1050000 },
-  { month: "Apr", income: 1300000, expense: 540000, net: 760000 },
-  { month: "May", income: 2100000, expense: 920000, net: 1180000 },
-  { month: "Jun", income: 2450000, expense: 1050000, net: 1400000 },
-  { month: "Jul", income: 2100000, expense: 540000, net: 1560000 },
-];
+// Friendly labels for the farm-worth breakdown keys returned by /api/farm-worth.
+const VALUATION_LABELS: Record<string, string> = {
+  land: "Land",
+  equipment: "Machinery & Equipment",
+  fieldCrops: "Field Crops",
+  warehouseCrops: "Warehouse Produce",
+};
 
-const EXPENSE_CATEGORIES_PIE = [
-  { name: "Fertilizer & Agro-chemicals", value: 35, color: "#15803d" },
-  { name: "Seeds & Seedlings", value: 25, color: "#2563eb" },
-  { name: "Labor & Field Wages", value: 20, color: "#d97706" },
-  { name: "Fuel & Power", value: 12, color: "#dc2626" },
-  { name: "Machinery & Maintenance", value: 8, color: "#9333ea" },
-];
-
-const VALUATION_BREAKDOWN = [
-  { category: "Land & Infrastructure", value: 8500000 },
-  { category: "Machinery & Equipment", value: 4200000 },
-  { category: "Produce Inventory", value: 2800000 },
-  { category: "Livestock Herd", value: 3100000 },
-  { category: "Cash & Receivables", value: 1900000 },
-];
+interface ValuationSlice {
+  category: string;
+  value: number;
+}
 
 function FinancialsContent() {
   const searchParams = useSearchParams();
@@ -85,10 +89,17 @@ function FinancialsContent() {
   const currentTab = searchParams.get("tab") || "overview";
 
   const { profile } = useProfile();
+  const user = useAuthStore((s) => s.user) as { _id?: string } | null;
+  const userId = user?._id;
   const farmCurrency = profile?.currency || "NGN";
 
   const [activeTab, setActiveTab] = useState(currentTab);
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [valuation, setValuation] = useState<ValuationSlice[]>([]);
+  const [totalWorth, setTotalWorth] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
 
@@ -118,6 +129,63 @@ function FinancialsContent() {
     }
   }, [searchParams]);
 
+  // Load the user's persisted transactions from the backend.
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    setIsLoading(true);
+    apiClient
+      .get(`/api/financial/transaction/user/${userId}`)
+      .then((res) => {
+        if (cancelled) return;
+        const rows = (res?.data?.transactions ?? []) as Record<string, unknown>[];
+        setTransactions(rows.map(mapApiTransaction));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("[financials] failed to load transactions:", err);
+        toast.error("Could not load financial records");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // Load real farm valuation (asset worth) from the backend.
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    apiClient
+      .get(`/api/farm-worth`)
+      .then((res) => {
+        if (cancelled) return;
+        const breakdown = (res?.data?.breakdown ?? {}) as Record<string, number>;
+        const slices: ValuationSlice[] = Object.entries(breakdown)
+          .filter(([, value]) => Number(value) > 0)
+          .map(([key, value]) => ({
+            category: VALUATION_LABELS[key] || key,
+            value: Number(value) || 0,
+          }));
+        setValuation(slices);
+        setTotalWorth(Number(res?.data?.totalWorth) || 0);
+      })
+      .catch((err) => {
+        // 403 = user has no farm assets yet; treat as empty, not an error.
+        if (cancelled) return;
+        if (err?.response?.status !== 403) {
+          console.error("[financials] failed to load farm worth:", err);
+        }
+        setValuation([]);
+        setTotalWorth(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     router.push(`/financials?tab=${tabId}`);
@@ -134,9 +202,56 @@ function FinancialsContent() {
 
     const netProfit = totalIncome - totalExpense;
     const profitMargin = totalIncome > 0 ? ((netProfit / totalIncome) * 100).toFixed(1) : "0.0";
-    const totalValuation = VALUATION_BREAKDOWN.reduce((sum, v) => sum + v.value, 0) + netProfit;
+    // Real asset worth from /api/farm-worth (null until loaded).
+    const totalValuation = totalWorth ?? 0;
 
     return { totalIncome, totalExpense, netProfit, profitMargin, totalValuation };
+  }, [transactions, totalWorth]);
+
+  // Income vs expense trend over the last 7 calendar months, derived from real data.
+  const monthlyData = useMemo(() => {
+    const now = new Date();
+    const buckets: { key: string; month: string; income: number; expense: number; net: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push({
+        key: `${d.getFullYear()}-${d.getMonth()}`,
+        month: d.toLocaleString("en-US", { month: "short" }),
+        income: 0,
+        expense: 0,
+        net: 0,
+      });
+    }
+    const index = new Map(buckets.map((b) => [b.key, b]));
+    transactions.forEach((t) => {
+      if (!t.date) return;
+      const d = new Date(t.date);
+      const bucket = index.get(`${d.getFullYear()}-${d.getMonth()}`);
+      if (!bucket) return;
+      if (t.type === "income") bucket.income += t.amount;
+      else bucket.expense += t.amount;
+      bucket.net = bucket.income - bucket.expense;
+    });
+    return buckets;
+  }, [transactions]);
+
+  // Expense breakdown by category (share of total expense), derived from real data.
+  const expenseBreakdown = useMemo(() => {
+    const totals = new Map<string, number>();
+    transactions.forEach((t) => {
+      if (t.type !== "expense") return;
+      totals.set(t.category, (totals.get(t.category) || 0) + t.amount);
+    });
+    const grandTotal = Array.from(totals.values()).reduce((s, v) => s + v, 0);
+    if (grandTotal === 0) return [];
+    return Array.from(totals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, EXPENSE_COLORS.length)
+      .map(([name, amount], i) => ({
+        name,
+        value: Math.round((amount / grandTotal) * 100),
+        color: EXPENSE_COLORS[i],
+      }));
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
@@ -158,60 +273,97 @@ function FinancialsContent() {
     }).format(val);
   };
 
-  const handleAddIncome = (e: React.FormEvent) => {
+  const handleAddIncome = async (e: React.FormEvent) => {
     e.preventDefault();
     const amt = parseFloat(incomeForm.amount);
     if (isNaN(amt) || amt <= 0) {
       toast.error("Please enter a valid amount");
       return;
     }
-    const newTx: Transaction = {
-      id: `tx-${Date.now()}`,
-      type: "income",
-      category: incomeForm.category,
-      amount: amt,
-      date: incomeForm.date,
-      reference: incomeForm.reference.trim() || "Revenue Deposit",
-      notes: incomeForm.notes.trim(),
-    };
-    setTransactions((prev) => [newTx, ...prev]);
-    toast.success("Income logged successfully!");
-    setShowIncomeModal(false);
-    setIncomeForm({
-      category: "Crop Harvest",
-      amount: "",
-      date: new Date().toISOString().split("T")[0],
-      reference: "",
-      notes: "",
-    });
+    setIsSaving(true);
+    try {
+      const res = await apiClient.post("/api/financial/transaction", {
+        type: "income",
+        category: incomeForm.category,
+        amount: amt,
+        date: incomeForm.date,
+        reference: incomeForm.reference.trim() || "Revenue Deposit",
+        notes: incomeForm.notes.trim(),
+        farmId: profile?.id,
+      });
+      const saved = mapApiTransaction(res?.data?.transaction ?? {});
+      setTransactions((prev) => [saved, ...prev]);
+      toast.success("Income logged successfully!");
+      setShowIncomeModal(false);
+      setIncomeForm({
+        category: "Crop Harvest",
+        amount: "",
+        date: new Date().toISOString().split("T")[0],
+        reference: "",
+        notes: "",
+      });
+    } catch (err) {
+      console.error("[financials] add income failed:", err);
+      toast.error("Failed to save income");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleAddExpense = (e: React.FormEvent) => {
+  const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     const amt = parseFloat(expenseForm.amount);
     if (isNaN(amt) || amt <= 0) {
       toast.error("Please enter a valid amount");
       return;
     }
-    const newTx: Transaction = {
-      id: `tx-${Date.now()}`,
-      type: "expense",
-      category: expenseForm.category,
-      amount: amt,
-      date: expenseForm.date,
-      reference: expenseForm.reference.trim() || "Cost Payment",
-      notes: expenseForm.notes.trim(),
-    };
-    setTransactions((prev) => [newTx, ...prev]);
-    toast.success("Expense logged successfully!");
-    setShowExpenseModal(false);
-    setExpenseForm({
-      category: "Fertilizer",
-      amount: "",
-      date: new Date().toISOString().split("T")[0],
-      reference: "",
-      notes: "",
-    });
+    setIsSaving(true);
+    try {
+      const res = await apiClient.post("/api/financial/transaction", {
+        type: "expense",
+        category: expenseForm.category,
+        amount: amt,
+        date: expenseForm.date,
+        reference: expenseForm.reference.trim() || "Cost Payment",
+        notes: expenseForm.notes.trim(),
+        farmId: profile?.id,
+      });
+      const saved = mapApiTransaction(res?.data?.transaction ?? {});
+      setTransactions((prev) => [saved, ...prev]);
+      toast.success("Expense logged successfully!");
+      setShowExpenseModal(false);
+      setExpenseForm({
+        category: "Fertilizer",
+        amount: "",
+        date: new Date().toISOString().split("T")[0],
+        reference: "",
+        notes: "",
+      });
+    } catch (err) {
+      console.error("[financials] add expense failed:", err);
+      toast.error("Failed to save expense");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!id || deletingId) return;
+    if (!window.confirm("Delete this transaction? This cannot be undone.")) return;
+    setDeletingId(id);
+    // Optimistically remove, restore on failure.
+    const previous = transactions;
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    try {
+      await apiClient.delete(`/api/financial/transaction/${id}`);
+      toast.success("Transaction deleted");
+    } catch (err) {
+      console.error("[financials] delete failed:", err);
+      toast.error("Failed to delete transaction");
+      setTransactions(previous);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleExportCSV = () => {
@@ -239,35 +391,25 @@ function FinancialsContent() {
   return (
     <div className="p-0 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
       
-      {/* Standard Famtech Heading (100% Identical to Farm Operations, Inventory Management & Warehouse) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#30363d] pb-4">
-        <div>
-          <h1 className="text-3xl font-semibold text-green-700 dark:text-green-500">
-            Financial Management
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Manage income, track expenses, and view live net worth valuation.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#161b22] text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
-          <button
-            onClick={() => setShowIncomeModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg transition-colors shadow-sm">
-            <Plus className="w-4 h-4" /> Log Income
-          </button>
-          <button
-            onClick={() => setShowExpenseModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-sm">
-            <Plus className="w-4 h-4" /> Log Expense
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Financial Management"
+        subtitle="Manage income, track expenses, and view live net worth valuation.">
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#161b22] text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+          <Download className="w-4 h-4" /> Export CSV
+        </button>
+        <button
+          onClick={() => setShowIncomeModal(true)}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg transition-colors shadow-sm">
+          <Plus className="w-4 h-4" /> Log Income
+        </button>
+        <button
+          onClick={() => setShowExpenseModal(true)}
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-sm">
+          <Plus className="w-4 h-4" /> Log Expense
+        </button>
+      </PageHeader>
 
       {/* Sub-Nav Tabs (Identical to Farm Operations sub-nav) */}
       <div className="flex border-b border-gray-200 dark:border-[#30363d]">
@@ -304,9 +446,9 @@ function FinancialsContent() {
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {formatMoney(summary.totalValuation)}
           </p>
-          <div className="flex items-center text-xs font-semibold text-green-700 dark:text-green-400 gap-1">
-            <ArrowUpRight className="w-3.5 h-3.5" /> +12.4% net worth growth
-          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Includes net profit from recorded transactions
+          </p>
         </div>
 
         <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm space-y-2">
@@ -372,7 +514,7 @@ function FinancialsContent() {
             </div>
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={MONTHLY_FINANCIAL_DATA}>
+                <AreaChart data={monthlyData}>
                   <defs>
                     <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#15803d" stopOpacity={0.3} />
@@ -408,8 +550,8 @@ function FinancialsContent() {
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={EXPENSE_CATEGORIES_PIE} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={4}>
-                      {EXPENSE_CATEGORIES_PIE.map((entry, index) => (
+                    <Pie data={expenseBreakdown} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={4}>
+                      {expenseBreakdown.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -419,15 +561,19 @@ function FinancialsContent() {
               </div>
             </div>
             <div className="space-y-1.5 text-xs border-t border-gray-100 dark:border-[#30363d] pt-3">
-              {EXPENSE_CATEGORIES_PIE.map((cat) => (
-                <div key={cat.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
-                    <span className="text-gray-600 dark:text-gray-300 truncate max-w-[160px]">{cat.name}</span>
+              {expenseBreakdown.length === 0 ? (
+                <p className="text-gray-400 text-center py-2">No expenses recorded yet.</p>
+              ) : (
+                expenseBreakdown.map((cat) => (
+                  <div key={cat.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <span className="text-gray-600 dark:text-gray-300 truncate max-w-[160px]">{cat.name}</span>
+                    </div>
+                    <span className="font-semibold text-gray-900 dark:text-white">{cat.value}%</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-white">{cat.value}%</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -439,18 +585,28 @@ function FinancialsContent() {
           <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">
             Farm Valuation & Asset Allocation
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">Breakdown of land, machinery, produce inventory, and livestock valuation</p>
-          <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={VALUATION_BREAKDOWN}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                <XAxis dataKey="category" stroke="#8b949e" fontSize={12} />
-                <YAxis stroke="#8b949e" fontSize={12} />
-                <Tooltip formatter={(val: any) => [formatMoney(Number(val || 0)), "Valuation"]} />
-                <Bar dataKey="value" fill="#15803d" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">Breakdown of land, machinery, and produce asset valuation</p>
+          {valuation.length === 0 ? (
+            <div className="h-80 w-full flex flex-col items-center justify-center text-center gap-2">
+              <Building2 className="w-8 h-8 text-gray-300 dark:text-gray-600" />
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">No farm assets recorded yet</p>
+              <p className="text-xs text-gray-400 max-w-xs">
+                Add land, equipment, or produce assets to see your live farm valuation here.
+              </p>
+            </div>
+          ) : (
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={valuation}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                  <XAxis dataKey="category" stroke="#8b949e" fontSize={12} />
+                  <YAxis stroke="#8b949e" fontSize={12} />
+                  <Tooltip formatter={(val: any) => [formatMoney(Number(val || 0)), "Valuation"]} />
+                  <Bar dataKey="value" fill="#15803d" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       )}
 
@@ -503,13 +659,18 @@ function FinancialsContent() {
                 <th className="p-3.5">Date</th>
                 <th className="p-3.5">Amount</th>
                 <th className="p-3.5">Notes</th>
+                <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#30363d]">
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-400">
-                    No transactions match your query.
+                  <td colSpan={7} className="text-center py-8 text-gray-400">
+                    {isLoading
+                      ? "Loading transactions..."
+                      : transactions.length === 0
+                      ? "No transactions yet. Log your first income or expense to get started."
+                      : "No transactions match your query."}
                   </td>
                 </tr>
               ) : (
@@ -537,6 +698,16 @@ function FinancialsContent() {
                       {tx.type === "income" ? "+" : "-"}{formatMoney(tx.amount)}
                     </td>
                     <td className="p-3.5 text-gray-500 dark:text-gray-400 truncate max-w-xs">{tx.notes || "—"}</td>
+                    <td className="p-3.5 text-right">
+                      <button
+                        onClick={() => handleDeleteTransaction(tx.id)}
+                        disabled={deletingId === tx.id}
+                        title="Delete transaction"
+                        aria-label="Delete transaction"
+                        className="inline-flex items-center justify-center p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -632,8 +803,9 @@ function FinancialsContent() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-green-700 hover:bg-green-800 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
-                Save Income Transaction
+                disabled={isSaving}
+                className="w-full py-2.5 bg-green-700 hover:bg-green-800 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
+                {isSaving ? "Saving..." : "Save Income Transaction"}
               </button>
             </form>
           </div>
@@ -729,8 +901,9 @@ function FinancialsContent() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
-                Save Expense Transaction
+                disabled={isSaving}
+                className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
+                {isSaving ? "Saving..." : "Save Expense Transaction"}
               </button>
             </form>
           </div>

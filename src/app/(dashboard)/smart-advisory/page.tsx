@@ -12,6 +12,7 @@ import { SmartInsight } from "@/components/smartAdvisory/SmartInsight";
 import { Explore } from "@/components/smartAdvisory/Explore";
 import SmartAdvisory from '@/components/skeleton/smart-advisory/SmartAdvisory'
 import { useProfile } from "@/lib/hooks/useProfile";
+import PageHeader from "@/components/common/PageHeader";
 
 const tabsConfig = [
   { label: "Farm Advice", icon: Telescope, key: "farm advice" },
@@ -93,22 +94,13 @@ export default function Page() {
   return (
     <div className="text-slate-900 dark:text-[#e6edf3] font-sans p-3 md:p-6 bg-slate-50/30 dark:bg-[#0d1117]">
 
-      {/* Standard Famtech Heading */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#30363d] pb-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-semibold text-green-700 dark:text-green-500">
-            Advisory Workspace
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Generate expert advice plans and consult with your AI assistant.
-          </p>
-        </div>
-        <div className="flex flex-col sm:items-end gap-1 shrink-0">
-          <span className="inline-flex px-3 py-1 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold rounded-lg">
-            Hi, {owner?.firstName || "Farmer"}
-          </span>
-        </div>
-      </div>
+      <PageHeader
+        title="Advisory Workspace"
+        subtitle="Generate expert advice plans and consult with your AI assistant.">
+        <span className="inline-flex px-3 py-1 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold rounded-lg">
+          Hi, {owner?.firstName || "Farmer"}
+        </span>
+      </PageHeader>
 
       {/* --- SEGMENTED TABS SECTION --- */}
       <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-slate-100/80 dark:bg-[#161b22] rounded-xl md:rounded-2xl mb-4 md:mb-6 max-w-2xl scrollbar-none">
