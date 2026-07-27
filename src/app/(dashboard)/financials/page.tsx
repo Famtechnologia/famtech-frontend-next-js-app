@@ -447,7 +447,7 @@ function FinancialsContent() {
             {formatMoney(summary.totalValuation)}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Includes net profit from recorded transactions
+            Live valuation of your recorded farm assets
           </p>
         </div>
 
