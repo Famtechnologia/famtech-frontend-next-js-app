@@ -389,7 +389,7 @@ function FinancialsContent() {
                   <XAxis dataKey="month" stroke="#8b949e" fontSize={12} />
                   <YAxis stroke="#8b949e" fontSize={12} />
                   <Tooltip
-                    formatter={(value: number) => [formatMoney(value), ""]}
+                    formatter={(value: any) => [formatMoney(Number(value || 0)), ""]}
                     contentStyle={{ backgroundColor: "#161b22", borderRadius: "8px", border: "1px solid #30363d" }}
                   />
                   <Legend />
@@ -415,7 +415,7 @@ function FinancialsContent() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => [`${value}%`, ""]} />
+                    <Tooltip formatter={(value: any) => [`${value || 0}%`, ""]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -448,7 +448,7 @@ function FinancialsContent() {
                 <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                 <XAxis dataKey="category" stroke="#8b949e" fontSize={12} />
                 <YAxis stroke="#8b949e" fontSize={12} />
-                <Tooltip formatter={(val: number) => [formatMoney(val), "Valuation"]} />
+                <Tooltip formatter={(val: any) => [formatMoney(Number(val || 0)), "Valuation"]} />
                 <Bar dataKey="value" fill="#10B981" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
