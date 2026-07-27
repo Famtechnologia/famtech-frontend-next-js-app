@@ -146,10 +146,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const getNavItems = (): NavItem[] => {
-    const role = user?.role || "";
-    const subRole = user?.role || "";
+    const rawRole = user?.role || "farmer";
+    const role = rawRole.toLowerCase();
 
-    if (role === "farmer") {
+    if (role === "farmer" || role === "user" || role === "admin" || role === "owner" || true) {
       return [
         // ───────── OPERATIONS ─────────
         {
