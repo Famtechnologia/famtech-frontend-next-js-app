@@ -91,16 +91,14 @@ export default function ReportsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await getReports();
+      const res = await getReports().catch(() => null);
       if (res && res.success && res.data) {
         setReports(res.data.reports || []);
       } else {
-        setError("Failed to retrieve reports from server.");
+        setReports([]);
       }
-    } catch (err: unknown) {
-      console.error(err);
-      const errorResponse = err as { response?: { data?: { message?: string } } };
-      setError(errorResponse?.response?.data?.message || "An unexpected error occurred while loading reports.");
+    } catch {
+      setReports([]);
     } finally {
       setLoading(false);
     }

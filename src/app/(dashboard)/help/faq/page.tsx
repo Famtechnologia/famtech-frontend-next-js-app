@@ -52,9 +52,12 @@ const HelpAndSupport = () => {
                 <h3 className="text-lg font-medium text-gray-900">{faq.title}</h3>
               </div>
               <p className="text-sm text-gray-500">{faq.description}</p>
-              <a href="#" className="text-sm font-medium text-gray-600 underline hover:text-blue-500">
-                Learn more
-              </a>
+              <button 
+                type="button"
+                onClick={() => handleToggle(index % helpTopics.length)}
+                className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline text-left">
+                Explore topic →
+              </button>
             </div>
           ))}
         </div>
@@ -79,14 +82,14 @@ const HelpAndSupport = () => {
             />
           </div>
           <div className="space-y-2">
-            <div className="flex text-sm items-center space-x-2 text-gray-600">
+            <a href="mailto:famtechnologia@gmail.com" className="flex text-sm items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors">
               <Mail className="h-5 w-5" />
               <span>famtechnologia@gmail.com</span>
-            </div>
-            <div className="flex text-sm items-center space-x-2 text-gray-600">
+            </a>
+            <a href="tel:+2348096979032" className="flex text-sm items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors">
               <Phone className=" h-4 w-4 md:h-5 md:w-5 " />
               <span>+234 809 697 9032</span>
-            </div>
+            </a>
           </div>
         </div>
         <div className="flex-1 space-y-4">
