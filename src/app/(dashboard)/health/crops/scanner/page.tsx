@@ -51,6 +51,7 @@ export default function DiseaseScannerPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -60,6 +61,7 @@ export default function DiseaseScannerPage() {
       return;
     }
     setResult(null);
+    setScanError(null);
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };
@@ -68,6 +70,7 @@ export default function DiseaseScannerPage() {
     setFile(null);
     setPreview(null);
     setResult(null);
+    setScanError(null);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -75,16 +78,27 @@ export default function DiseaseScannerPage() {
     if (!file) return;
     setIsScanning(true);
     setResult(null);
+    setScanError(null);
     try {
       const compressed = await compressImage(file);
       const fd = new FormData();
       fd.append("image", compressed, compressed.name);
       const res = await apiClient.post("/api/health/scan", fd);
-      setResult((res?.data?.data ?? {}) as ScanResult);
-    } catch (err: unknown) {
+      if (res?.data?.success) {
+        setResult((res?.data?.data ?? {}) as ScanResult);
+        toast.success("Crop scan completed successfully");
+      } else {
+        const errMsg = res?.data?.message || "Failed to analyze image";
+        setScanError(errMsg);
+        toast.error(errMsg);
+      }
+    } catch (err: any) {
       console.error("[scanner] scan failed:", err);
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      toast.error(status === 503 ? "AI scanner isn't enabled on the server yet" : "Failed to analyze image");
+      const serverMsg = err?.response?.data?.message || err?.response?.data?.error || err?.message;
+      const status = err?.response?.status;
+      const errorText = serverMsg || (status === 503 ? "AI scanner service is currently unavailable" : "Failed to analyze image. Please try again.");
+      setScanError(errorText);
+      toast.error(errorText);
     } finally {
       setIsScanning(false);
     }
@@ -144,7 +158,18 @@ export default function DiseaseScannerPage() {
         <div className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm p-5">
           {isScanning ? (
             <div className="h-full min-h-[16rem] flex flex-col items-center justify-center gap-2 text-green-700 dark:text-green-500 font-semibold">
-              <RefreshCw className="w-6 h-6 animate-spin" /> Analyzing your crop...
+              <RefreshCw className="w-6 h-6 animate-spin" /> Analyzing your crop with AI...
+            </div>
+          ) : scanError ? (
+            <div className="h-full min-h-[16rem] flex flex-col items-center justify-center gap-2 text-center text-rose-600 dark:text-rose-400 p-4">
+              <AlertTriangle className="w-8 h-8" />
+              <p className="text-base font-bold">Scan Error</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 max-w-sm">{scanError}</p>
+              <button
+                onClick={scan}
+                className="mt-3 px-4 py-2 bg-green-700 text-white text-xs font-semibold rounded-lg hover:bg-green-800 transition-all">
+                Retry Scan
+              </button>
             </div>
           ) : !result ? (
             <div className="h-full min-h-[16rem] flex flex-col items-center justify-center gap-2 text-center text-gray-400">
