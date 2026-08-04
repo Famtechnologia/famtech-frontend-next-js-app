@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Leaf, PawPrint, Bug, Activity, ShieldCheck, AlertTriangle, RefreshCw, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { Leaf, PawPrint, Bug, Activity, ShieldCheck, AlertTriangle, RefreshCw, Plus, X, ScanLine } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
 import apiClient from "@/lib/api/apiClient";
 import { useProfile } from "@/lib/hooks/useProfile";
@@ -242,6 +243,11 @@ export default function HealthPage() {
   return (
     <div className="p-4 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
       <PageHeader title="Crop & Livestock Health" subtitle="Track the health of everything you grow and raise — and log checkups & diseases inline.">
+        <Link
+          href="/health/crops/scanner"
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg transition-colors shadow-sm">
+          <ScanLine className="w-4 h-4" /> Scan Disease
+        </Link>
         <button
           onClick={load}
           disabled={isLoading}
