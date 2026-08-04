@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Leaf,
   X,
+  FlipHorizontal,
 } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
 import apiClient from "@/lib/api/apiClient";
@@ -48,14 +49,106 @@ const titleCase = (s?: string) => (s ? s.replace(/_/g, " ").replace(/\b\w/g, (l)
 export default function DiseaseScannerPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
 
-  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Live Camera Viewfinder Modal state
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+
+  // Clean up camera stream when camera closes or component unmounts
+  const stopCameraStream = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, [cameraStream]);
+
+  const startCamera = async (mode: "environment" | "user" = facingMode) => {
+    stopCameraStream();
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error("Camera access is not supported on this browser");
+        fileInputRef.current?.click();
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+
+      setCameraStream(stream);
+      setIsCameraOpen(true);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (err: any) {
+      console.error("[Camera] Error starting camera:", err);
+      toast.error("Could not access camera. Please allow camera permissions or upload an image.");
+      setIsCameraOpen(false);
+    }
+  };
+
+  const toggleCameraFacing = () => {
+    const nextMode = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(nextMode);
+    startCamera(nextMode);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          toast.error("Failed to capture photo frame");
+          return;
+        }
+
+        const capturedFile = new File([blob], `crop_scan_${Date.now()}.jpg`, {
+          type: "image/jpeg",
+          lastModified: Date.now(),
+        });
+
+        setResult(null);
+        setFile(capturedFile);
+        setPreview(URL.createObjectURL(blob));
+        stopCameraStream();
+        setIsCameraOpen(false);
+        toast.success("Photo captured!");
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
+
+  const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("image/")) {
@@ -72,7 +165,6 @@ export default function DiseaseScannerPage() {
     setPreview(null);
     setResult(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
   const scan = async () => {
@@ -117,24 +209,69 @@ export default function DiseaseScannerPage() {
         </button>
       </PageHeader>
 
-      {/* Hidden Inputs */}
-      {/* File Upload Input */}
+      {/* Hidden File Picker & Canvas element */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={onPick}
+        onChange={onPickFile}
         className="hidden"
       />
-      {/* Camera Capture Input */}
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={onPick}
-        className="hidden"
-      />
+      <canvas ref={canvasRef} className="hidden" />
+
+      {/* Live Camera Viewfinder Modal */}
+      {isCameraOpen && (
+        <div className="fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-between p-4 md:p-6">
+          <div className="w-full flex items-center justify-between text-white z-10">
+            <span className="text-sm font-semibold flex items-center gap-2">
+              <Camera className="w-4 h-4 text-green-400" /> Live Viewfinder
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleCameraFacing}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
+                title="Switch Camera">
+                <FlipHorizontal className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => {
+                  stopCameraStream();
+                  setIsCameraOpen(false);
+                }}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="relative w-full max-w-xl flex-1 my-4 bg-black rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              onLoadedMetadata={() => videoRef.current?.play()}
+            />
+            {/* Viewfinder Overlay Frame */}
+            <div className="absolute inset-8 border-2 border-dashed border-green-400/70 rounded-xl pointer-events-none flex items-center justify-center">
+              <span className="text-xs text-white/80 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
+                Position leaf or crop inside frame
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center pb-4 z-10">
+            <button
+              onClick={capturePhoto}
+              className="h-16 w-16 rounded-full bg-green-600 hover:bg-green-700 text-white p-1 border-4 border-white shadow-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95">
+              <div className="h-12 w-12 rounded-full bg-white text-green-700 flex items-center justify-center">
+                <Camera className="w-6 h-6" />
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upload / preview card */}
@@ -167,22 +304,22 @@ export default function DiseaseScannerPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Select image source</p>
-                <p className="text-xs text-gray-400 mt-0.5">Take a fresh photo or pick a leaf image from device</p>
+                <p className="text-xs text-gray-400 mt-0.5">Turn on live camera or upload an image file</p>
               </div>
             </div>
           )}
 
-          {/* Action Buttons: Take Photo & Upload File */}
+          {/* Action Buttons: Live Camera & Upload File */}
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => cameraInputRef.current?.click()}
-              className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
-              <Camera className="w-4 h-4 text-green-700" /> Take Photo
+              onClick={() => startCamera("environment")}
+              className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold border border-green-200 dark:border-green-800/50 rounded-lg bg-green-50/50 dark:bg-green-950/20 text-green-700 dark:text-green-400 hover:bg-green-100/50 transition-colors shadow-sm">
+              <Camera className="w-4 h-4 text-green-700" /> Turn On Camera
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
-              <Upload className="w-4 h-4 text-emerald-700" /> Upload File
+              <Upload className="w-4 h-4 text-gray-600 dark:text-gray-300" /> Upload File
             </button>
           </div>
 
@@ -205,7 +342,7 @@ export default function DiseaseScannerPage() {
             <div className="h-full min-h-[16rem] flex flex-col items-center justify-center gap-2 text-center text-gray-400">
               <ScanLine className="w-8 h-8 text-green-700" />
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Scan results will appear here</p>
-              <p className="text-xs max-w-xs text-gray-400">Take a photo or upload an image and tap Analyze Crop to get a diagnosis.</p>
+              <p className="text-xs max-w-xs text-gray-400">Snap a photo with camera or upload an image and tap Analyze Crop to get a diagnosis.</p>
             </div>
           ) : (
             <div className="space-y-4">
