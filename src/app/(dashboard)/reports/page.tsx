@@ -7,7 +7,6 @@ import {
   Download,
   Trash2,
   Calendar,
-  Sparkles,
   Loader2,
   FileCheck,
   AlertCircle,
@@ -642,7 +641,6 @@ export default function ReportsPage() {
           {/* Action Footer */}
           <div className="flex items-center justify-between border-t border-slate-100 pt-4">
             <span className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
-              <Sparkles className="h-4 w-4 text-green-500 shrink-0" />
               <span>Auto-compiles log activities</span>
             </span>
             

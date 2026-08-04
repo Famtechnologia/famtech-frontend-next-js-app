@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, Send, X, HelpCircle, User, Loader2, Sparkles } from "lucide-react";
+import { MessageSquare, Send, X, HelpCircle, User, Loader2 } from "lucide-react";
 
 interface Message {
   id: string;
@@ -153,7 +153,7 @@ export default function FloatingChatbot() {
             <div className="flex items-center gap-2.5">
               <div className="relative">
                 <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-                  <Sparkles size={18} className="text-green-300" />
+                  <MessageSquare size={18} className="text-green-300" />
                 </div>
                 {/* Active dot */}
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-green-600 rounded-full animate-pulse"></span>
@@ -181,7 +181,7 @@ export default function FloatingChatbot() {
               >
                 {msg.sender === "bot" && (
                   <div className="w-8 h-8 rounded-xl bg-green-100 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] flex items-center justify-center shrink-0">
-                    <Sparkles size={14} />
+                    <MessageSquare size={14} />
                   </div>
                 )}
 
@@ -216,7 +216,7 @@ export default function FloatingChatbot() {
             {isTyping && (
               <div className="flex gap-2.5 justify-start">
                 <div className="w-8 h-8 rounded-xl bg-green-100 dark:bg-[#1a3a2a] text-green-700 dark:text-[#4ade80] flex items-center justify-center shrink-0">
-                  <Sparkles size={14} />
+                  <MessageSquare size={14} />
                 </div>
                 <div className="bg-white dark:bg-[#21262d] text-gray-500 dark:text-[#8b949e] border border-gray-100 dark:border-[#30363d] rounded-2xl rounded-tl-none p-3.5 text-sm shadow-sm flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-[#4ade80] rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
