@@ -34,6 +34,7 @@ export interface LivestockRecord {
     userId: string;
     specie: string;
     numberOfAnimal: number;
+    valuePerHead?: number;
     ageGroup: string;
     acquisitionDate: Date;
     breed: string;
@@ -83,6 +84,7 @@ export interface UpdateCropPayload {
 export interface UpdateLivestockPayload {
     specie: string;
     numberOfAnimal: number;
+    valuePerHead?: number;
     ageGroup: string;
     acquisitionDate: string;
     breed: string;

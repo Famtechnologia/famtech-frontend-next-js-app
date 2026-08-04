@@ -18,6 +18,7 @@ interface LivestockFormData {
   specie: string;
   breed: string;
   numberOfAnimal: number;
+  valuePerHead: number;
   ageGroup: string;
   acquisitionDate: string;
   healthStatus: "good" | "excellent" | "fair" | "poor";
@@ -40,6 +41,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
     specie: "",
     breed: "",
     numberOfAnimal: 1,
+    valuePerHead: 0,
     ageGroup: "Adult",
     acquisitionDate: "",
     healthStatus: "good",
@@ -113,6 +115,7 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
     data.append("specie", formData.specie);
     data.append("breed", formData.breed);
     data.append("numberOfAnimal", formData.numberOfAnimal.toFixed());
+    data.append("valuePerHead", String(formData.valuePerHead || 0));
     data.append("ageGroup", formData.ageGroup);
     data.append("acquisitionDate", formData.acquisitionDate);
     data.append("healthStatus", formData.healthStatus);
@@ -217,6 +220,25 @@ export const AddLivestockForm: React.FC<AddLivestockFormProps> = ({
             min="1"
             className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="valuePerHead"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+          >
+            Est. Value per Animal
+          </label>
+          <input
+            type="number"
+            id="valuePerHead"
+            placeholder="E.g., 150000"
+            value={formData.valuePerHead}
+            onChange={handleChange}
+            min="0"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">Used to calculate your farm valuation.</p>
         </div>
 
         <div>
@@ -394,6 +416,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
     specie: record.specie || "",
     breed: record.breed || "",
     numberOfAnimal: record.numberOfAnimal || 1,
+    valuePerHead: record.valuePerHead || 0,
     ageGroup: record.ageGroup || "Adult",
     feedSchedule: record.feedSchedule || "",
     acquisitionDate: formatDate(record.acquisitionDate.toString()) || "",
@@ -423,6 +446,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
       specie: record.specie || "",
       breed: record.breed || "",
       numberOfAnimal: record.numberOfAnimal || 1,
+      valuePerHead: record.valuePerHead || 0,
       ageGroup: record.ageGroup || "Adult",
       feedSchedule: record.feedSchedule || "",
       acquisitionDate: formatDate(record.acquisitionDate.toString()) || "",
@@ -508,6 +532,7 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
         data.append("specie", formData.specie);
         data.append("breed", formData.breed);
         data.append("numberOfAnimal", formData.numberOfAnimal.toString());
+        data.append("valuePerHead", String(formData.valuePerHead || 0));
         data.append("ageGroup", formData.ageGroup);
         data.append("acquisitionDate", formData.acquisitionDate);
         data.append("healthStatus", formData.healthStatus);
@@ -616,6 +641,25 @@ export const UpdateLivestockForm: React.FC<UpdateLivestockFormProps> = ({
             min="1"
             className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
           />
+        </div>
+        {/* valuePerHead */}
+        <div>
+          <label
+            htmlFor="valuePerHead"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+          >
+            Est. Value per Animal
+          </label>
+          <input
+            type="number"
+            id="valuePerHead"
+            placeholder="E.g., 150000"
+            value={formData.valuePerHead}
+            onChange={handleChange}
+            min="0"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-gray-800 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none transition-all shadow-sm"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">Used to calculate your farm valuation.</p>
         </div>
         {/* ageGroup */}
         <div>

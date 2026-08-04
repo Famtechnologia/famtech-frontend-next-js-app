@@ -76,6 +76,7 @@ const VALUATION_LABELS: Record<string, string> = {
   equipment: "Machinery & Equipment",
   fieldCrops: "Field Crops",
   warehouseCrops: "Warehouse Produce",
+  livestock: "Livestock",
 };
 
 interface ValuationSlice {
