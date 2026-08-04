@@ -28,6 +28,8 @@ import {
   StoreIcon,
   Cpu,
   TrendingUp,
+  Cloud,
+  HeartPulse,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -197,6 +199,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           href: `/warehouse`,
           section: "Operations",
         },
+        {
+          name: "Crop & Livestock Health",
+          icon: HeartPulse,
+          key: "health",
+          expandable: false,
+          href: `/health`,
+          section: "Operations",
+        },
 
         // ───────── INSIGHTS ─────────
         {
@@ -229,6 +239,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "mapping",
           expandable: false,
           href: `/mapping`,
+          comingSoon: false,
+          section: "Insights",
+        },
+        {
+          name: "Weather",
+          icon: Cloud,
+          key: "weather",
+          expandable: false,
+          href: `/weather`,
           comingSoon: false,
           section: "Insights",
         },
