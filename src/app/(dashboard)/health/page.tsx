@@ -1,43 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Leaf,
-  Bug,
-  Activity,
-  AlertTriangle,
-  ShieldCheck,
-  RefreshCw,
-} from "lucide-react";
+import { Leaf, PawPrint, Activity, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
 import apiClient from "@/lib/api/apiClient";
+import { useProfile } from "@/lib/hooks/useProfile";
+import { toast } from "react-hot-toast";
+import {
+  getCropRecords,
+  getLivestockRecords,
+  CropRecord,
+  LivestockRecord,
+} from "@/lib/services/croplivestock";
 
-interface CropHealthRecord {
-  _id?: string;
-  id?: string;
-  cropType?: string;
-  fieldName?: string;
-  growthStage?: string;
-  healthStatus?: string;
-  overallScore?: number;
-  inspectionDate?: string;
-  createdAt?: string;
-}
+type HealthStatus = "excellent" | "good" | "fair" | "poor";
+const STATUS_OPTIONS: HealthStatus[] = ["excellent", "good", "fair", "poor"];
 
-interface DiseaseRecord {
-  _id?: string;
-  id?: string;
-  cropType?: string;
-  diseaseName?: string;
-  diseaseType?: string;
-  severity?: string;
-  status?: string;
-  affectedArea?: number;
-  isResolved?: boolean;
-  createdAt?: string;
-}
-
-const healthStatusStyle = (s?: string) => {
+const statusStyle = (s?: string) => {
   switch ((s || "").toLowerCase()) {
     case "excellent":
     case "good":
@@ -45,37 +24,6 @@ const healthStatusStyle = (s?: string) => {
     case "fair":
       return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300";
     case "poor":
-      return "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300";
-    case "critical":
-      return "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300";
-    default:
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-  }
-};
-
-const severityStyle = (s?: string) => {
-  switch ((s || "").toLowerCase()) {
-    case "low":
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-    case "medium":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300";
-    case "high":
-      return "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300";
-    case "critical":
-      return "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300";
-    default:
-      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
-  }
-};
-
-const diseaseStatusStyle = (s?: string) => {
-  switch ((s || "").toLowerCase()) {
-    case "resolved":
-      return "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300";
-    case "contained":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300";
-    case "active":
-    case "spreading":
       return "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300";
     default:
       return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
@@ -83,54 +31,127 @@ const diseaseStatusStyle = (s?: string) => {
 };
 
 const titleCase = (s?: string) => (s ? s.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "—");
-const fmtDate = (d?: string) => (d ? new Date(d).toLocaleDateString() : "—");
+const fmtDate = (d?: string | Date) => (d ? new Date(d).toLocaleDateString() : "—");
+
+// Pull an array out of either a bare array or a { data: [] } envelope.
+function asArray<T>(res: unknown): T[] {
+  if (Array.isArray(res)) return res as T[];
+  const inner = (res as { data?: unknown })?.data;
+  return Array.isArray(inner) ? (inner as T[]) : [];
+}
+
+function summarize(records: { healthStatus?: string }[]) {
+  const norm = (r: { healthStatus?: string }) => (r.healthStatus || "").toLowerCase();
+  return {
+    total: records.length,
+    healthy: records.filter((r) => ["excellent", "good"].includes(norm(r))).length,
+    fair: records.filter((r) => norm(r) === "fair").length,
+    poor: records.filter((r) => norm(r) === "poor").length,
+  };
+}
 
 export default function HealthPage() {
-  const [tab, setTab] = useState<"crops" | "diseases">("crops");
-  const [cropRecords, setCropRecords] = useState<CropHealthRecord[]>([]);
-  const [diseaseRecords, setDiseaseRecords] = useState<DiseaseRecord[]>([]);
+  const { profile } = useProfile();
+  const profileId = profile?.id;
+
+  const [tab, setTab] = useState<"crops" | "livestock">("crops");
+  const [crops, setCrops] = useState<CropRecord[]>([]);
+  const [livestock, setLivestock] = useState<LivestockRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!profileId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const [crops, diseases] = await Promise.all([
-        apiClient.get("/api/health/crops").catch(() => ({ data: { data: [] } })),
-        apiClient.get("/api/health/diseases").catch(() => ({ data: { data: [] } })),
+      const [c, l] = await Promise.all([
+        getCropRecords(profileId).catch(() => []),
+        getLivestockRecords(profileId).catch(() => []),
       ]);
-      setCropRecords((crops?.data?.data ?? []) as CropHealthRecord[]);
-      setDiseaseRecords((diseases?.data?.data ?? []) as DiseaseRecord[]);
+      setCrops(asArray<CropRecord>(c));
+      setLivestock(asArray<LivestockRecord>(l));
     } catch (err) {
-      console.error("[health] failed to load:", err);
-      setError("Could not load health records.");
+      console.error("[health] failed to load records:", err);
+      setError("Could not load your crop and livestock records.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [profileId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const cropSummary = useMemo(() => {
-    const healthy = cropRecords.filter((r) => ["excellent", "good"].includes((r.healthStatus || "").toLowerCase())).length;
-    const attention = cropRecords.filter((r) => ["fair", "poor"].includes((r.healthStatus || "").toLowerCase())).length;
-    const critical = cropRecords.filter((r) => (r.healthStatus || "").toLowerCase() === "critical").length;
-    return { total: cropRecords.length, healthy, attention, critical };
-  }, [cropRecords]);
+  const cropSummary = useMemo(() => summarize(crops), [crops]);
+  const livestockSummary = useMemo(() => summarize(livestock), [livestock]);
 
-  const diseaseSummary = useMemo(() => {
-    const active = diseaseRecords.filter((r) => ["active", "spreading"].includes((r.status || "").toLowerCase())).length;
-    const critical = diseaseRecords.filter((r) => (r.severity || "").toLowerCase() === "critical").length;
-    const resolved = diseaseRecords.filter((r) => r.isResolved || (r.status || "").toLowerCase() === "resolved").length;
-    return { total: diseaseRecords.length, active, critical, resolved };
-  }, [diseaseRecords]);
+  // Update a crop's health status. The backend PUT validates the full record
+  // and expects multipart, so we resend the existing fields + new status.
+  const updateCropHealth = async (record: CropRecord, status: HealthStatus) => {
+    const rid = record.id || record._id;
+    setUpdatingId(rid);
+    try {
+      const fd = new FormData();
+      fd.append("cropName", record.cropName || "");
+      fd.append("variety", record.variety || "");
+      fd.append("location", record.location || "");
+      fd.append("plantingDate", record.plantingDate ? new Date(record.plantingDate).toISOString() : "");
+      fd.append("expectedHarvestDate", record.expectedHarvestDate ? new Date(record.expectedHarvestDate).toISOString() : "");
+      fd.append("currentGrowthStage", record.currentGrowthStage || "");
+      fd.append("healthStatus", status);
+      fd.append("area[value]", String(record.area?.value ?? 0));
+      fd.append("area[unit]", record.area?.unit || "ac");
+      fd.append("seedQuantity[value]", String(record.seedQuantity?.value ?? 0));
+      fd.append("seedQuantity[unit]", record.seedQuantity?.unit || "kg");
+      await apiClient.put(`/api/crop-record/${rid}`, fd);
+      setCrops((prev) => prev.map((r) => ((r.id || r._id) === rid ? { ...r, healthStatus: status } : r)));
+      toast.success("Crop health updated");
+    } catch (err) {
+      console.error("[health] crop update failed:", err);
+      toast.error("Failed to update crop health");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  // Update a livestock group's health status and stamp the checkup date.
+  const updateLivestockHealth = async (record: LivestockRecord, status: HealthStatus) => {
+    const rid = record.id || record._id;
+    setUpdatingId(rid);
+    try {
+      const fd = new FormData();
+      fd.append("specie", record.specie || "");
+      fd.append("breed", record.breed || "");
+      fd.append("numberOfAnimal", String(record.numberOfAnimal ?? 0));
+      fd.append("valuePerHead", String(record.valuePerHead ?? 0));
+      fd.append("ageGroup", (record.ageGroup || "adult").toLowerCase());
+      fd.append("acquisitionDate", record.acquisitionDate ? new Date(record.acquisitionDate).toISOString() : "");
+      fd.append("healthStatus", status);
+      fd.append("lastHealthCheckup", new Date().toISOString());
+      await apiClient.put(`/api/livestock-record/${rid}`, fd);
+      setLivestock((prev) =>
+        prev.map((r) =>
+          (r.id || r._id) === rid
+            ? { ...r, healthStatus: status, lastHealthCheckup: new Date().toISOString() }
+            : r
+        )
+      );
+      toast.success("Livestock health updated");
+    } catch (err) {
+      console.error("[health] livestock update failed:", err);
+      toast.error("Failed to update livestock health");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const summary = tab === "crops" ? cropSummary : livestockSummary;
 
   return (
     <div className="p-4 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
-      <PageHeader title="Crop & Livestock Health" subtitle="Monitor crop health records and track disease outbreaks.">
+      <PageHeader title="Crop & Livestock Health" subtitle="Track the health of everything you grow and raise — and log a checkup inline.">
         <button
           onClick={load}
           disabled={isLoading}
@@ -143,7 +164,7 @@ export default function HealthPage() {
       <div className="flex border-b border-gray-200 dark:border-[#30363d]">
         {[
           { id: "crops" as const, label: "Crop Health", icon: Leaf },
-          { id: "diseases" as const, label: "Diseases", icon: Bug },
+          { id: "livestock" as const, label: "Livestock Health", icon: PawPrint },
         ].map((t) => (
           <button
             key={t.id}
@@ -158,9 +179,17 @@ export default function HealthPage() {
         ))}
       </div>
 
+      {/* Summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={<Activity className="w-5 h-5" />} label="Records" value={summary.total} />
+        <StatCard icon={<ShieldCheck className="w-5 h-5" />} label="Healthy" value={summary.healthy} tone="green" />
+        <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Fair" value={summary.fair} tone="amber" />
+        <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Poor" value={summary.poor} tone="rose" />
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center py-24 text-green-700 dark:text-green-500 gap-2 font-semibold">
-          <RefreshCw className="w-5 h-5 animate-spin" /> Loading health records...
+          <RefreshCw className="w-5 h-5 animate-spin" /> Loading records...
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-24 text-center gap-2">
@@ -169,70 +198,72 @@ export default function HealthPage() {
           <button onClick={load} className="text-xs font-semibold text-green-700 dark:text-green-500 hover:underline">Try again</button>
         </div>
       ) : tab === "crops" ? (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard icon={<Activity className="w-5 h-5" />} label="Records" value={cropSummary.total} />
-            <StatCard icon={<ShieldCheck className="w-5 h-5" />} label="Healthy" value={cropSummary.healthy} tone="green" />
-            <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Needs Attention" value={cropSummary.attention} tone="amber" />
-            <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Critical" value={cropSummary.critical} tone="rose" />
-          </div>
-
-          <RecordTable
-            empty={cropRecords.length === 0}
-            emptyText="No crop health records yet."
-            head={["Crop", "Field", "Growth Stage", "Status", "Score", "Inspected"]}>
-            {cropRecords.map((r) => (
-              <tr key={r._id || r.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                <td className="p-3.5 font-semibold text-gray-900 dark:text-white">{titleCase(r.cropType)}</td>
-                <td className="p-3.5 text-gray-700 dark:text-gray-300">{r.fieldName || "—"}</td>
-                <td className="p-3.5 text-gray-700 dark:text-gray-300">{titleCase(r.growthStage)}</td>
+        <RecordTable head={["Crop", "Variety", "Growth Stage", "Health", "Update Health"]} empty={crops.length === 0} emptyText="No crop records yet. Add crops in Farm Operations to track their health here.">
+          {crops.map((r) => {
+            const rid = r.id || r._id;
+            return (
+              <tr key={rid} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                <td className="p-3.5 font-semibold text-gray-900 dark:text-white">{titleCase(r.cropName)}</td>
+                <td className="p-3.5 text-gray-700 dark:text-gray-300">{titleCase(r.variety)}</td>
+                <td className="p-3.5 text-gray-700 dark:text-gray-300">{titleCase(r.currentGrowthStage)}</td>
                 <td className="p-3.5">
-                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${healthStatusStyle(r.healthStatus)}`}>
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusStyle(r.healthStatus)}`}>
                     {r.healthStatus || "—"}
                   </span>
                 </td>
-                <td className="p-3.5 text-gray-700 dark:text-gray-300">{r.overallScore != null ? `${r.overallScore}` : "—"}</td>
-                <td className="p-3.5 text-gray-500">{fmtDate(r.inspectionDate || r.createdAt)}</td>
+                <td className="p-3.5">
+                  <HealthSelect value={r.healthStatus} disabled={updatingId === rid} onChange={(s) => updateCropHealth(r, s)} />
+                </td>
               </tr>
-            ))}
-          </RecordTable>
-        </>
+            );
+          })}
+        </RecordTable>
       ) : (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard icon={<Bug className="w-5 h-5" />} label="Records" value={diseaseSummary.total} />
-            <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Active" value={diseaseSummary.active} tone="rose" />
-            <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Critical" value={diseaseSummary.critical} tone="rose" />
-            <StatCard icon={<ShieldCheck className="w-5 h-5" />} label="Resolved" value={diseaseSummary.resolved} tone="green" />
-          </div>
-
-          <RecordTable
-            empty={diseaseRecords.length === 0}
-            emptyText="No disease records yet."
-            head={["Disease", "Crop", "Type", "Severity", "Status", "Affected (ha)", "Reported"]}>
-            {diseaseRecords.map((r) => (
-              <tr key={r._id || r.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                <td className="p-3.5 font-semibold text-gray-900 dark:text-white">{r.diseaseName || "—"}</td>
-                <td className="p-3.5 text-gray-700 dark:text-gray-300">{titleCase(r.cropType)}</td>
-                <td className="p-3.5 text-gray-700 dark:text-gray-300">{titleCase(r.diseaseType)}</td>
+        <RecordTable head={["Species", "Breed", "Count", "Health", "Last Checkup", "Update Health"]} empty={livestock.length === 0} emptyText="No livestock records yet. Add livestock in Farm Operations to track their health here.">
+          {livestock.map((r) => {
+            const rid = r.id || r._id;
+            return (
+              <tr key={rid} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                <td className="p-3.5 font-semibold text-gray-900 dark:text-white">{titleCase(r.specie)}</td>
+                <td className="p-3.5 text-gray-700 dark:text-gray-300">{titleCase(r.breed)}</td>
+                <td className="p-3.5 text-gray-700 dark:text-gray-300">{r.numberOfAnimal ?? "—"}</td>
                 <td className="p-3.5">
-                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${severityStyle(r.severity)}`}>
-                    {r.severity || "—"}
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusStyle(r.healthStatus)}`}>
+                    {r.healthStatus || "—"}
                   </span>
                 </td>
+                <td className="p-3.5 text-gray-500">{fmtDate((r as LivestockRecord & { lastHealthCheckup?: string }).lastHealthCheckup)}</td>
                 <td className="p-3.5">
-                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${diseaseStatusStyle(r.status)}`}>
-                    {r.status || "—"}
-                  </span>
+                  <HealthSelect value={r.healthStatus} disabled={updatingId === rid} onChange={(s) => updateLivestockHealth(r, s)} />
                 </td>
-                <td className="p-3.5 text-gray-700 dark:text-gray-300">{r.affectedArea != null ? r.affectedArea : "—"}</td>
-                <td className="p-3.5 text-gray-500">{fmtDate(r.createdAt)}</td>
               </tr>
-            ))}
-          </RecordTable>
-        </>
+            );
+          })}
+        </RecordTable>
       )}
     </div>
+  );
+}
+
+function HealthSelect({
+  value,
+  disabled,
+  onChange,
+}: {
+  value?: string;
+  disabled?: boolean;
+  onChange: (s: HealthStatus) => void;
+}) {
+  return (
+    <select
+      value={(value || "good").toLowerCase()}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.value as HealthStatus)}
+      className="text-xs border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-[#e6edf3] px-2 py-1 capitalize focus:outline-none focus:ring-1 focus:ring-green-600 disabled:opacity-50">
+      {STATUS_OPTIONS.map((s) => (
+        <option key={s} value={s} className="capitalize">{s}</option>
+      ))}
+    </select>
   );
 }
 
@@ -291,9 +322,7 @@ function RecordTable({
           <tbody className="divide-y divide-gray-100 dark:divide-[#30363d]">
             {empty ? (
               <tr>
-                <td colSpan={head.length} className="text-center py-8 text-gray-400">
-                  {emptyText}
-                </td>
+                <td colSpan={head.length} className="text-center py-8 text-gray-400">{emptyText}</td>
               </tr>
             ) : (
               children
