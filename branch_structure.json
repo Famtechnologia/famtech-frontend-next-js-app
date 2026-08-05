@@ -1,0 +1,30 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "dev",
+    "feature/financialSmartNet",
+    "feature/pelumi",
+    "main",
+    "origin",
+    "prolomon",
+    "socket"
+  ],
+  "parent": {
+    "dev": "main",
+    "feature/financialSmartNet": "main",
+    "feature/pelumi": "main",
+    "main": null,
+    "origin": "main",
+    "prolomon": "main",
+    "socket": "main"
+  },
+  "order": [
+    "main",
+    "dev",
+    "feature/financialSmartNet",
+    "feature/pelumi",
+    "origin",
+    "prolomon",
+    "socket"
+  ]
+}
