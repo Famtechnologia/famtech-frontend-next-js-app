@@ -638,12 +638,12 @@ export default function MappingPage() {
                 navigator.geolocation.getCurrentPosition(
                   (pos) => {
                     const { latitude, longitude } = pos.coords;
-                    showToast(`📍 Corner marked at Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
+                    setToast(`📍 Corner marked at Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
                   },
-                  () => showToast("Please allow GPS access on your phone")
+                  () => setToast("Please allow GPS access on your phone")
                 );
               } else {
-                showToast("GPS location is not supported on this device");
+                setToast("GPS location is not supported on this device");
               }
             }}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm">
