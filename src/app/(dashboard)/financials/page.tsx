@@ -778,11 +778,11 @@ function FinancialsContent() {
 
               <div>
                 <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">
-                  Reference / Buyer Name
+                  Receipt / Note (Optional)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Grain Distributor Batch #A2"
+                  placeholder="e.g. Local Market Cash Sale"
                   value={incomeForm.reference}
                   onChange={(e) => setIncomeForm({ ...incomeForm, reference: e.target.value })}
                   className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[#30363d] rounded-lg bg-gray-50 dark:bg-[#0d1117] text-gray-900 dark:text-white"

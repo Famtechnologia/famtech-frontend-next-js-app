@@ -306,30 +306,30 @@ export const SmartInsight = () => {
 
   const quickPrompts = [
     {
-      title: "Crop Diagnosis",
-      desc: "Determine fertilizers and crop health metrics.",
-      prompt: "Can you analyze my crop status and suggest the best fertilizer application schedule for my state?",
+      title: "Maize Fertilizer Timing",
+      desc: "Get exact dates for NPK & Urea application.",
+      prompt: "When should I apply fertilizer to my maize crop?",
       icon: <Sprout className="h-5 w-5 text-emerald-600" />,
       bg: "bg-emerald-50/50 hover:bg-emerald-50"
     },
     {
-      title: "Livestock Rations",
-      desc: "Check feeding ratios and health plans.",
-      prompt: "What are the optimal feeding ratios and vaccination guidelines for my livestock breed?",
+      title: "Cassava Mealybug Control",
+      desc: "Prevent mealybug damage & wilt.",
+      prompt: "How do I control cassava mealybugs on my farm?",
       icon: <HelpCircle className="h-5 w-5 text-blue-600" />,
       bg: "bg-blue-50/50 hover:bg-blue-50"
     },
     {
-      title: "Weather Advisory",
-      desc: "Formulate actions based on seasonal patterns.",
-      prompt: "Based on local seasonal patterns, how should I schedule my watering and harvesting times?",
+      title: "Produce Market Prices",
+      desc: "Check local wholesale grain prices.",
+      prompt: "What is the current market price for cassava and maize in my state?",
       icon: <CloudSun className="h-5 w-5 text-amber-600" />,
       bg: "bg-amber-50/50 hover:bg-amber-50"
     },
     {
-      title: "Soil Optimizations",
-      desc: "Analyze nutrients and prevent disease.",
-      prompt: "How can I improve soil nutrient concentrations to prevent common crop diseases?",
+      title: "Livestock Vaccination",
+      desc: "Check CBPP & Deworming schedules.",
+      prompt: "What are the best vaccination dates for my cattle, pigs, and goats?",
       icon: <Microscope className="h-5 w-5 text-indigo-600" />,
       bg: "bg-indigo-50/50 hover:bg-indigo-50"
     }

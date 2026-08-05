@@ -346,20 +346,26 @@ export default function DiseaseScannerPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className={`flex items-center gap-3 rounded-lg p-4 ${healthy ? "bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300" : "bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300"}`}>
-                {healthy ? <ShieldCheck className="w-6 h-6 shrink-0" /> : <AlertTriangle className="w-6 h-6 shrink-0" />}
-                <div>
-                  <p className="text-lg font-bold">{healthy ? "Looks Healthy" : titleCase(result.disease) || "Issue Detected"}</p>
-                  <p className="text-xs opacity-90">
-                    {result.crop && result.crop !== "unknown" ? `${titleCase(result.crop)} · ` : ""}
-                    {typeof result.confidence === "number" ? `${result.confidence}% confidence` : ""}
-                  </p>
+              {/* Prominent Farmer Action Banner */}
+              <div className={`p-4 rounded-xl border flex flex-col gap-1 shadow-sm ${healthy ? "bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-800 text-green-900 dark:text-green-200" : "bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800 text-rose-900 dark:text-rose-200"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 font-bold text-sm md:text-base">
+                    {healthy ? <ShieldCheck className="w-5 h-5 text-green-600 shrink-0" /> : <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 animate-pulse" />}
+                    <span>{healthy ? "🟢 HEALTHY SAMPLE" : `🔴 ACTION REQUIRED: ${titleCase(result.disease)}`}</span>
+                  </div>
+                  {result.severity && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${severityStyle(result.severity)}`}>
+                      {result.severity}
+                    </span>
+                  )}
                 </div>
-                {!healthy && result.severity && (
-                  <span className={`ml-auto px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${severityStyle(result.severity)}`}>
-                    {result.severity}
-                  </span>
-                )}
+                <p className="text-xs font-semibold mt-1">
+                  {healthy ? "Sample is in good health. Maintain regular watering & farm care." : `What to do today: ${result.treatment || "Apply broad-spectrum copper fungicide once a week."}`}
+                </p>
+                <p className="text-[11px] opacity-75 mt-0.5">
+                  {result.crop && result.crop !== "unknown" ? `${titleCase(result.crop)} · ` : ""}
+                  {typeof result.confidence === "number" ? `${result.confidence}% confidence` : ""}
+                </p>
               </div>
 
               {result.symptoms && result.symptoms.length > 0 && (

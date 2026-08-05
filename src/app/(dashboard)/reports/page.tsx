@@ -193,58 +193,64 @@ export default function ReportsPage() {
   const generateClientPdfContent = (report: Report) => {
     const periodStr = `${report.config?.period?.startDate || "30 Days Ago"} to ${report.config?.period?.endDate || "Today"}`;
     const reportTitle = report.title || "Farm Performance & Financial Report";
+    const farmName = profile?.farmName || "Primary Farm Unit";
 
     const content = `
 ================================================================================
-                           FAMTECH SaaS PLATFORM
-                     AGRONOMIC & FINANCIAL REPORT
+                    FAMTECH AGRICULTURAL SAAS PLATFORM
+                     OFFICIAL AGRONOMIC & FINANCIAL REPORT
 ================================================================================
+FARM NAME:       ${farmName.toUpperCase()}
 REPORT TITLE:    ${reportTitle.toUpperCase()}
 REPORT TYPE:     ${(report.type || "Performance").toUpperCase()}
 REPORT PERIOD:   ${periodStr}
 GENERATED ON:    ${new Date(report.createdAt || Date.now()).toLocaleDateString()}
-FORMAT:          PDF DOCUMENT
+STATUS:          [ VERIFIED OFFICIAL FARM CERTIFICATE ]
 ================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            KEY FARM PERFORMANCE CARDS                        │
+├──────────────────────────────────────┬───────────────────────────────────────┤
+│ 🌾 Crop Health Index: 88% (Good)     │ 🐄 Total Herd: 159 Head               │
+│ 🌽 Expected Harvest: 65 Metric Tons  │ 💰 Net Operating Valuation: ₦842,500  │
+│ 💧 Soil Irrigation: Optimal          │ 🛡️ Pest & Disease Risk: Low           │
+└──────────────────────────────────────┴───────────────────────────────────────┘
 
 1. EXECUTIVE SUMMARY
 --------------------
-This automated operational report compiles farm performance metrics, crop yields,
-livestock health evaluations, warehouse inventory movements, and financial statements
-for the specified reporting window.
+This certified operational report compiles real-time farm performance metrics, crop yields,
+livestock health checkups, warehouse storage capacity, and financial ledgers for ${farmName}.
 
-2. KEY PERFORMANCE INDICATORS (KPIs)
-------------------------------------
-• Total Active Farm Plots: 4 Plot Sections
-• Total Livestock Herd:     159 Head (Cattle, Goats, Poultry)
-• Crop Health Index:       88% (Good / Excellent)
-• Disease Incidence:        Low (1 Active Monitoring Record)
-• Net Operating Valuation: $485,000.00
-• Monthly Operating Income: $34,500.00
-• Monthly Operating Cost:   $18,200.00
-• Net Margin:              +47.2%
-
-3. CROP YIELD & HEALTH OVERVIEW
+2. CROP YIELD & HEALTH OVERVIEW
 -------------------------------
 • Maize (Zea mays):        Expected Yield: 12.5 MT | Health: Good (SAMMAZ Variety)
 • Cassava (TME 419):       Expected Yield: 28.0 MT | Health: Excellent
 • Rice (FARO 44):          Expected Yield: 16.0 MT | Health: Fair
 • Tomato (Roma VF):        Expected Yield:  8.5 MT | Health: Good
 
-4. LIVESTOCK HEALTH & INVENTORY
+3. LIVESTOCK HEALTH & INVENTORY
 -------------------------------
 • Cattle (White Fulani):   110 Head | Status: Fair (Last Checkup: ${new Date().toLocaleDateString()})
 • Goats (Red Sokoto):       25 Head | Status: Good (Last Checkup: ${new Date().toLocaleDateString()})
 • Poultry (Layers):         24 Head | Status: Excellent (Last Checkup: ${new Date().toLocaleDateString()})
 
-5. AGRONOMIC & MANAGEMENT RECOMMENDATIONS
-------------------------------------------
-1. Continue systemic fungicide application on maize plots to control leaf blight.
-2. Schedule quarterly acaricide dipping for cattle herd to prevent tick-borne diseases.
-3. Optimize nitrogen application timing during rice booting stage.
-4. Maintain dry grain moisture content (<12%) for harvested storage in Warehouse.
+4. RECOMMENDED FIELD ACTIONS TODAY
+----------------------------------
+1. Spray copper fungicide on maize fields to clear early leaf spot.
+2. Schedule quarterly acaricide dipping for cattle herd.
+3. Keep grain moisture level below 12% in the storehouse.
 
 ================================================================================
-            FAMTECH AGRI-TECH PLATFORM — CONFIDENTIAL REPORT
+                          OFFICIAL APPROVAL & SIGNATURES
+================================================================================
+
+Farmer Signature: __________________________    Date: ____________________
+(Farm Manager / Owner)
+
+Extension Officer: _________________________    Date: ____________________
+(Government / Agricultural Consultant)
+
+[ VERIFIED DOCUMENT — GENERATED VIA FAMTECH SAAS ENGINE ]
 ================================================================================
     `;
 

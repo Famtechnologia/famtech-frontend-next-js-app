@@ -370,48 +370,83 @@ export default function HealthPage() {
         <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#161b22] rounded-xl border border-gray-200 dark:border-[#30363d] w-full max-w-md shadow-xl overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#30363d]">
-              <h3 className="font-semibold text-gray-900 dark:text-white text-base flex items-center gap-2">
-                <span className="p-1.5 bg-rose-100 text-rose-600 rounded-lg"><Bug className="w-4 h-4" /></span>
-                Log Disease — {titleCase(logCrop.cropName)}
-              </h3>
-              <button onClick={() => setLogCrop(null)}><X className="w-5 h-5 text-gray-400 hover:text-gray-600" /></button>
-            </div>
-            <form onSubmit={submitDisease} className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-              <Field label="Disease name *">
-                <input value={diseaseForm.diseaseName} onChange={(e) => setDiseaseForm({ ...diseaseForm, diseaseName: e.target.value })} placeholder="e.g. Maize Leaf Blight" className={inputCls} />
-              </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Crop type *">
-                  <select value={diseaseForm.cropType} onChange={(e) => setDiseaseForm({ ...diseaseForm, cropType: e.target.value })} className={inputCls}>
-                    {CROP_TYPES.map((c) => <option key={c} value={c} className="capitalize">{titleCase(c)}</option>)}
-                  </select>
-                </Field>
-                <Field label="Disease type *">
-                  <select value={diseaseForm.diseaseType} onChange={(e) => setDiseaseForm({ ...diseaseForm, diseaseType: e.target.value })} className={inputCls}>
-                    {DISEASE_TYPES.map((d) => <option key={d} value={d}>{titleCase(d)}</option>)}
-                  </select>
-                </Field>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Severity *">
-                  <select value={diseaseForm.severity} onChange={(e) => setDiseaseForm({ ...diseaseForm, severity: e.target.value })} className={inputCls}>
-                    {SEVERITIES.map((s) => <option key={s} value={s} className="capitalize">{titleCase(s)}</option>)}
-                  </select>
-                </Field>
-                <Field label="Affected area (ha) *">
-                  <input type="number" min="0" step="0.1" value={diseaseForm.affectedArea} onChange={(e) => setDiseaseForm({ ...diseaseForm, affectedArea: e.target.value })} placeholder="e.g. 0.5" className={inputCls} />
-                </Field>
-              </div>
-              <Field label="Symptoms * (comma-separated)">
-                <input value={diseaseForm.symptoms} onChange={(e) => setDiseaseForm({ ...diseaseForm, symptoms: e.target.value })} placeholder="e.g. yellow spots, wilting leaves" className={inputCls} />
-              </Field>
-              <button type="submit" disabled={isSaving} className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
-                {isSaving ? "Saving..." : "Log Disease"}
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Report Disease on {titleCase(logCrop.cropName)}</h3>
+              <button onClick={() => setLogCrop(null)} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <X className="w-5 h-5" />
               </button>
+            </div>
+            <form onSubmit={submitDisease} className="p-4 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Disease Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Early Blight, Corn Borer"
+                  value={diseaseForm.diseaseName}
+                  onChange={(e) => setDiseaseForm((p) => ({ ...p, diseaseName: e.target.value }))}
+                  className="w-full p-2.5 text-xs rounded-lg border border-gray-300 dark:border-[#30363d] bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                  <select
+                    value={diseaseForm.diseaseType}
+                    onChange={(e) => setDiseaseForm((p) => ({ ...p, diseaseType: e.target.value }))}
+                    className="w-full p-2.5 text-xs rounded-lg border border-gray-300 dark:border-[#30363d] bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    {DISEASE_TYPES.map((dt) => <option key={dt} value={dt}>{titleCase(dt)}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Severity</label>
+                  <select
+                    value={diseaseForm.severity}
+                    onChange={(e) => setDiseaseForm((p) => ({ ...p, severity: e.target.value }))}
+                    className="w-full p-2.5 text-xs rounded-lg border border-gray-300 dark:border-[#30363d] bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    {SEVERITIES.map((sv) => <option key={sv} value={sv}>{titleCase(sv)}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Affected Area (acres/ha)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="e.g. 1.5"
+                  value={diseaseForm.affectedArea}
+                  onChange={(e) => setDiseaseForm((p) => ({ ...p, affectedArea: e.target.value }))}
+                  className="w-full p-2.5 text-xs rounded-lg border border-gray-300 dark:border-[#30363d] bg-white dark:bg-[#0d1117] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-[#30363d]">
+                <button
+                  type="button"
+                  onClick={() => setLogCrop(null)}
+                  className="px-3 py-2 text-xs font-semibold rounded-lg border border-gray-300 dark:border-[#30363d] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-4 py-2 text-xs font-bold rounded-lg bg-green-700 hover:bg-green-800 disabled:opacity-60 text-white shadow-sm">
+                  {isSaving ? "Saving..." : "Save Disease Log"}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Sticky WhatsApp Extension Officer Button */}
+      <div className="fixed bottom-6 right-6 z-[9990]">
+        <a
+          href="https://wa.me/2348000000000?text=Hello%20Famtech%20Agronomist,%20I%20need%20help%20with%20my%20farm%20crop/livestock%20health."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 border-2 border-white">
+          <span className="text-base">💬</span> Call / WhatsApp Agronomist
+        </a>
+      </div>
     </div>
   );
 }

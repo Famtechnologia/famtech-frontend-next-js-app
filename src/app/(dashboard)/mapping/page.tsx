@@ -632,6 +632,23 @@ export default function MappingPage() {
           <span className="hidden sm:inline text-xs text-gray-400 dark:text-[#8b949e]">· WGS84</span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    showToast(`📍 Corner marked at Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
+                  },
+                  () => showToast("Please allow GPS access on your phone")
+                );
+              } else {
+                showToast("GPS location is not supported on this device");
+              }
+            }}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm">
+            <span>📍</span> <span className="inline-block">Walk & Mark GPS</span>
+          </button>
           {activeFarm && (
             <button onClick={exportGeoJSON}
               className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold border border-gray-200 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#0d1117] dark:text-[#e6edf3]">

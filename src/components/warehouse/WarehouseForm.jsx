@@ -252,13 +252,19 @@ const WarehouseForm = ({ isOpen, onClose, onSubmit, warehouse, isLoading }) => {
                   placeholder="Quantity (e.g., 4000)"
                   className={inputClass(false)}
                 />
-                <input
+                <select
                   name="unit"
                   value={productForm.unit}
                   onChange={handleProductChange}
-                  placeholder="Unit (e.g., bags, kg)"
-                  className={inputClass(false)}
-                />
+                  className={inputClass(false)}>
+                  <option value="">Select Unit</option>
+                  <option value="100kg Bags">100kg Bags</option>
+                  <option value="50kg Sacks">50kg Sacks</option>
+                  <option value="Crates / Boxes">Crates / Boxes</option>
+                  <option value="Kilograms (kg)">Kilograms (kg)</option>
+                  <option value="Metric Tons (MT)">Metric Tons (MT)</option>
+                  <option value="Bunches / Tubers">Bunches / Tubers</option>
+                </select>
                 <input
                   name="description"
                   value={productForm.description}
