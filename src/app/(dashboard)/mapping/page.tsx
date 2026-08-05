@@ -201,6 +201,49 @@ export default function MappingPage() {
     } catch { /* ignore */ }
   }, [authToken, tenantId]);
 
+  // Load persisted farms/sections/assets from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedFarms = localStorage.getItem("famtech_geo_farms");
+      const savedSections = localStorage.getItem("famtech_geo_sections");
+      const savedAssets = localStorage.getItem("famtech_geo_assets");
+      if (savedFarms) {
+        const parsed = JSON.parse(savedFarms);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setFarms(parsed);
+          setActiveFarm(parsed[0]);
+        }
+      }
+      if (savedSections) {
+        const parsedSecs = JSON.parse(savedSections);
+        if (Array.isArray(parsedSecs)) setSections(parsedSecs);
+      }
+      if (savedAssets) {
+        const parsedAssets = JSON.parse(savedAssets);
+        if (Array.isArray(parsedAssets)) setAssets(parsedAssets);
+      }
+    } catch { /* ignore localstorage error */ }
+  }, []);
+
+  // Save farms, sections, and assets to localStorage whenever updated
+  useEffect(() => {
+    if (farms.length > 0) {
+      try { localStorage.setItem("famtech_geo_farms", JSON.stringify(farms)); } catch {}
+    }
+  }, [farms]);
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      try { localStorage.setItem("famtech_geo_sections", JSON.stringify(sections)); } catch {}
+    }
+  }, [sections]);
+
+  useEffect(() => {
+    if (assets.length > 0) {
+      try { localStorage.setItem("famtech_geo_assets", JSON.stringify(assets)); } catch {}
+    }
+  }, [assets]);
+
   useEffect(() => {
     if (!tenantId || tenantId === "default") return;
     const init = async () => {

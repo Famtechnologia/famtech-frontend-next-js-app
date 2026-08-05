@@ -176,13 +176,13 @@ export default function HealthPage() {
       fd.append("healthStatus", status);
       fd.append("lastHealthCheckup", new Date().toISOString());
       await apiClient.put(`/api/livestock-record/${rid}`, fd);
+      const nowIso = new Date().toISOString();
       setLivestock((prev) =>
         prev.map((r) =>
-          (r.id || r._id) === rid
-            ? { ...r, healthStatus: status, lastHealthCheckup: new Date().toISOString() }
-            : r
+          (r.id || r._id) === rid ? { ...r, healthStatus: status, lastHealthCheckup: nowIso } : r
         )
       );
+      toast.success("Livestock health updated");
       toast.success("Livestock health updated");
     } catch (err) {
       console.error("[health] livestock update failed:", err);
@@ -337,7 +337,9 @@ export default function HealthPage() {
                 <td className="p-3.5">
                   <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusStyle(r.healthStatus)}`}>{r.healthStatus || "—"}</span>
                 </td>
-                <td className="p-3.5 text-gray-500">{fmtDate((r as LivestockRecord & { lastHealthCheckup?: string }).lastHealthCheckup)}</td>
+                <td className="p-3.5 text-gray-700 dark:text-gray-300 font-medium">
+                  {fmtDate((r as any).lastHealthCheckup || (r as any).updatedAt || (r as any).createdAt || r.acquisitionDate)}
+                </td>
                 <td className="p-3.5">
                   <HealthSelect value={r.healthStatus} disabled={updatingId === rid} onChange={(s) => updateLivestockHealth(r, s)} />
                 </td>
