@@ -151,32 +151,7 @@ export default function SignupPage() {
             <p className="text-red-300 text-sm">{errors.email.message}</p>
           )}
 
-          {/* Password suggestion */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-white/70">Need a strong password?</span>
-            <button
-              type="button"
-              onClick={handleSuggestPassword}
-              className="text-xs text-green-300 hover:text-green-200 font-medium underline underline-offset-2"
-            >
-              Suggest one
-            </button>
-          </div>
 
-          {suggestedPassword && (
-            <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm">
-              <span className="flex-1 font-mono text-white/90 truncate select-all">
-                {suggestedPassword}
-              </span>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="text-xs text-green-300 hover:text-green-200 whitespace-nowrap font-medium"
-              >
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-          )}
 
           {/* Password */}
           <div className="relative">
