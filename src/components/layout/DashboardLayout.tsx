@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           ],
         },
         {
-          name: "Inventory Management",
+          name: "Farm Supplies & Seeds",
           href: `/inventory`,
           icon: StoreIcon,
           key: "inventory",
@@ -192,7 +192,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           section: "Operations",
         },
         {
-          name: "Warehouse",
+          name: "Farm Storehouse",
           icon: BarrelIcon,
           key: "warehouse",
           expandable: false,
@@ -234,7 +234,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           section: "Insights",
         },
         {
-          name: "Mapping & Geo Tools",
+          name: "My Fields & Maps",
           icon: Map,
           key: "mapping",
           expandable: false,
@@ -254,8 +254,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         // ───────── BUSINESS ─────────
         {
-          name: "Financials",
-          subBrand: "SmartNet",
+          name: "Money & Profits",
+          subBrand: "Ledger",
           icon: CreditCard,
           key: "financials",
           expandable: true,
