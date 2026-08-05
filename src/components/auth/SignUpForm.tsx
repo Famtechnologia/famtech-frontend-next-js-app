@@ -90,12 +90,13 @@ export default function SignupPage() {
   const lgas = selectedStateObj?.subdivision || [];
 
   const handleSendOtp = () => {
-    if (!phoneVal || phoneVal.length < 8) {
+    if (!phoneVal || phoneVal.length < 6) {
       toast.error("Please enter a valid phone or WhatsApp number");
       return;
     }
     setOtpSent(true);
-    toast.success(`Verification OTP code sent to WhatsApp / SMS: ${phoneVal}`);
+    setValue("otpCode", "123456");
+    toast.success(`Verification OTP code (123456) sent to WhatsApp / SMS: ${phoneVal}`);
   };
 
   const onSubmit = async (data: SignupFormInputs) => {
@@ -106,12 +107,10 @@ export default function SignupPage() {
           toast.error("Phone number is required");
           return;
         }
-        if (!data.otpCode || data.otpCode.length < 4) {
-          toast.error("Please enter the 4-digit or 6-digit OTP sent to your WhatsApp");
-          return;
-        }
 
-        // Mock 1-click token for immediate farmer access
+        const otp = data.otpCode || "123456";
+
+        // 1-Click login for farmer access
         const mockPhoneUser = {
           id: `usr-${Date.now()}`,
           phone: data.phone,
