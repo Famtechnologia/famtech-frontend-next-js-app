@@ -6,7 +6,7 @@ import {
   CloudRain,
   Droplets,
   Wind,
-  Thermometer,
+  Umbrella,
   ThermometerSun,
   ThermometerSnowflake,
   MapPin,
@@ -31,6 +31,7 @@ interface WeatherData {
   maxTemp: number;
   humidity: number;
   rainfall: number;
+  rainChance?: number | null;
   condition: string;
   windSpeed?: number;
   source?: string;
@@ -58,9 +59,12 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
   // raining right now (present tense), not a forecast.
   const rainingNow = /rain|drizzle|shower|storm|thunder/.test(cond);
   const heavyNow = /storm|thunder|heavy/.test(cond) || w.rainfall >= 5;
-  // Not raining now, but damp/humid enough that rain is plausible.
-  const rainLikely = !rainingNow && (w.rainfall > 0 || w.humidity >= 90);
+  const chance = typeof w.rainChance === "number" ? w.rainChance : null;
+  // Not raining now, but the forecast chance (or damp/humid air) says rain soon.
+  const rainLikely =
+    !rainingNow && (chance != null ? chance >= 40 : w.rainfall > 0 || w.humidity >= 90);
   const wet = rainingNow || rainLikely;
+  const chanceText = chance != null ? ` There is a ${chance}% chance of rain.` : "";
   const hot = w.maxTemp >= 33;
   const humid = w.humidity >= 85;
   const windy = (w.windSpeed ?? 0) >= 8; // ~29 km/h
@@ -98,13 +102,13 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
     out.push({
       tone: "alert",
       title: "Heavy rain expected",
-      text: `Hold irrigation and spraying, and check drainage.${readyToHarvest.length ? ` Bring in your ${nameList(readyToHarvest)} before the downpour.` : ""}`,
+      text: `Hold irrigation and spraying, and check drainage.${chanceText}${readyToHarvest.length ? ` Bring in your ${nameList(readyToHarvest)} before the downpour.` : ""}`,
     });
   } else if (rainLikely) {
     out.push({
       tone: "watch",
-      title: "Rain likely",
-      text: `Conditions are damp, so you can probably skip irrigation today.${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)}, since rain washes off applications.` : ""}`,
+      title: "Light rain expected",
+      text: `You can probably skip irrigation today.${chanceText}${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)}, since rain washes off applications.` : ""}`,
     });
   }
   if (hot && !wet) {
@@ -343,7 +347,11 @@ export default function WeatherPage() {
             <MetricCard icon={<Droplets className="w-5 h-5" />} label="Humidity" value={`${weather.humidity}%`} />
             <MetricCard icon={<CloudRain className="w-5 h-5" />} label="Rainfall" value={`${weather.rainfall} mm`} />
             <MetricCard icon={<Wind className="w-5 h-5" />} label="Wind" value={`${weather.windSpeed ?? 0} m/s`} />
-            <MetricCard icon={<Thermometer className="w-5 h-5" />} label="Feels like" value={`${Math.round(weather.temperature)}°C`} />
+            <MetricCard
+              icon={<Umbrella className="w-5 h-5" />}
+              label="Rain chance"
+              value={weather.rainChance != null ? `${weather.rainChance}%` : "N/A"}
+            />
           </div>
 
           {/* Farm advisory - tailored to conditions, your crops and due tasks */}
