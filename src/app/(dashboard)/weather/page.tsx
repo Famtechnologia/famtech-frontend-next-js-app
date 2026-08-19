@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Cloud,
   CloudRain,
-  CloudSun,
-  Sun,
   Droplets,
   Wind,
   Thermometer,
@@ -18,6 +16,10 @@ import {
 import PageHeader from "@/components/common/PageHeader";
 import apiClient from "@/lib/api/apiClient";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { getCropRecords } from "@/lib/services/croplivestock";
+import { getTasks } from "@/lib/services/taskplanner";
+import WeatherScene from "./components/WeatherScene";
 
 interface WeatherData {
   country?: string;
@@ -34,30 +36,106 @@ interface WeatherData {
   timestamp?: string;
 }
 
-// Simple, farm-relevant advisory derived from current conditions.
-function farmAdvisory(w: WeatherData): { tone: "good" | "watch" | "alert"; text: string } {
-  if (w.rainfall >= 5) {
-    return { tone: "alert", text: "Significant rainfall expected — hold off on irrigation and spraying; check drainage." };
+type Advisory = { tone: "good" | "watch" | "alert"; title: string; text: string };
+type CropLite = { cropName?: string; currentGrowthStage?: string; healthStatus?: string };
+type TaskLite = { title?: string; status?: string; timeline?: { dueDate?: string } };
+
+const cap = (s?: string) => (s ? s.replace(/\b\w/g, (c) => c.toUpperCase()) : "");
+const uniqueNames = (crops: CropLite[]) =>
+  [...new Set(crops.map((c) => cap(c.cropName)).filter(Boolean))];
+const nameList = (crops: CropLite[]) => {
+  const n = uniqueNames(crops);
+  return n.length <= 1 ? n[0] || "crops" : `${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`;
+};
+const titleList = (tasks: TaskLite[]) => tasks.map((t) => `"${cap(t.title)}"`).join(", ");
+
+// Weather-, crop- and task-aware farm advisories, most urgent first.
+function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): Advisory[] {
+  const out: Advisory[] = [];
+  const cond = (w.condition || "").toLowerCase();
+  const raining = w.rainfall > 0 || /rain|drizzle|storm|shower/.test(cond);
+  const heavyRain = w.rainfall >= 5 || /storm|thunder/.test(cond);
+  const hot = w.maxTemp >= 33;
+  const humid = w.humidity >= 85;
+  const windy = (w.windSpeed ?? 0) >= 8; // ~29 km/h
+
+  const stage = (c: CropLite) => (c.currentGrowthStage || "").toLowerCase();
+  const health = (c: CropLite) => (c.healthStatus || "").toLowerCase();
+  const tender = crops.filter((c) => ["flowering", "fruiting", "seeding"].includes(stage(c)));
+  const readyToHarvest = crops.filter((c) => ["maturity", "harvesting"].includes(stage(c)));
+  const poor = crops.filter((c) => ["poor", "fair"].includes(health(c)));
+
+  const soon = tasks.filter((t) => {
+    const s = (t.status || "").toLowerCase();
+    if (!["pending", "ongoing"].includes(s)) return false;
+    const due = t.timeline?.dueDate ? new Date(t.timeline.dueDate).getTime() : 0;
+    return due > 0 && due - Date.now() <= 3 * 864e5;
+  });
+  const sprayTasks = soon.filter((t) => /spray|pesticide|fertil|herbicid|weed/i.test(t.title || ""));
+  const harvestTasks = soon.filter((t) => /harvest/i.test(t.title || ""));
+
+  if (heavyRain) {
+    out.push({
+      tone: "alert",
+      title: "Heavy rain incoming",
+      text: `Hold irrigation and spraying, and check drainage.${readyToHarvest.length ? ` Bring in your ${nameList(readyToHarvest)} before the downpour.` : ""}`,
+    });
+  } else if (raining) {
+    out.push({
+      tone: "watch",
+      title: "Light rain likely",
+      text: `You can skip irrigation today.${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)} — rain washes off applications.` : ""}`,
+    });
   }
-  if (w.rainfall > 0) {
-    return { tone: "watch", text: "Light rain likely — you may be able to skip irrigation today." };
+  if (hot && !raining) {
+    out.push({
+      tone: "alert",
+      title: "High heat",
+      text: `Water crops early morning or evening and watch livestock for heat stress.${tender.length ? ` Your ${nameList(tender)} ${tender.length > 1 ? "are" : "is"} at a sensitive stage — keep soil moisture up.` : ""}`,
+    });
   }
-  if (w.maxTemp >= 34) {
-    return { tone: "alert", text: "High heat — water crops early morning or evening and watch livestock for heat stress." };
+  if (humid && !heavyRain) {
+    out.push({
+      tone: "watch",
+      title: "Disease watch",
+      text: `High humidity raises fungal-disease risk.${tender.length ? ` Scout your ${nameList(tender)} for blight/mildew and improve airflow.` : " Scout crops and improve airflow."}`,
+    });
   }
-  if (w.humidity >= 85) {
-    return { tone: "watch", text: "High humidity raises fungal-disease risk — scout crops and improve airflow." };
+  if (windy && sprayTasks.length) {
+    out.push({ tone: "watch", title: "Too windy to spray", text: `Winds are up — postpone ${titleList(sprayTasks)} to avoid drift.` });
   }
-  return { tone: "good", text: "Favourable conditions for most field work today." };
+  if (!raining && readyToHarvest.length) {
+    out.push({
+      tone: "good",
+      title: "Good harvest window",
+      text: `Dry conditions are ideal to harvest your ${nameList(readyToHarvest)}${harvestTasks.length ? ` (${titleList(harvestTasks)} due)` : ""}.`,
+    });
+  }
+  if (poor.length) {
+    out.push({
+      tone: "watch",
+      title: "Crops need attention",
+      text: `${nameList(poor)} ${poor.length > 1 ? "are" : "is"} rated ${[...new Set(poor.map((c) => health(c)))].join("/")} — inspect for pests, water or nutrient stress.`,
+    });
+  }
+  if (soon.length) {
+    out.push({ tone: "good", title: `${soon.length} task${soon.length > 1 ? "s" : ""} due soon`, text: soon.slice(0, 3).map((t) => cap(t.title)).join(" · ") });
+  }
+  if (!out.length) out.push({ tone: "good", title: "All clear", text: "Favourable conditions for most field work today." });
+
+  return out.slice(0, 5);
 }
 
 export default function WeatherPage() {
   const { profile } = useProfile();
+  const { user } = useAuth();
   const region = profile?.location?.state || profile?.location?.city || "";
 
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [crops, setCrops] = useState<CropLite[]>([]);
+  const [tasks, setTasks] = useState<TaskLite[]>([]);
 
   const fetchWeather = useCallback(async () => {
     setIsLoading(true);
@@ -79,7 +157,26 @@ export default function WeatherPage() {
     fetchWeather();
   }, [fetchWeather]);
 
-  const advisory = useMemo(() => (weather ? farmAdvisory(weather) : null), [weather]);
+  // Pull the farmer's crops and upcoming tasks so advisories can reference them.
+  useEffect(() => {
+    const pid = profile?.id as string | undefined;
+    if (!pid) return;
+    getCropRecords(pid)
+      .then((data) => setCrops(Array.isArray(data) ? (data as CropLite[]) : []))
+      .catch(() => setCrops([]));
+    getTasks(pid)
+      .then((data) => {
+        const list = Array.isArray(data) ? (data as (TaskLite & { assignee?: string })[]) : [];
+        const email = user?.email;
+        setTasks(email ? list.filter((t) => t.assignee === email) : list);
+      })
+      .catch(() => setTasks([]));
+  }, [profile?.id, user?.email]);
+
+  const advisories = useMemo(
+    () => (weather ? buildAdvisories(weather, crops, tasks) : []),
+    [weather, crops, tasks]
+  );
 
   // Title-case any location string ("nigeria" -> "Nigeria").
   const titleCase = (s?: string) =>
@@ -128,28 +225,30 @@ export default function WeatherPage() {
         </div>
       ) : (
         <>
-          {/* Current conditions hero */}
-          <div className="bg-gradient-to-br from-green-700 to-emerald-800 rounded-2xl p-5 sm:p-8 text-white shadow-sm">
-            <div className="flex items-center gap-1.5 text-green-100 text-sm font-medium">
-              <MapPin className="w-4 h-4 shrink-0" />
-              <span className="truncate">{locationLabel}</span>
-            </div>
-            <div className="mt-5 flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-6xl sm:text-7xl font-bold leading-none tracking-tight">
-                  {Math.round(weather.temperature)}°
-                </div>
-                <div className="mt-2 capitalize text-green-100 text-base sm:text-lg">{weather.condition}</div>
+          {/* Current conditions hero — animated farm scene reflects the live condition */}
+          <div className="relative overflow-hidden rounded-2xl p-5 sm:p-8 text-white shadow-sm min-h-[220px] sm:min-h-[240px] flex flex-col">
+            <WeatherScene condition={weather.condition} />
+            <div className="relative z-10 flex flex-col flex-1 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center gap-1.5 text-white/90 text-sm font-medium">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span className="truncate">{locationLabel}</span>
               </div>
-              <HeroIcon condition={weather.condition} />
-            </div>
-            <div className="mt-5 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
-                <ThermometerSnowflake className="w-3.5 h-3.5" /> Min {Math.round(weather.minTemp)}°
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
-                <ThermometerSun className="w-3.5 h-3.5" /> Max {Math.round(weather.maxTemp)}°
-              </span>
+              <div className="mt-auto flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-6xl sm:text-7xl font-bold leading-none tracking-tight">
+                    {Math.round(weather.temperature)}°
+                  </div>
+                  <div className="mt-2 capitalize text-white/90 text-base sm:text-lg">{weather.condition}</div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-black/25 backdrop-blur-sm px-3 py-1 text-xs font-medium">
+                      <ThermometerSnowflake className="w-3.5 h-3.5" /> Min {Math.round(weather.minTemp)}°
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-black/25 backdrop-blur-sm px-3 py-1 text-xs font-medium">
+                      <ThermometerSun className="w-3.5 h-3.5" /> Max {Math.round(weather.maxTemp)}°
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -161,22 +260,35 @@ export default function WeatherPage() {
             <MetricCard icon={<Thermometer className="w-5 h-5" />} label="Feels like" value={`${Math.round(weather.temperature)}°C`} />
           </div>
 
-          {/* Farm advisory */}
-          {advisory && (
-            <div
-              className={`flex items-start gap-3 rounded-xl border p-4 ${
-                advisory.tone === "alert"
-                  ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300"
-                  : advisory.tone === "watch"
-                  ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300"
-                  : "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-800 dark:text-green-300"
-              }`}>
-              <Sprout className="w-5 h-5 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold">Farm advisory</p>
-                <p className="text-sm">{advisory.text}</p>
+          {/* Farm advisory — tailored to conditions, your crops and due tasks */}
+          {advisories.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Sprout className="w-4 h-4 text-green-700 dark:text-green-500" />
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Farm advisory</h2>
               </div>
-            </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {advisories.map((a, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-start gap-3 rounded-xl border p-4 ${
+                      a.tone === "alert"
+                        ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300"
+                        : a.tone === "watch"
+                        ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300"
+                        : "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-800 dark:text-green-300"
+                    }`}>
+                    <span className="mt-0.5 shrink-0">
+                      {a.tone === "alert" ? "⚠️" : a.tone === "watch" ? "🌦️" : "🌱"}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold">{a.title}</p>
+                      <p className="text-sm opacity-90">{a.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
 
           {weather.timestamp && (
@@ -189,17 +301,6 @@ export default function WeatherPage() {
       )}
     </div>
   );
-}
-
-// Large decorative icon for the hero, chosen from the condition text.
-function HeroIcon({ condition }: { condition: string }) {
-  const c = (condition || "").toLowerCase();
-  const cls = "w-16 h-16 sm:w-20 sm:h-20 text-green-100/90 shrink-0";
-  if (c.includes("rain") || c.includes("drizzle") || c.includes("shower") || c.includes("storm"))
-    return <CloudRain className={cls} />;
-  if (c.includes("cloud") || c.includes("overcast")) return <Cloud className={cls} />;
-  if (c.includes("clear") || c.includes("sun")) return <Sun className={cls} />;
-  return <CloudSun className={cls} />;
 }
 
 function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
