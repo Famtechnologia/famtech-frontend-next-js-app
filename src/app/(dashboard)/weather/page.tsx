@@ -54,8 +54,13 @@ const titleList = (tasks: TaskLite[]) => tasks.map((t) => `"${cap(t.title)}"`).j
 function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): Advisory[] {
   const out: Advisory[] = [];
   const cond = (w.condition || "").toLowerCase();
-  const raining = w.rainfall > 0 || /rain|drizzle|storm|shower/.test(cond);
-  const heavyRain = w.rainfall >= 5 || /storm|thunder/.test(cond);
+  // `condition` is the CURRENT observed weather, so rain words mean it is
+  // raining right now (present tense), not a forecast.
+  const rainingNow = /rain|drizzle|shower|storm|thunder/.test(cond);
+  const heavyNow = /storm|thunder|heavy/.test(cond) || w.rainfall >= 5;
+  // Not raining now, but damp/humid enough that rain is plausible.
+  const rainLikely = !rainingNow && (w.rainfall > 0 || w.humidity >= 90);
+  const wet = rainingNow || rainLikely;
   const hot = w.maxTemp >= 33;
   const humid = w.humidity >= 85;
   const windy = (w.windSpeed ?? 0) >= 8; // ~29 km/h
@@ -75,27 +80,41 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
   const sprayTasks = soon.filter((t) => /spray|pesticide|fertil|herbicid|weed/i.test(t.title || ""));
   const harvestTasks = soon.filter((t) => /harvest/i.test(t.title || ""));
 
-  if (heavyRain) {
+  if (rainingNow) {
+    out.push(
+      heavyNow
+        ? {
+            tone: "alert",
+            title: "Heavy rain right now",
+            text: `It is ${w.condition?.toLowerCase() || "raining heavily"}. Hold irrigation and spraying, and check drainage.${readyToHarvest.length ? ` Get your ${nameList(readyToHarvest)} under cover.` : ""}`,
+          }
+        : {
+            tone: "watch",
+            title: "Raining now",
+            text: `It is ${w.condition?.toLowerCase() || "raining"}. Skip irrigation and hold off on spraying.${sprayTasks.length ? ` Delay ${titleList(sprayTasks)} until it is dry.` : ""}`,
+          }
+    );
+  } else if (heavyNow) {
     out.push({
       tone: "alert",
-      title: "Heavy rain incoming",
+      title: "Heavy rain expected",
       text: `Hold irrigation and spraying, and check drainage.${readyToHarvest.length ? ` Bring in your ${nameList(readyToHarvest)} before the downpour.` : ""}`,
     });
-  } else if (raining) {
+  } else if (rainLikely) {
     out.push({
       tone: "watch",
-      title: "Light rain likely",
-      text: `You can skip irrigation today.${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)}, since rain washes off applications.` : ""}`,
+      title: "Rain likely",
+      text: `Conditions are damp, so you can probably skip irrigation today.${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)}, since rain washes off applications.` : ""}`,
     });
   }
-  if (hot && !raining) {
+  if (hot && !wet) {
     out.push({
       tone: "alert",
       title: "High heat",
       text: `Water crops early morning or evening and watch livestock for heat stress.${tender.length ? ` Your ${nameList(tender)} ${tender.length > 1 ? "are" : "is"} at a sensitive stage, so keep soil moisture up.` : ""}`,
     });
   }
-  if (humid && !heavyRain) {
+  if (humid && !wet) {
     out.push({
       tone: "watch",
       title: "Disease watch",
@@ -105,7 +124,7 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
   if (windy && sprayTasks.length) {
     out.push({ tone: "watch", title: "Too windy to spray", text: `Winds are up, so postpone ${titleList(sprayTasks)} to avoid drift.` });
   }
-  if (!raining && readyToHarvest.length) {
+  if (!wet && readyToHarvest.length) {
     out.push({
       tone: "good",
       title: "Good harvest window",
