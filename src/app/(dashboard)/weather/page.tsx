@@ -182,11 +182,14 @@ export default function WeatherPage() {
   const titleCase = (s?: string) =>
     s ? s.replace(/\b\w/g, (c) => c.toUpperCase()) : s;
 
-  // Prefer the city (e.g. "Ibadan") over the state ("Oyo") to match how
-  // Apple/Google label the location; fall back to state, country as needed.
-  const city = titleCase(weather?.city);
+  // Prefer the town over the state to match how Apple/Google label the
+  // location. Order: the farm profile's own city (most accurate to the farm) →
+  // the town OpenWeather resolved — but ignore generic centroid names like
+  // "Oyo State" that just echo the state → otherwise fall back to state/country.
   const state = titleCase(weather?.state || profile?.location?.state);
   const country = titleCase(weather?.country || profile?.location?.country);
+  const owmCity = weather?.city && !/\bstate\b/i.test(weather.city) ? weather.city : "";
+  const city = titleCase(profile?.location?.city || owmCity);
   const locationLabel =
     (city && state && city.toLowerCase() !== state.toLowerCase()
       ? `${city}, ${state}`
