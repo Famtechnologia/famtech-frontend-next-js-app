@@ -12,6 +12,7 @@ import {
   MapPin,
   RefreshCw,
   Sprout,
+  LocateFixed,
 } from "lucide-react";
 import PageHeader from "@/components/common/PageHeader";
 import apiClient from "@/lib/api/apiClient";
@@ -143,6 +144,16 @@ export default function WeatherPage() {
   const [error, setError] = useState<string | null>(null);
   const [crops, setCrops] = useState<CropLite[]>([]);
   const [tasks, setTasks] = useState<TaskLite[]>([]);
+  // Live device location (auto-detected via the browser) + chosen source.
+  const [geo, setGeo] = useState<{ lat: string; lon: string } | null>(null);
+  const [mode, setMode] = useState<"auto" | "farm">("auto");
+
+  // In "auto" mode use the device's live GPS when available, otherwise the
+  // farm's saved coordinates. "farm" mode always uses the saved farm pin.
+  const useDevice = mode === "auto" && !!geo;
+  const effLat = useDevice ? (geo as { lat: string }).lat : lat;
+  const effLon = useDevice ? (geo as { lon: string }).lon : lon;
+  const sourceLabel = useDevice ? "Your location" : lat && lon ? "Farm location" : "Region";
 
   const fetchWeather = useCallback(async () => {
     setIsLoading(true);
@@ -150,9 +161,9 @@ export default function WeatherPage() {
     try {
       const params: Record<string, string> = {};
       if (region) params.region = region;
-      if (lat && lon) {
-        params.lat = lat;
-        params.lon = lon;
+      if (effLat && effLon) {
+        params.lat = effLat;
+        params.lon = effLon;
       }
       const res = await apiClient.get("/api/weather", { params });
       setWeather((res?.data?.data ?? null) as WeatherData | null);
@@ -162,11 +173,26 @@ export default function WeatherPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [region, lat, lon]);
+  }, [region, effLat, effLon]);
 
   useEffect(() => {
     fetchWeather();
   }, [fetchWeather]);
+
+  // Auto-detect the farmer's current location once on mount. If permission is
+  // denied or unavailable, we silently keep using the saved farm coordinates.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        setGeo({
+          lat: String(pos.coords.latitude),
+          lon: String(pos.coords.longitude),
+        }),
+      () => {}, // denied/unavailable: fall back to farm location
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+    );
+  }, []);
 
   // Pull the farmer's crops and upcoming tasks so advisories can reference them.
   useEffect(() => {
@@ -211,12 +237,36 @@ export default function WeatherPage() {
       <PageHeader
         title="Weather"
         subtitle="Live conditions for your farm's region.">
-        <button
-          onClick={fetchWeather}
-          disabled={isLoading}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#161b22] text-gray-700 dark:text-gray-200 hover:bg-gray-50 disabled:opacity-60 transition-colors shadow-sm">
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {geo && (lat && lon) && (
+            <div className="inline-flex rounded-lg border border-gray-300 dark:border-[#30363d] bg-white dark:bg-[#161b22] p-0.5 text-xs font-semibold shadow-sm">
+              <button
+                onClick={() => setMode("auto")}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md transition-colors ${
+                  mode === "auto"
+                    ? "bg-green-600 text-white"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#21262d]"
+                }`}>
+                <LocateFixed className="w-3.5 h-3.5" /> My location
+              </button>
+              <button
+                onClick={() => setMode("farm")}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md transition-colors ${
+                  mode === "farm"
+                    ? "bg-green-600 text-white"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#21262d]"
+                }`}>
+                <Sprout className="w-3.5 h-3.5" /> Farm
+              </button>
+            </div>
+          )}
+          <button
+            onClick={fetchWeather}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-gray-300 dark:border-[#30363d] rounded-lg bg-white dark:bg-[#161b22] text-gray-700 dark:text-gray-200 hover:bg-gray-50 disabled:opacity-60 transition-colors shadow-sm">
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} /> Refresh
+          </button>
+        </div>
       </PageHeader>
 
       {isLoading ? (
@@ -246,6 +296,9 @@ export default function WeatherPage() {
               <div className="flex items-center gap-1.5 text-white/90 text-sm font-medium">
                 <MapPin className="w-4 h-4 shrink-0" />
                 <span className="truncate">{locationLabel}</span>
+                <span className="ml-1 shrink-0 rounded-full bg-black/25 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                  {sourceLabel}
+                </span>
               </div>
               <div className="mt-auto flex items-end justify-between gap-3">
                 <div className="min-w-0">
