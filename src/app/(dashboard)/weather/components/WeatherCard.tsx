@@ -65,10 +65,19 @@ function getWeatherIcon(description: string, className = "w-10 h-10") {
 // Generate smart weather advisory for agriculture
 const getFarmingAdvisory = (temp: number, windSpeed: number, humidity: number, description: string) => {
     const desc = description.toLowerCase();
+    // `description` is the current observed condition, so rain words mean it is
+    // raining right now.
+    const raining = /rain|drizzle|shower|storm|thunder/.test(desc);
     const tips = [];
 
     // Spraying advice
-    if (windSpeed > 15) {
+    if (raining) {
+        tips.push({
+            title: "Spraying Operations",
+            desc: "It is raining, so hold off spraying. Rain will wash off fertilizers and pesticides.",
+            status: "warning",
+        });
+    } else if (windSpeed > 15) {
         tips.push({
             title: "Spraying Operations",
             desc: "Avoid spraying today. High winds may cause pesticide drift.",
@@ -77,16 +86,22 @@ const getFarmingAdvisory = (temp: number, windSpeed: number, humidity: number, d
     } else {
         tips.push({
             title: "Spraying Operations",
-            desc: "Ideal wind conditions for spraying fertilizers or pesticides.",
+            desc: "Good conditions for spraying fertilizers or pesticides.",
             status: "optimal",
         });
     }
 
     // Irrigation advice
-    if (desc.includes("rain") || desc.includes("storm") || humidity > 80) {
+    if (raining) {
         tips.push({
             title: "Irrigation Management",
-            desc: "Pause irrigation. Natural soil moisture level is sufficient.",
+            desc: "It is raining now, so pause irrigation. Natural rainfall has your soil covered.",
+            status: "info",
+        });
+    } else if (humidity > 80) {
+        tips.push({
+            title: "Irrigation Management",
+            desc: "Humidity is high, so hold irrigation. Soil moisture is likely sufficient.",
             status: "info",
         });
     } else if (temp > 30) {
@@ -104,10 +119,10 @@ const getFarmingAdvisory = (temp: number, windSpeed: number, humidity: number, d
     }
 
     // Harvesting suitability
-    if (desc.includes("rain") || desc.includes("storm")) {
+    if (raining) {
         tips.push({
             title: "Harvest & Tillage",
-            desc: "Postpone harvesting. Wet soils increase soil compaction risk.",
+            desc: "It is wet, so postpone harvesting. Wet soils increase soil compaction risk.",
             status: "warning",
         });
     } else {
