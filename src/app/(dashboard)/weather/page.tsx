@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Cloud,
   CloudRain,
+  CloudSun,
+  Sun,
   Droplets,
   Wind,
   Thermometer,
@@ -20,6 +22,7 @@ import { useProfile } from "@/lib/hooks/useProfile";
 interface WeatherData {
   country?: string;
   state?: string;
+  city?: string;
   temperature: number;
   minTemp: number;
   maxTemp: number;
@@ -78,13 +81,22 @@ export default function WeatherPage() {
 
   const advisory = useMemo(() => (weather ? farmAdvisory(weather) : null), [weather]);
 
+  // Title-case any location string ("nigeria" -> "Nigeria").
+  const titleCase = (s?: string) =>
+    s ? s.replace(/\b\w/g, (c) => c.toUpperCase()) : s;
+
+  // Prefer the city (e.g. "Ibadan") over the state ("Oyo") to match how
+  // Apple/Google label the location; fall back to state, country as needed.
+  const city = titleCase(weather?.city);
+  const state = titleCase(weather?.state || profile?.location?.state);
+  const country = titleCase(weather?.country || profile?.location?.country);
   const locationLabel =
-    [weather?.state || profile?.location?.state, weather?.country || profile?.location?.country]
-      .filter(Boolean)
-      .join(", ") || "Your region";
+    (city && state && city.toLowerCase() !== state.toLowerCase()
+      ? `${city}, ${state}`
+      : [city || state, country].filter(Boolean).join(", ")) || "Your region";
 
   return (
-    <div className="p-4 md:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-6 text-gray-900 dark:text-[#e6edf3]">
+    <div className="p-4 sm:p-6 bg-white dark:bg-[#0d1117] min-h-screen space-y-5 text-gray-900 dark:text-[#e6edf3]">
       <PageHeader
         title="Weather"
         subtitle="Live conditions for your farm's region.">
@@ -117,28 +129,32 @@ export default function WeatherPage() {
       ) : (
         <>
           {/* Current conditions hero */}
-          <div className="bg-gradient-to-br from-green-700 to-emerald-800 rounded-2xl p-6 md:p-8 text-white shadow-sm">
-            <div className="flex items-center gap-1.5 text-green-100 text-sm font-medium mb-4">
-              <MapPin className="w-4 h-4" /> {locationLabel}
+          <div className="bg-gradient-to-br from-green-700 to-emerald-800 rounded-2xl p-5 sm:p-8 text-white shadow-sm">
+            <div className="flex items-center gap-1.5 text-green-100 text-sm font-medium">
+              <MapPin className="w-4 h-4 shrink-0" />
+              <span className="truncate">{locationLabel}</span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <div className="text-6xl font-bold leading-none">{Math.round(weather.temperature)}°C</div>
-                <div className="mt-2 capitalize text-green-100 text-lg">{weather.condition}</div>
-              </div>
-              <div className="flex items-center gap-6 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <ThermometerSnowflake className="w-4 h-4 text-green-200" /> Min {Math.round(weather.minTemp)}°
+            <div className="mt-5 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-6xl sm:text-7xl font-bold leading-none tracking-tight">
+                  {Math.round(weather.temperature)}°
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <ThermometerSun className="w-4 h-4 text-green-200" /> Max {Math.round(weather.maxTemp)}°
-                </div>
+                <div className="mt-2 capitalize text-green-100 text-base sm:text-lg">{weather.condition}</div>
               </div>
+              <HeroIcon condition={weather.condition} />
+            </div>
+            <div className="mt-5 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+                <ThermometerSnowflake className="w-3.5 h-3.5" /> Min {Math.round(weather.minTemp)}°
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+                <ThermometerSun className="w-3.5 h-3.5" /> Max {Math.round(weather.maxTemp)}°
+              </span>
             </div>
           </div>
 
           {/* Metric grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard icon={<Droplets className="w-5 h-5" />} label="Humidity" value={`${weather.humidity}%`} />
             <MetricCard icon={<CloudRain className="w-5 h-5" />} label="Rainfall" value={`${weather.rainfall} mm`} />
             <MetricCard icon={<Wind className="w-5 h-5" />} label="Wind" value={`${weather.windSpeed ?? 0} m/s`} />
@@ -175,9 +191,20 @@ export default function WeatherPage() {
   );
 }
 
+// Large decorative icon for the hero, chosen from the condition text.
+function HeroIcon({ condition }: { condition: string }) {
+  const c = (condition || "").toLowerCase();
+  const cls = "w-16 h-16 sm:w-20 sm:h-20 text-green-100/90 shrink-0";
+  if (c.includes("rain") || c.includes("drizzle") || c.includes("shower") || c.includes("storm"))
+    return <CloudRain className={cls} />;
+  if (c.includes("cloud") || c.includes("overcast")) return <Cloud className={cls} />;
+  if (c.includes("clear") || c.includes("sun")) return <Sun className={cls} />;
+  return <CloudSun className={cls} />;
+}
+
 function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-white dark:bg-[#161b22] p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm">
+    <div className="bg-white dark:bg-[#161b22] p-4 sm:p-5 rounded-xl border border-gray-200 dark:border-[#30363d] shadow-sm">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</span>
         <span className="text-green-700 dark:text-green-400">{icon}</span>
