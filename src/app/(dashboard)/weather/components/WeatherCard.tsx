@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getWeather } from '@/lib/services/weatherAPI';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useProfile } from '@/lib/hooks/useProfile';
 import { WeatherApiResponse } from '@/types/weather';
 
 // Helper function to estimate UV Index
@@ -147,9 +148,30 @@ const getCardTheme = (description: string) => {
 export default function WeatherCard() {
     const [weatherInfo, setWeatherInfo] = useState<WeatherApiResponse | undefined>();
     const [isLoading, setIsLoading] = useState(true);
-    const [displayLocation, setDisplayLocation] = useState('N/A'); 
+    const [displayLocation, setDisplayLocation] = useState('N/A');
     const [activeTab, setActiveTab] = useState<'weather' | 'advisory'>('weather');
+    const [geo, setGeo] = useState<{ lat: string; lon: string } | null>(null);
     const { user } = useAuth();
+    const { profile } = useProfile();
+
+    // Farm's saved coordinates + city (fallback when live GPS is unavailable).
+    const loc = (profile as { location?: { coordinates?: { lat?: string | number; lng?: string | number }; city?: string } } | null)?.location;
+    const farmLat = loc?.coordinates?.lat != null && loc.coordinates.lat !== "" ? String(loc.coordinates.lat) : "";
+    const farmLon = loc?.coordinates?.lng != null && loc.coordinates.lng !== "" ? String(loc.coordinates.lng) : "";
+    const farmCity = loc?.city || "";
+
+    // Auto-detect the farmer's live location once; fall back to the farm pin.
+    useEffect(() => {
+        if (typeof navigator === "undefined" || !navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            (pos) => setGeo({ lat: String(pos.coords.latitude), lon: String(pos.coords.longitude) }),
+            () => {},
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+        );
+    }, []);
+
+    const effLat = geo?.lat || farmLat;
+    const effLon = geo?.lon || farmLon;
 
     useEffect(() => {
         if (!user) {
@@ -158,18 +180,27 @@ export default function WeatherCard() {
 
         const country = user.country || "nigeria";
         const state = user.state || 'lagos';
-        
-        const formattedState = state.charAt(0).toUpperCase() + state.slice(1);
+
+        const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+        const formattedState = titleCase(state);
         setDisplayLocation(formattedState);
 
         const getAsyncWeather = async () => {
             setIsLoading(true);
             try {
-                const res = await getWeather(country, state);
+                const res = await getWeather(
+                    country,
+                    state,
+                    effLat && effLon ? { lat: effLat, lon: effLon } : undefined
+                );
                 setWeatherInfo(res?.data);
 
-                if (res?.data?.name && res.data.name.toLowerCase() !== state.toLowerCase()) {
-                    setDisplayLocation(`${res.data.name}, ${formattedState}`);
+                // Prefer the farm's own city, then the town OpenWeather resolved
+                // (ignoring generic "…State" names), else fall back to the state.
+                const owmCity: string = res?.data?.city && !/\bstate\b/i.test(res.data.city) ? res.data.city : "";
+                const cityName = farmCity || owmCity;
+                if (cityName && cityName.toLowerCase() !== state.toLowerCase()) {
+                    setDisplayLocation(`${titleCase(cityName)}, ${formattedState}`);
                 }
             } catch (error) {
                 console.error("Failed to fetch weather:", error);
@@ -178,10 +209,10 @@ export default function WeatherCard() {
                 setIsLoading(false);
             }
         };
-        
+
         getAsyncWeather();
 
-    }, [user]);
+    }, [user, effLat, effLon, farmCity]);
 
     const weatherCondition = weatherInfo?.weather?.[0]?.description || "N/A";
     const temp = Math.round(weatherInfo?.main?.temp || 0);
