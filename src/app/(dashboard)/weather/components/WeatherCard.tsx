@@ -5,7 +5,6 @@ import {
   Sun, 
   CloudRain, 
   Wind, 
-  Eye, 
   Cloudy, 
   CloudFog, 
   CloudDrizzle, 
@@ -22,33 +21,6 @@ import { getWeather } from '@/lib/services/weatherAPI';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useProfile } from '@/lib/hooks/useProfile';
 import { WeatherApiResponse } from '@/types/weather';
-
-// Helper function to estimate UV Index
-const estimateUVIndex = (weather: WeatherApiResponse | undefined) => {
-    if (!weather || !weather.weather || !weather.clouds) {
-        return null;
-    }
-    const weatherCondition = weather.weather[0]?.main;
-    const cloudiness = weather.clouds.all; // in %
-
-    if (weatherCondition === "Clear") {
-        if (cloudiness < 10) return 10;
-        if (cloudiness < 30) return 7;
-        if (cloudiness < 60) return 5;
-        return 2;
-    }
-
-    if (weatherCondition === "Clouds") {
-        if (cloudiness < 50) return 4;
-        return 2;
-    }
-
-    if (weatherCondition === "Rain" || weatherCondition === "Drizzle" || weatherCondition === "Thunderstorm") {
-        return 1;
-    }
-
-    return null;
-};
 
 // Helper function to get weather icon
 function getWeatherIcon(description: string, className = "w-10 h-10") {
@@ -234,7 +206,7 @@ export default function WeatherCard() {
     const humidity = weatherInfo?.main?.humidity || 0;
     const windSpeed = (weatherInfo?.wind?.speed || 0) * 3.6; // convert m/s to km/h if needed, or use as is
     const feelsLike = Math.round(weatherInfo?.main?.feels_like || 0);
-    const uvIndex = estimateUVIndex(weatherInfo) ?? "N/A";
+    const rainChance = (weatherInfo as { rainChance?: number } | undefined)?.rainChance;
 
     const cardTheme = getCardTheme(weatherCondition);
 
@@ -303,9 +275,9 @@ export default function WeatherCard() {
                             <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">Wind Speed</div>
                         </div>
                         <div className="bg-white/50 dark:bg-[#1c2128] border border-gray-100 dark:border-[#30363d] rounded-xl p-2.5 text-center transition-all hover:bg-white/80 dark:hover:bg-[#21262d]">
-                            <Eye className="w-4 h-4 text-purple-500 mx-auto mb-1" />
-                            <div className="text-xs font-bold text-gray-800 dark:text-[#e6edf3]">{uvIndex} / 10</div>
-                            <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">UV Index</div>
+                            <CloudRain className="w-4 h-4 text-sky-500 mx-auto mb-1" />
+                            <div className="text-xs font-bold text-gray-800 dark:text-[#e6edf3]">{typeof rainChance === "number" ? `${rainChance}%` : "N/A"}</div>
+                            <div className="text-[10px] text-gray-500 dark:text-[#8b949e] font-medium">Rain Chance</div>
                         </div>
                     </div>
                 </div>
