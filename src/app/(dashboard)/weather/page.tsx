@@ -84,14 +84,14 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
     out.push({
       tone: "watch",
       title: "Light rain likely",
-      text: `You can skip irrigation today.${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)} — rain washes off applications.` : ""}`,
+      text: `You can skip irrigation today.${sprayTasks.length ? ` Consider delaying ${titleList(sprayTasks)}, since rain washes off applications.` : ""}`,
     });
   }
   if (hot && !raining) {
     out.push({
       tone: "alert",
       title: "High heat",
-      text: `Water crops early morning or evening and watch livestock for heat stress.${tender.length ? ` Your ${nameList(tender)} ${tender.length > 1 ? "are" : "is"} at a sensitive stage — keep soil moisture up.` : ""}`,
+      text: `Water crops early morning or evening and watch livestock for heat stress.${tender.length ? ` Your ${nameList(tender)} ${tender.length > 1 ? "are" : "is"} at a sensitive stage, so keep soil moisture up.` : ""}`,
     });
   }
   if (humid && !heavyRain) {
@@ -102,7 +102,7 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
     });
   }
   if (windy && sprayTasks.length) {
-    out.push({ tone: "watch", title: "Too windy to spray", text: `Winds are up — postpone ${titleList(sprayTasks)} to avoid drift.` });
+    out.push({ tone: "watch", title: "Too windy to spray", text: `Winds are up, so postpone ${titleList(sprayTasks)} to avoid drift.` });
   }
   if (!raining && readyToHarvest.length) {
     out.push({
@@ -115,7 +115,7 @@ function buildAdvisories(w: WeatherData, crops: CropLite[], tasks: TaskLite[]): 
     out.push({
       tone: "watch",
       title: "Crops need attention",
-      text: `${nameList(poor)} ${poor.length > 1 ? "are" : "is"} rated ${[...new Set(poor.map((c) => health(c)))].join("/")} — inspect for pests, water or nutrient stress.`,
+      text: `${nameList(poor)} ${poor.length > 1 ? "are" : "is"} rated ${[...new Set(poor.map((c) => health(c)))].join("/")}. Inspect for pests, water or nutrient stress.`,
     });
   }
   if (soon.length) {
@@ -131,6 +131,13 @@ export default function WeatherPage() {
   const { user } = useAuth();
   const region = profile?.location?.state || profile?.location?.city || "";
 
+  // Exact farm coordinates (accurate to the farm's real location, not the
+  // state centre). Profile stores them as { lat, lng }.
+  const coords = (profile as { location?: { coordinates?: { lat?: string | number; lng?: string | number } } } | null)
+    ?.location?.coordinates;
+  const lat = coords?.lat != null && coords.lat !== "" ? String(coords.lat) : "";
+  const lon = coords?.lng != null && coords.lng !== "" ? String(coords.lng) : "";
+
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,9 +148,13 @@ export default function WeatherPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await apiClient.get("/api/weather", {
-        params: region ? { region } : {},
-      });
+      const params: Record<string, string> = {};
+      if (region) params.region = region;
+      if (lat && lon) {
+        params.lat = lat;
+        params.lon = lon;
+      }
+      const res = await apiClient.get("/api/weather", { params });
       setWeather((res?.data?.data ?? null) as WeatherData | null);
     } catch (err) {
       console.error("[weather] failed to load:", err);
@@ -151,7 +162,7 @@ export default function WeatherPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [region]);
+  }, [region, lat, lon]);
 
   useEffect(() => {
     fetchWeather();
@@ -184,7 +195,7 @@ export default function WeatherPage() {
 
   // Prefer the town over the state to match how Apple/Google label the
   // location. Order: the farm profile's own city (most accurate to the farm) →
-  // the town OpenWeather resolved — but ignore generic centroid names like
+  // the town OpenWeather resolved - but ignore generic centroid names like
   // "Oyo State" that just echo the state → otherwise fall back to state/country.
   const state = titleCase(weather?.state || profile?.location?.state);
   const country = titleCase(weather?.country || profile?.location?.country);
@@ -228,7 +239,7 @@ export default function WeatherPage() {
         </div>
       ) : (
         <>
-          {/* Current conditions hero — animated farm scene reflects the live condition */}
+          {/* Current conditions hero - animated farm scene reflects the live condition */}
           <div className="relative overflow-hidden rounded-2xl p-5 sm:p-8 text-white shadow-sm min-h-[220px] sm:min-h-[240px] flex flex-col">
             <WeatherScene condition={weather.condition} />
             <div className="relative z-10 flex flex-col flex-1 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
@@ -263,7 +274,7 @@ export default function WeatherPage() {
             <MetricCard icon={<Thermometer className="w-5 h-5" />} label="Feels like" value={`${Math.round(weather.temperature)}°C`} />
           </div>
 
-          {/* Farm advisory — tailored to conditions, your crops and due tasks */}
+          {/* Farm advisory - tailored to conditions, your crops and due tasks */}
           {advisories.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">

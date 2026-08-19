@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 /**
  * Animated "farm vibe" backdrop for the weather hero.
  * Reacts to the live condition: sun rays when clear, drifting clouds when
- * overcast, falling rain for drizzle/rain, plus lightning for storms — all
+ * overcast, falling rain for drizzle/rain, plus lightning for storms - all
  * over a small farm scene (rolling fields + crop rows).
  *
  * Pure CSS/SVG, no external assets. Raindrop positions are deterministic
